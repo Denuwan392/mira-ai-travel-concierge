@@ -16,8 +16,8 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body>
         <FloatingNav />
         {children}
-        <footer className="frame footer"><Link className="wordmark" href="/"><BrandMark size={24} /> Ceylon Compass</Link>
-          <span>Fictional travel concierge · Demo booking only</span><Link href="/credits">Photography</Link><Link href="/staff">Staff console</Link>
+        <footer className="frame footer"><Link prefetch={false} className="wordmark" href="/"><BrandMark size={24} /> Ceylon Compass</Link>
+          <span>Fictional travel concierge · Demo booking only</span><Link prefetch={false} href="/credits">Photography</Link><Link prefetch={false} href="/staff">Staff console</Link>
         </footer>
       </body>
     </html>
