@@ -1,0 +1,14 @@
+.DS_Store
+.mira/
+.env
+.env.local
+.venv/
+.deps/
+__pycache__/
+.pytest_cache/
+node_modules/
+.next/
+*.tsbuildinfo
+playwright-report/
+test-results/
+next-env.d.ts
