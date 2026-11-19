@@ -1,0 +1,43 @@
+.advisor-workspace{width:min(1540px,calc(100% - 5vw));padding:20px 0 45px;color:#172d24}
+.advisor-workspace .planner-workspace-heading{display:flex;align-items:baseline;justify-content:space-between;flex-direction:row-reverse;border-bottom:1px solid #dce1d8;margin:0 0 14px;padding:0 0 12px}
+.advisor-workspace .planner-title{font:400 clamp(29px,3vw,42px)/1.1 Georgia,serif;text-transform:none;letter-spacing:-.04em;margin:0}
+.advisor-workspace .planner-workspace-heading .eyebrow{font-size:10px;letter-spacing:.13em}
+.advisor-workspace .bento-workspace{display:grid;grid-template-columns:minmax(250px,24%) minmax(0,1fr);gap:18px;align-items:start}
+.advisor-workspace .workspace-chat{position:sticky;top:12px;height:clamp(470px,calc(100dvh - 160px),850px);min-width:0;min-height:0;border-radius:16px}
+.advisor-workspace .chat-starters{display:grid;gap:5px;justify-items:start}
+.advisor-workspace .messages{overflow:auto;overscroll-behavior:contain}
+.chat-result,.history-return,.guide-back,.ask-place,.guide-actions button,.compare-pair button{min-height:34px;padding:5px 10px;display:inline-flex;align-items:center;gap:6px;border:1px solid #bdc9bf;color:#214337;background:white;border-radius:8px;font-size:12px;font-weight:650}
+.chat-result{margin-top:5px;background:#edf3ed}.history-return{margin-bottom:10px}
+.advisor-canvas{display:block;min-width:0}.advisor-components{display:grid;gap:12px}.advisor-components:not(:empty){margin-bottom:16px}
+.advisor-components>.journey-card{display:grid;grid-template-columns:minmax(100px,26%) minmax(0,1fr);padding:0;border-radius:12px;overflow:hidden}.advisor-components .editorial-tour-photo{height:100%;min-height:130px;margin:0;border-radius:0}.advisor-components .editorial-tour-photo>.journey-photo{height:100%;margin:0;border-radius:0}
+.advisor-board{background:white;border:1px solid #d9dfd7;border-radius:15px;overflow:hidden}
+.guide-toolbar{padding:12px 18px;border-bottom:1px solid #dfe4db}
+.guide-modes,.day-switch,.guide-actions{display:flex;align-items:center;flex-wrap:wrap;gap:6px}
+.guide-modes button,.day-switch button,.map-places button{display:inline-flex;align-items:center;gap:5px;min-height:34px;border:1px solid transparent;background:#f0f2ec;color:#334d40;border-radius:22px;font-size:13px;padding:5px 12px}
+.guide-modes button[aria-pressed=true],.day-switch button[aria-pressed=true],.map-places button[aria-pressed=true]{background:#214536;color:white}
+.guide-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(180px,30%);align-items:start}
+.guide-results{min-width:0;padding:20px}.guide-kicker,.trip-day>span{display:block;font-size:10px;text-transform:uppercase;font-weight:750;letter-spacing:.1em;color:#52614d}
+.guide-results h2,.guide-result-heading h2{font:400 clamp(25px,2.5vw,40px)/1.07 Georgia,serif;color:#193e30;letter-spacing:-.045em;margin:6px 0 18px}
+.guide-results>p{font-size:14px;line-height:1.5}.guide-card{position:relative;display:flex;align-items:stretch;gap:14px;padding:16px 0;border-top:1px solid #e0e5dc}
+.guide-photo{position:relative;width:clamp(85px,9vw,156px);min-height:134px;flex:none;overflow:hidden;border-radius:9px}.guide-photo img{object-fit:cover}
+.guide-card-copy{flex:1;min-width:0}.guide-card-copy .guide-kicker{padding-right:27px}
+.guide-card h3,.trip-day h3{font:600 clamp(16px,1.45vw,22px)/1.19 Georgia,serif;color:#193e30;margin:7px 0;padding-right:16px}.guide-card-copy p{font-size:13px;line-height:1.52;color:#49574e;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;margin:0 0 9px}
+.guide-actions button:last-child,.ask-place{background:#214536;color:white;border-color:transparent}
+.save-tour{position:absolute;right:0;top:14px;width:31px;height:32px;background:#f5f4ed;color:#304638;border:0;border-radius:50%}
+.guide-back{margin:0 0 12px}.guide-locator{border-left:1px solid #dee4db;padding:14px 12px;position:sticky;top:12px}
+.island-map{overflow:hidden;border:1px solid #ccd9cf;border-radius:12px;background:#f2f6f1}
+.island-map header{display:flex;align-items:center;justify-content:space-between;padding:7px 9px;background:#f5f6ee;font-size:12px;font-weight:650}.island-map header span{display:flex;align-items:center;gap:4px}
+.island-map header button{width:31px;height:31px;background:white;border:1px solid #c7d1c3;border-radius:7px}
+.island-map>svg{width:100%;height:clamp(218px,28vw,395px);display:block;background:#dcebec}
+.ocean-name{fill:#476b72;font:italic 13px Georgia,serif}.pin-label{font:bold 11px Arial,sans-serif;fill:#18372b;paint-order:stroke;stroke:white;stroke-width:3px}.map-marker{cursor:pointer}.map-marker:focus{outline:2px solid #aa4111}
+.map-places{display:flex;gap:4px;flex-wrap:wrap;padding:8px}.map-places button{padding:4px 8px;min-height:28px;font-size:11px;background:white;border-color:#c5d3c9}
+.island-map small{display:block;padding:0 9px 8px;color:#4c6254;font-size:10px}.ask-place{margin-top:8px;width:100%}
+.day-switch{margin:18px 0}.trip-day{padding:16px 0;border-top:1px solid #dae1d8}.trip-day p{font-size:14px;white-space:pre-line;margin:8px 0}.compare-pair{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}.compare-pair article{border:1px solid #d1dbcb;background:#f6f7f1;border-radius:10px;padding:10px;font-size:13px}.compare-pair dt{margin-top:7px;font-size:11px;color:#536650}.compare-pair dd{margin:0}
+@media(max-width:1050px){.guide-layout{grid-template-columns:minmax(0,1fr) 185px}.advisor-workspace .bento-workspace{grid-template-columns:245px minmax(0,1fr);gap:10px}.guide-results{padding:13px}.guide-locator{padding:8px}.guide-photo{width:85px}.guide-card{gap:8px}}
+@media(max-width:800px){.advisor-workspace{width:calc(100% - 28px)}.advisor-workspace .bento-workspace{display:block}.advisor-workspace .mobile-tabs{display:flex;margin-bottom:10px}.advisor-workspace .chat-selected .advisor-canvas,.advisor-workspace .journey-selected .workspace-chat{display:none}.advisor-workspace .workspace-chat{height:calc(100dvh - 220px);min-height:335px;position:static}.advisor-workspace .planner-workspace-heading .eyebrow{display:none}}
+@media(max-width:610px){.guide-layout{display:flex;flex-direction:column}.guide-results,.guide-locator{width:100%}.guide-locator{position:static;border:0;border-top:1px solid #dbe4d9;padding:12px}.guide-photo{width:84px;min-height:117px}.guide-toolbar{padding:10px}.guide-modes button{padding:5px 9px}.guide-card h3{font-size:17px}.guide-actions button{font-size:11px;min-height:36px}.island-map>svg{height:230px}.advisor-components>.journey-card{grid-template-columns:1fr}.advisor-components .editorial-tour-photo{height:125px}.advisor-workspace .workspace-chat .messages{min-height:0}}
+.guide-toolbar{display:flex;justify-content:space-between;align-items:center;gap:4px}.guide-map-switch{display:none}
+@media(max-width:610px){.guide-map-switch{display:inline-flex;align-items:center;gap:3px;background:white;border:1px solid #c5d3c9;border-radius:18px;padding:5px 7px;min-height:34px;font-size:12px}.guide-layout .guide-locator{display:none}.guide-layout.show-map .guide-locator{display:block;order:-1;border-bottom:1px solid #dbe4d9}.guide-modes{gap:2px}.guide-modes button{padding:5px 7px;font-size:12px}}
+.town-label{font:9px Arial,sans-serif;fill:#38503b;paint-order:stroke;stroke:#f6f4df;stroke-width:2px}
+.guide-actions button:disabled{opacity:.55;cursor:default}
+@media(max-width:800px){.advisor-workspace .planner-workspace-heading{justify-content:flex-end}}
