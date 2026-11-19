@@ -104,6 +104,8 @@ def interpret(state):
     action = "discover"
     if re.search(r"ignore .*instructions|profit margin|reveal .*cost|publish .*without|invent .*price|\d+% off", text):
         action = "reject"
+    elif re.fullmatch(r"(?:please )?compare (?:them|these|those|my options|the routes|these tours|these journeys)[.!?]?", text) and ctx.get("suggestions"):
+        action = "compare"
     elif re.search(r"python script|sort a list|write .*code", text):
         action = "off_topic"
     elif re.search(r"\b(?:custom|airport transfer|adam.s peak)\b|design .*journey|across kandy|(?:stay at|change pickup|with extra|different hotel)|sigiriya.*from (?!kandy)", text):
@@ -206,9 +208,13 @@ def retrieve(_):
     ids = {
         "cancellation": ["P02"], "children": ["P03"], "dietary": ["P04"], "payment": ["P01"],
         "polonnaruwa": ["T09", "T08"],
+        "compare": ctx.get("suggestions", [])[:2],
         "destination": [w["named"]], "discover": [ctx.get("tour")],
         "custom": ["T08", "T10", "T12"], "general": ["T01", "T09", "T05"],
     }.get(action, [])
+    if action == "destination":
+        place = records[w["named"]]["path"].rsplit("/", 1)[-1].removesuffix(".md")
+        ids += [key for key, tour in w["tours"].items() if place in tour["destinations"]][:3]
     if action in {"custom", "general"}:
         trip = ctx.get("custom", {}) if action == "custom" else {}
         destinations = {name.split()[0].lower() for name in trip.get("destinations", [])}
@@ -217,6 +223,8 @@ def retrieve(_):
             ids = [key for key in related if destinations.intersection(w["tours"][key]["destinations"])][:3] or ids
         ids = rank(w["tours"], trip, w["events"]) or ids
     w["rows"] = [records[key] for key in ids if key in records]
+    if action in {"general", "destination", "custom", "compare"}:
+        ctx["suggestions"] = [row["id"] for row in w["rows"] if row["type"] == "tour"]
     w["events"].append({"stage": "retrieval", "sources": [r["id"] for r in w["rows"]]})
     return {}
 
@@ -260,7 +268,7 @@ def compose(_):
     sources = []
     for row in rows:
         key = row["id"]
-        if action in {"cancellation", "children", "dietary", "payment", "destination", "polonnaruwa"}:
+        if action in {"cancellation", "children", "dietary", "payment", "polonnaruwa"} or (action == "destination" and row["type"] == "destination"):
             heading = None
             if action == "cancellation" and w["named"] in w["tours"]:
                 heading = ("Multi-day tours and stays" if "nights" in w["tours"][w["named"]]["duration"]
@@ -296,6 +304,10 @@ def compose(_):
         text = "I’m Mira, your Sri Lanka travel companion. I can help you explore tours or plan a trip."
     elif action == "unknown":
         text = "I can’t confirm that from our published travel information. You can ask me to create a custom enquiry."
+    elif action == "compare" and rows:
+        text = "Here are the published routes from your last results. Compare the duration, starting point and destinations, then choose a tour to plan."
+    elif action == "destination" and len(ctx.get("suggestions", [])) > 1:
+        text = f"I found {len(ctx['suggestions'])} published journeys that visit {w['records'][w['named']]['title']}. Would you like to compare their routes or explore one itinerary?"
     elif action in {"cancellation", "children", "dietary", "payment", "polonnaruwa", "destination"} and sources:
         text = "Here’s what our published travel information says."
     elif action == "invalid_party":
