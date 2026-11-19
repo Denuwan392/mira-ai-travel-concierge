@@ -6,7 +6,7 @@ import { api } from "../../lib/api";
 
 const statuses = ["new", "contacted", "waiting", "closed"];
 type Row = { id: string; reason: string; status: string; created: string; quote: string | null; trip: string; trace: string };
-type Detail = Row & { events: object[]; finance: object | null; notes: { actor: string; body: string; created: string }[] };
+type Detail = Row & { events: object[]; finance: { cost_lkr: string; total: number; deposit: number; gross_profit_pct: string } | null; notes: { actor: string; body: string; created: string }[] };
 type Draft = { id: string; title: string; body: string; source: string; author: string; status: string; created: string; published?: string };
 type Audit = { id: number; action: string; actor: string; target: string; created: string };
 
@@ -130,7 +130,12 @@ export default function Staff() {
             <div className="table-heading"><h2>Enquiry {detail.id.slice(0, 8)}</h2><button className="button outline" onClick={() => setDetail(undefined)}>Close</button></div>
             <p>{detail.reason.replaceAll("_", " ")}</p><pre>{JSON.stringify(JSON.parse(detail.trip), null, 2)}</pre>
             <details><summary>Trace {detail.trace.slice(0, 8)}</summary><pre>{JSON.stringify(detail.events, null, 2)}</pre></details>
-            {detail.finance && <details><summary>Internal finance</summary><pre>{JSON.stringify(detail.finance, null, 2)}</pre></details>}
+            {detail.finance && <details><summary>Internal finance</summary><dl className="finance-summary">
+              <div><dt>Cost</dt><dd>LKR {Number(detail.finance.cost_lkr).toLocaleString("en-US")}</dd></div>
+              <div><dt>Selling price</dt><dd>USD {detail.finance.total.toLocaleString("en-US")}</dd></div>
+              <div><dt>Deposit</dt><dd>USD {detail.finance.deposit.toLocaleString("en-US")}</dd></div>
+              <div><dt>Gross profit</dt><dd>{Number(detail.finance.gross_profit_pct).toFixed(2)}%</dd></div>
+            </dl><details><summary>Workbook calculation</summary><pre>{JSON.stringify(detail.finance, null, 2)}</pre></details></details>}
             <ul>{detail.notes.map((n, i) => <li key={i}>{n.actor} · {n.body}</li>)}</ul>
             <form onSubmit={follow} key={`${detail.id}-${detail.notes.length}-${detail.status}`}>
               <label>New status<select name="status" defaultValue={detail.status}>{statuses.map(s => <option key={s}>{s}</option>)}</select></label>
