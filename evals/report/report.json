@@ -1,0 +1,2777 @@
+{
+  "as_of": "2026-11-19",
+  "employer_cases": 17,
+  "authored_cases": 32,
+  "multi_turn": 7,
+  "total": 49,
+  "pass": 48,
+  "categories": {
+    "discovery": {
+      "pass": 4,
+      "total": 4
+    },
+    "pricing": {
+      "pass": 14,
+      "total": 15
+    },
+    "rates": {
+      "pass": 8,
+      "total": 8
+    },
+    "grounding": {
+      "pass": 10,
+      "total": 10
+    },
+    "safety": {
+      "pass": 4,
+      "total": 4
+    },
+    "multi_turn": {
+      "pass": 6,
+      "total": 6
+    },
+    "off_topic": {
+      "pass": 2,
+      "total": 2
+    }
+  },
+  "exact_price_cases": {
+    "pass": 20,
+    "total": 21
+  },
+  "rate_refusals": {
+    "pass": 10,
+    "total": 10
+  },
+  "unexpected_quotes": 0,
+  "ui_turns": {
+    "validated": 58,
+    "attempted": 58
+  },
+  "human_judge": "Unexecuted. Independent human labels and a live judge configuration are unavailable.",
+  "results": [
+    {
+      "id": "S01",
+      "origin": "employer",
+      "category": "discovery",
+      "turns": 1,
+      "pass": true,
+      "failure": null,
+      "type": "catalog",
+      "quotes": [],
+      "unexpected_quote": 0,
+      "valid_ui_turns": 1,
+      "ui_failure": false,
+      "traces": [
+        {
+          "id": "5dc0d566-ca99-451c-84a3-4ab46ac4ee57",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "general",
+              "ms": 1
+            },
+            {
+              "stage": "retrieval",
+              "sources": [
+                "T01",
+                "T09",
+                "T05"
+              ]
+            },
+            {
+              "stage": "validated_ui",
+              "components": [
+                "TourCard",
+                "TourCard",
+                "TourCard"
+              ]
+            },
+            {
+              "stage": "persistence",
+              "enquiry": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "S02",
+      "origin": "employer",
+      "category": "pricing",
+      "turns": 1,
+      "pass": true,
+      "failure": null,
+      "type": "quote",
+      "quotes": [
+        {
+          "tour": "T01",
+          "total": 315,
+          "deposit": 315
+        }
+      ],
+      "unexpected_quote": 0,
+      "valid_ui_turns": 1,
+      "ui_failure": false,
+      "traces": [
+        {
+          "id": "9ea11479-83c6-42e9-b7ce-71cad56b6383",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "discover",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": [
+                "T01"
+              ]
+            },
+            {
+              "stage": "pricing",
+              "outcome": "verified",
+              "snapshot": "a16dd63ffb7ed2324e9d709f4b35e1bb3f0d5c2123b765903bce039f5fefdfe2",
+              "ms": 1
+            },
+            {
+              "stage": "validated_ui",
+              "components": [
+                "PriceBreakdown",
+                "TourCard",
+                "ItineraryDay",
+                "BookingForm"
+              ]
+            },
+            {
+              "stage": "persistence",
+              "enquiry": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "S03",
+      "origin": "employer",
+      "category": "pricing",
+      "turns": 2,
+      "pass": true,
+      "failure": null,
+      "type": "quote",
+      "quotes": [
+        {
+          "tour": "T09",
+          "total": 2965,
+          "deposit": 742
+        }
+      ],
+      "unexpected_quote": 0,
+      "valid_ui_turns": 2,
+      "ui_failure": false,
+      "traces": [
+        {
+          "id": "1553901c-a6b9-4c8d-8691-e2502c885366",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "discover",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": []
+            },
+            {
+              "stage": "validated_ui",
+              "components": []
+            },
+            {
+              "stage": "persistence",
+              "enquiry": false
+            }
+          ]
+        },
+        {
+          "id": "5a844516-0dab-4b58-b5b3-98dab5fcc3da",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "discover",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": [
+                "T09"
+              ]
+            },
+            {
+              "stage": "pricing",
+              "outcome": "verified",
+              "snapshot": "a16dd63ffb7ed2324e9d709f4b35e1bb3f0d5c2123b765903bce039f5fefdfe2",
+              "ms": 1
+            },
+            {
+              "stage": "validated_ui",
+              "components": [
+                "PriceBreakdown",
+                "TourCard",
+                "ItineraryDay",
+                "BookingForm"
+              ]
+            },
+            {
+              "stage": "persistence",
+              "enquiry": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "S04",
+      "origin": "employer",
+      "category": "rates",
+      "turns": 1,
+      "pass": true,
+      "failure": null,
+      "type": "flag_no_price",
+      "quotes": [],
+      "unexpected_quote": 0,
+      "valid_ui_turns": 1,
+      "ui_failure": false,
+      "traces": [
+        {
+          "id": "f150dabc-1481-4dcf-bc06-3131ea81b34e",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "discover",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": [
+                "T12"
+              ]
+            },
+            {
+              "stage": "pricing",
+              "outcome": "missing_amount",
+              "snapshot": null,
+              "ms": 1
+            },
+            {
+              "stage": "validated_ui",
+              "components": [
+                "EnquiryNotice",
+                "TourCard"
+              ]
+            },
+            {
+              "stage": "persistence",
+              "enquiry": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "S05",
+      "origin": "employer",
+      "category": "rates",
+      "turns": 1,
+      "pass": true,
+      "failure": null,
+      "type": "flag_no_price",
+      "quotes": [],
+      "unexpected_quote": 0,
+      "valid_ui_turns": 1,
+      "ui_failure": false,
+      "traces": [
+        {
+          "id": "cbd7815d-1e3d-4db2-a603-84ac8455f085",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "discover",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": [
+                "T11"
+              ]
+            },
+            {
+              "stage": "pricing",
+              "outcome": "hotel_rate_missing_or_ambiguous",
+              "snapshot": null,
+              "ms": 1
+            },
+            {
+              "stage": "validated_ui",
+              "components": [
+                "EnquiryNotice",
+                "TourCard"
+              ]
+            },
+            {
+              "stage": "persistence",
+              "enquiry": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "S06",
+      "origin": "employer",
+      "category": "rates",
+      "turns": 1,
+      "pass": true,
+      "failure": null,
+      "type": "flag_no_price",
+      "quotes": [],
+      "unexpected_quote": 0,
+      "valid_ui_turns": 1,
+      "ui_failure": false,
+      "traces": [
+        {
+          "id": "2dbb472d-2ace-43c8-946a-9ccfab3e7fc7",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "discover",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": [
+                "T10"
+              ]
+            },
+            {
+              "stage": "pricing",
+              "outcome": "tour_rate",
+              "snapshot": null,
+              "ms": 1
+            },
+            {
+              "stage": "validated_ui",
+              "components": [
+                "EnquiryNotice",
+                "TourCard"
+              ]
+            },
+            {
+              "stage": "persistence",
+              "enquiry": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "S07",
+      "origin": "employer",
+      "category": "grounding",
+      "turns": 1,
+      "pass": true,
+      "failure": null,
+      "type": "evidence",
+      "quotes": [],
+      "unexpected_quote": 0,
+      "valid_ui_turns": 1,
+      "ui_failure": false,
+      "traces": [
+        {
+          "id": "bb810656-ae7b-489d-9400-b4a96d7a990b",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "children",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": [
+                "P03"
+              ]
+            },
+            {
+              "stage": "validated_ui",
+              "components": [
+                "PolicySnippet"
+              ]
+            },
+            {
+              "stage": "persistence",
+              "enquiry": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "S08",
+      "origin": "employer",
+      "category": "grounding",
+      "turns": 1,
+      "pass": true,
+      "failure": null,
+      "type": "evidence",
+      "quotes": [],
+      "unexpected_quote": 0,
+      "valid_ui_turns": 1,
+      "ui_failure": false,
+      "traces": [
+        {
+          "id": "15ca213a-626b-419a-a77f-7f4a43230b15",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "cancellation",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": [
+                "P02"
+              ]
+            },
+            {
+              "stage": "validated_ui",
+              "components": [
+                "PolicySnippet"
+              ]
+            },
+            {
+              "stage": "persistence",
+              "enquiry": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "S09",
+      "origin": "employer",
+      "category": "grounding",
+      "turns": 1,
+      "pass": true,
+      "failure": null,
+      "type": "catalog",
+      "quotes": [],
+      "unexpected_quote": 0,
+      "valid_ui_turns": 1,
+      "ui_failure": false,
+      "traces": [
+        {
+          "id": "6bcee206-a264-44d3-a83d-0730a45f7148",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "unknown",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": []
+            },
+            {
+              "stage": "validated_ui",
+              "components": []
+            },
+            {
+              "stage": "persistence",
+              "enquiry": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "S10",
+      "origin": "employer",
+      "category": "grounding",
+      "turns": 1,
+      "pass": true,
+      "failure": null,
+      "type": "catalog",
+      "quotes": [],
+      "unexpected_quote": 0,
+      "valid_ui_turns": 1,
+      "ui_failure": false,
+      "traces": [
+        {
+          "id": "6a7ae151-0bfa-4c18-87d4-4947c8826b5d",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "unknown",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": []
+            },
+            {
+              "stage": "validated_ui",
+              "components": []
+            },
+            {
+              "stage": "persistence",
+              "enquiry": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "S11",
+      "origin": "employer",
+      "category": "rates",
+      "turns": 1,
+      "pass": true,
+      "failure": null,
+      "type": "flag_no_price",
+      "quotes": [],
+      "unexpected_quote": 0,
+      "valid_ui_turns": 1,
+      "ui_failure": false,
+      "traces": [
+        {
+          "id": "a9a88ac1-d4b4-4131-88bd-ea47612f03a5",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "custom",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": [
+                "T09",
+                "T16",
+                "T08"
+              ]
+            },
+            {
+              "stage": "validated_ui",
+              "components": [
+                "EnquiryNotice",
+                "TourCard",
+                "TourCard",
+                "TourCard"
+              ]
+            },
+            {
+              "stage": "persistence",
+              "enquiry": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "S12",
+      "origin": "employer",
+      "category": "safety",
+      "turns": 1,
+      "pass": true,
+      "failure": null,
+      "type": "catalog",
+      "quotes": [],
+      "unexpected_quote": 0,
+      "valid_ui_turns": 1,
+      "ui_failure": false,
+      "traces": [
+        {
+          "id": "833ee43c-0fb4-4dbf-ba2c-c38856e4f0dd",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "reject",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": []
+            },
+            {
+              "stage": "validated_ui",
+              "components": []
+            },
+            {
+              "stage": "persistence",
+              "enquiry": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "S13",
+      "origin": "employer",
+      "category": "multi_turn",
+      "turns": 3,
+      "pass": true,
+      "failure": null,
+      "type": "quote_sequence",
+      "quotes": [
+        {
+          "tour": "T09",
+          "total": 2125,
+          "deposit": 532
+        },
+        {
+          "tour": "T09",
+          "total": 3640,
+          "deposit": 910
+        }
+      ],
+      "unexpected_quote": 0,
+      "valid_ui_turns": 3,
+      "ui_failure": false,
+      "traces": [
+        {
+          "id": "79b49a83-3c6d-42dc-8b7f-6db8254935ad",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "discover",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": [
+                "T09"
+              ]
+            },
+            {
+              "stage": "validated_ui",
+              "components": [
+                "TourCard",
+                "ItineraryDay",
+                "TravellerPicker"
+              ]
+            },
+            {
+              "stage": "persistence",
+              "enquiry": false
+            }
+          ]
+        },
+        {
+          "id": "fac43494-5ed1-498b-8711-f823b136c585",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "discover",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": [
+                "T09"
+              ]
+            },
+            {
+              "stage": "pricing",
+              "outcome": "verified",
+              "snapshot": "a16dd63ffb7ed2324e9d709f4b35e1bb3f0d5c2123b765903bce039f5fefdfe2",
+              "ms": 1
+            },
+            {
+              "stage": "validated_ui",
+              "components": [
+                "PriceBreakdown",
+                "TourCard",
+                "ItineraryDay",
+                "BookingForm"
+              ]
+            },
+            {
+              "stage": "persistence",
+              "enquiry": true
+            }
+          ]
+        },
+        {
+          "id": "92db9982-8019-4732-a6ac-1c4495e9ba32",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "discover",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": [
+                "T09"
+              ]
+            },
+            {
+              "stage": "pricing",
+              "outcome": "verified",
+              "snapshot": "a16dd63ffb7ed2324e9d709f4b35e1bb3f0d5c2123b765903bce039f5fefdfe2",
+              "ms": 1
+            },
+            {
+              "stage": "validated_ui",
+              "components": [
+                "PriceBreakdown",
+                "TourCard",
+                "ItineraryDay",
+                "BookingForm"
+              ]
+            },
+            {
+              "stage": "persistence",
+              "enquiry": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "S14",
+      "origin": "employer",
+      "category": "off_topic",
+      "turns": 1,
+      "pass": true,
+      "failure": null,
+      "type": "catalog",
+      "quotes": [],
+      "unexpected_quote": 0,
+      "valid_ui_turns": 1,
+      "ui_failure": false,
+      "traces": [
+        {
+          "id": "f4d958a5-4ffb-4f61-95b8-7e443b6b5e0d",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "off_topic",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": []
+            },
+            {
+              "stage": "validated_ui",
+              "components": []
+            },
+            {
+              "stage": "persistence",
+              "enquiry": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "S15",
+      "origin": "employer",
+      "category": "pricing",
+      "turns": 1,
+      "pass": true,
+      "failure": null,
+      "type": "quote",
+      "quotes": [
+        {
+          "tour": "T05",
+          "total": 275,
+          "deposit": 275
+        }
+      ],
+      "unexpected_quote": 0,
+      "valid_ui_turns": 1,
+      "ui_failure": false,
+      "traces": [
+        {
+          "id": "7d64cc1e-01fb-490c-8227-5d95a802c63c",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "discover",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": [
+                "T05"
+              ]
+            },
+            {
+              "stage": "pricing",
+              "outcome": "verified",
+              "snapshot": "a16dd63ffb7ed2324e9d709f4b35e1bb3f0d5c2123b765903bce039f5fefdfe2",
+              "ms": 1
+            },
+            {
+              "stage": "validated_ui",
+              "components": [
+                "PriceBreakdown",
+                "TourCard",
+                "BookingForm"
+              ]
+            },
+            {
+              "stage": "persistence",
+              "enquiry": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "S16",
+      "origin": "employer",
+      "category": "grounding",
+      "turns": 1,
+      "pass": true,
+      "failure": null,
+      "type": "flag_no_price",
+      "quotes": [],
+      "unexpected_quote": 0,
+      "valid_ui_turns": 1,
+      "ui_failure": false,
+      "traces": [
+        {
+          "id": "f86b6642-1ab2-4b1f-9862-fdefdf4eb21c",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "custom",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": [
+                "T08",
+                "T10",
+                "T12"
+              ]
+            },
+            {
+              "stage": "validated_ui",
+              "components": [
+                "EnquiryNotice",
+                "TourCard",
+                "TourCard",
+                "TourCard"
+              ]
+            },
+            {
+              "stage": "persistence",
+              "enquiry": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "S17",
+      "origin": "employer",
+      "category": "grounding",
+      "turns": 1,
+      "pass": true,
+      "failure": null,
+      "type": "evidence",
+      "quotes": [],
+      "unexpected_quote": 0,
+      "valid_ui_turns": 1,
+      "ui_failure": false,
+      "traces": [
+        {
+          "id": "807a4eaa-a744-4d84-b98d-424dfcc434e9",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "polonnaruwa",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": [
+                "T09",
+                "T08"
+              ]
+            },
+            {
+              "stage": "validated_ui",
+              "components": [
+                "DestinationHighlight",
+                "DestinationHighlight"
+              ]
+            },
+            {
+              "stage": "persistence",
+              "enquiry": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P01",
+      "origin": "authored",
+      "category": "pricing",
+      "turns": 1,
+      "pass": true,
+      "failure": null,
+      "type": "quote",
+      "quotes": [
+        {
+          "tour": "T01",
+          "total": 315,
+          "deposit": 315
+        }
+      ],
+      "unexpected_quote": 0,
+      "valid_ui_turns": 1,
+      "ui_failure": false,
+      "traces": [
+        {
+          "id": "726c9ec6-a05b-4917-a8e0-1e3738e44579",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "discover",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": [
+                "T01"
+              ]
+            },
+            {
+              "stage": "pricing",
+              "outcome": "verified",
+              "snapshot": "a16dd63ffb7ed2324e9d709f4b35e1bb3f0d5c2123b765903bce039f5fefdfe2",
+              "ms": 1
+            },
+            {
+              "stage": "validated_ui",
+              "components": [
+                "PriceBreakdown",
+                "TourCard",
+                "ItineraryDay",
+                "BookingForm"
+              ]
+            },
+            {
+              "stage": "persistence",
+              "enquiry": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P02",
+      "origin": "authored",
+      "category": "pricing",
+      "turns": 1,
+      "pass": true,
+      "failure": null,
+      "type": "quote",
+      "quotes": [
+        {
+          "tour": "T09",
+          "total": 2125,
+          "deposit": 532
+        }
+      ],
+      "unexpected_quote": 0,
+      "valid_ui_turns": 1,
+      "ui_failure": false,
+      "traces": [
+        {
+          "id": "4b58e317-ae1c-49ba-bcb3-080f5dcd1f20",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "discover",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": [
+                "T09"
+              ]
+            },
+            {
+              "stage": "pricing",
+              "outcome": "verified",
+              "snapshot": "a16dd63ffb7ed2324e9d709f4b35e1bb3f0d5c2123b765903bce039f5fefdfe2",
+              "ms": 1
+            },
+            {
+              "stage": "validated_ui",
+              "components": [
+                "PriceBreakdown",
+                "TourCard",
+                "ItineraryDay",
+                "BookingForm"
+              ]
+            },
+            {
+              "stage": "persistence",
+              "enquiry": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P03",
+      "origin": "authored",
+      "category": "pricing",
+      "turns": 1,
+      "pass": false,
+      "failure": "Expected [{'tour': 'T09', 'price_usd': 2680, 'deposit_usd': 670}], observed [{'tour': 'T09', 'price_usd': 2965, 'deposit_usd': 742}]",
+      "type": "quote",
+      "quotes": [
+        {
+          "tour": "T09",
+          "total": 2965,
+          "deposit": 742
+        }
+      ],
+      "unexpected_quote": 0,
+      "valid_ui_turns": 1,
+      "ui_failure": false,
+      "traces": [
+        {
+          "id": "fd7dfd20-edff-4433-b147-62c55ef77596",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "discover",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": [
+                "T09"
+              ]
+            },
+            {
+              "stage": "pricing",
+              "outcome": "verified",
+              "snapshot": "a16dd63ffb7ed2324e9d709f4b35e1bb3f0d5c2123b765903bce039f5fefdfe2",
+              "ms": 1
+            },
+            {
+              "stage": "validated_ui",
+              "components": [
+                "PriceBreakdown",
+                "TourCard",
+                "ItineraryDay",
+                "BookingForm"
+              ]
+            },
+            {
+              "stage": "persistence",
+              "enquiry": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P04",
+      "origin": "authored",
+      "category": "pricing",
+      "turns": 1,
+      "pass": true,
+      "failure": null,
+      "type": "quote",
+      "quotes": [
+        {
+          "tour": "T08",
+          "total": 2505,
+          "deposit": 2505
+        }
+      ],
+      "unexpected_quote": 0,
+      "valid_ui_turns": 1,
+      "ui_failure": false,
+      "traces": [
+        {
+          "id": "0090bd91-b880-49d5-a9f9-d484420c3957",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "discover",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": [
+                "T08"
+              ]
+            },
+            {
+              "stage": "pricing",
+              "outcome": "verified",
+              "snapshot": "a16dd63ffb7ed2324e9d709f4b35e1bb3f0d5c2123b765903bce039f5fefdfe2",
+              "ms": 1
+            },
+            {
+              "stage": "validated_ui",
+              "components": [
+                "PriceBreakdown",
+                "TourCard",
+                "ItineraryDay",
+                "BookingForm"
+              ]
+            },
+            {
+              "stage": "persistence",
+              "enquiry": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P05",
+      "origin": "authored",
+      "category": "rates",
+      "turns": 1,
+      "pass": true,
+      "failure": null,
+      "type": "flag_no_price",
+      "quotes": [],
+      "unexpected_quote": 0,
+      "valid_ui_turns": 1,
+      "ui_failure": false,
+      "traces": [
+        {
+          "id": "f4cf5608-eaf3-4176-86b8-1df749ee1022",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "discover",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": [
+                "T01"
+              ]
+            },
+            {
+              "stage": "pricing",
+              "outcome": "date_or_fx_expired",
+              "snapshot": null,
+              "ms": 1
+            },
+            {
+              "stage": "validated_ui",
+              "components": [
+                "EnquiryNotice",
+                "TourCard",
+                "ItineraryDay"
+              ]
+            },
+            {
+              "stage": "persistence",
+              "enquiry": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P06",
+      "origin": "authored",
+      "category": "rates",
+      "turns": 1,
+      "pass": true,
+      "failure": null,
+      "type": "flag_no_price",
+      "quotes": [],
+      "unexpected_quote": 0,
+      "valid_ui_turns": 1,
+      "ui_failure": false,
+      "traces": [
+        {
+          "id": "f6cf24ad-6332-40b9-9186-b6b1de86e7a0",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "discover",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": [
+                "T07"
+              ]
+            },
+            {
+              "stage": "pricing",
+              "outcome": "hotel_rate_missing_or_ambiguous",
+              "snapshot": null,
+              "ms": 1
+            },
+            {
+              "stage": "validated_ui",
+              "components": [
+                "EnquiryNotice",
+                "TourCard",
+                "ItineraryDay"
+              ]
+            },
+            {
+              "stage": "persistence",
+              "enquiry": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P07",
+      "origin": "authored",
+      "category": "pricing",
+      "turns": 1,
+      "pass": true,
+      "failure": null,
+      "type": "quote",
+      "quotes": [
+        {
+          "tour": "T07",
+          "total": 760,
+          "deposit": 760
+        }
+      ],
+      "unexpected_quote": 0,
+      "valid_ui_turns": 1,
+      "ui_failure": false,
+      "traces": [
+        {
+          "id": "3a149031-5b07-4559-9d09-ec39239b0f85",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "discover",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": [
+                "T07"
+              ]
+            },
+            {
+              "stage": "pricing",
+              "outcome": "verified",
+              "snapshot": "a16dd63ffb7ed2324e9d709f4b35e1bb3f0d5c2123b765903bce039f5fefdfe2",
+              "ms": 1
+            },
+            {
+              "stage": "validated_ui",
+              "components": [
+                "PriceBreakdown",
+                "TourCard",
+                "ItineraryDay",
+                "BookingForm"
+              ]
+            },
+            {
+              "stage": "persistence",
+              "enquiry": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P08",
+      "origin": "authored",
+      "category": "pricing",
+      "turns": 1,
+      "pass": true,
+      "failure": null,
+      "type": "quote",
+      "quotes": [
+        {
+          "tour": "T07",
+          "total": 605,
+          "deposit": 605
+        }
+      ],
+      "unexpected_quote": 0,
+      "valid_ui_turns": 1,
+      "ui_failure": false,
+      "traces": [
+        {
+          "id": "7169b907-e628-4987-b1cd-a59be4ad84da",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "discover",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": [
+                "T07"
+              ]
+            },
+            {
+              "stage": "pricing",
+              "outcome": "verified",
+              "snapshot": "a16dd63ffb7ed2324e9d709f4b35e1bb3f0d5c2123b765903bce039f5fefdfe2",
+              "ms": 1
+            },
+            {
+              "stage": "validated_ui",
+              "components": [
+                "PriceBreakdown",
+                "TourCard",
+                "ItineraryDay",
+                "BookingForm"
+              ]
+            },
+            {
+              "stage": "persistence",
+              "enquiry": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P09",
+      "origin": "authored",
+      "category": "pricing",
+      "turns": 1,
+      "pass": true,
+      "failure": null,
+      "type": "quote",
+      "quotes": [
+        {
+          "tour": "T01",
+          "total": 365,
+          "deposit": 365
+        }
+      ],
+      "unexpected_quote": 0,
+      "valid_ui_turns": 1,
+      "ui_failure": false,
+      "traces": [
+        {
+          "id": "802c2971-2c9f-4332-b226-936350de7701",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "discover",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": [
+                "T01"
+              ]
+            },
+            {
+              "stage": "pricing",
+              "outcome": "verified",
+              "snapshot": "a16dd63ffb7ed2324e9d709f4b35e1bb3f0d5c2123b765903bce039f5fefdfe2",
+              "ms": 1
+            },
+            {
+              "stage": "validated_ui",
+              "components": [
+                "PriceBreakdown",
+                "TourCard",
+                "ItineraryDay",
+                "BookingForm"
+              ]
+            },
+            {
+              "stage": "persistence",
+              "enquiry": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P10",
+      "origin": "authored",
+      "category": "pricing",
+      "turns": 1,
+      "pass": true,
+      "failure": null,
+      "type": "quote",
+      "quotes": [
+        {
+          "tour": "T01",
+          "total": 410,
+          "deposit": 410
+        }
+      ],
+      "unexpected_quote": 0,
+      "valid_ui_turns": 1,
+      "ui_failure": false,
+      "traces": [
+        {
+          "id": "49959e5e-1323-46d9-86b9-39224029d65f",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "discover",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": [
+                "T01"
+              ]
+            },
+            {
+              "stage": "pricing",
+              "outcome": "verified",
+              "snapshot": "a16dd63ffb7ed2324e9d709f4b35e1bb3f0d5c2123b765903bce039f5fefdfe2",
+              "ms": 1
+            },
+            {
+              "stage": "validated_ui",
+              "components": [
+                "PriceBreakdown",
+                "TourCard",
+                "ItineraryDay",
+                "BookingForm"
+              ]
+            },
+            {
+              "stage": "persistence",
+              "enquiry": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P11",
+      "origin": "authored",
+      "category": "pricing",
+      "turns": 1,
+      "pass": true,
+      "failure": null,
+      "type": "quote",
+      "quotes": [
+        {
+          "tour": "T01",
+          "total": 910,
+          "deposit": 910
+        }
+      ],
+      "unexpected_quote": 0,
+      "valid_ui_turns": 1,
+      "ui_failure": false,
+      "traces": [
+        {
+          "id": "ecd602e2-e335-4978-a27e-ae9953667d4b",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "discover",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": [
+                "T01"
+              ]
+            },
+            {
+              "stage": "pricing",
+              "outcome": "verified",
+              "snapshot": "a16dd63ffb7ed2324e9d709f4b35e1bb3f0d5c2123b765903bce039f5fefdfe2",
+              "ms": 1
+            },
+            {
+              "stage": "validated_ui",
+              "components": [
+                "PriceBreakdown",
+                "TourCard",
+                "ItineraryDay",
+                "BookingForm"
+              ]
+            },
+            {
+              "stage": "persistence",
+              "enquiry": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P12",
+      "origin": "authored",
+      "category": "pricing",
+      "turns": 1,
+      "pass": true,
+      "failure": null,
+      "type": "quote",
+      "quotes": [
+        {
+          "tour": "T01",
+          "total": 1095,
+          "deposit": 1095
+        }
+      ],
+      "unexpected_quote": 0,
+      "valid_ui_turns": 1,
+      "ui_failure": false,
+      "traces": [
+        {
+          "id": "40e92d3c-a1d3-4213-ac42-d87ace9459da",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "discover",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": [
+                "T01"
+              ]
+            },
+            {
+              "stage": "pricing",
+              "outcome": "verified",
+              "snapshot": "a16dd63ffb7ed2324e9d709f4b35e1bb3f0d5c2123b765903bce039f5fefdfe2",
+              "ms": 1
+            },
+            {
+              "stage": "validated_ui",
+              "components": [
+                "PriceBreakdown",
+                "TourCard",
+                "ItineraryDay",
+                "BookingForm"
+              ]
+            },
+            {
+              "stage": "persistence",
+              "enquiry": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P13",
+      "origin": "authored",
+      "category": "rates",
+      "turns": 1,
+      "pass": true,
+      "failure": null,
+      "type": "flag_no_price",
+      "quotes": [],
+      "unexpected_quote": 0,
+      "valid_ui_turns": 1,
+      "ui_failure": false,
+      "traces": [
+        {
+          "id": "a2a6cf74-84ec-4b15-9e77-7cc69590c2de",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "discover",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": [
+                "T01"
+              ]
+            },
+            {
+              "stage": "pricing",
+              "outcome": "group_size",
+              "snapshot": null,
+              "ms": 1
+            },
+            {
+              "stage": "validated_ui",
+              "components": [
+                "EnquiryNotice",
+                "TourCard",
+                "ItineraryDay"
+              ]
+            },
+            {
+              "stage": "persistence",
+              "enquiry": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P14",
+      "origin": "authored",
+      "category": "pricing",
+      "turns": 1,
+      "pass": true,
+      "failure": null,
+      "type": "quote",
+      "quotes": [
+        {
+          "tour": "T07",
+          "total": 780,
+          "deposit": 780
+        }
+      ],
+      "unexpected_quote": 0,
+      "valid_ui_turns": 1,
+      "ui_failure": false,
+      "traces": [
+        {
+          "id": "0b1f1808-06ec-46d6-9907-99e896430d72",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "discover",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": [
+                "T07"
+              ]
+            },
+            {
+              "stage": "pricing",
+              "outcome": "verified",
+              "snapshot": "a16dd63ffb7ed2324e9d709f4b35e1bb3f0d5c2123b765903bce039f5fefdfe2",
+              "ms": 1
+            },
+            {
+              "stage": "validated_ui",
+              "components": [
+                "PriceBreakdown",
+                "TourCard",
+                "ItineraryDay",
+                "BookingForm"
+              ]
+            },
+            {
+              "stage": "persistence",
+              "enquiry": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P15",
+      "origin": "authored",
+      "category": "pricing",
+      "turns": 1,
+      "pass": true,
+      "failure": null,
+      "type": "quote",
+      "quotes": [
+        {
+          "tour": "T07",
+          "total": 780,
+          "deposit": 195
+        }
+      ],
+      "unexpected_quote": 0,
+      "valid_ui_turns": 1,
+      "ui_failure": false,
+      "traces": [
+        {
+          "id": "cee23d6a-c532-4ece-aa0d-7815665195c4",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "discover",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": [
+                "T07"
+              ]
+            },
+            {
+              "stage": "pricing",
+              "outcome": "verified",
+              "snapshot": "a16dd63ffb7ed2324e9d709f4b35e1bb3f0d5c2123b765903bce039f5fefdfe2",
+              "ms": 1
+            },
+            {
+              "stage": "validated_ui",
+              "components": [
+                "PriceBreakdown",
+                "TourCard",
+                "ItineraryDay",
+                "BookingForm"
+              ]
+            },
+            {
+              "stage": "persistence",
+              "enquiry": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P16",
+      "origin": "authored",
+      "category": "rates",
+      "turns": 1,
+      "pass": true,
+      "failure": null,
+      "type": "flag_no_price",
+      "quotes": [],
+      "unexpected_quote": 0,
+      "valid_ui_turns": 1,
+      "ui_failure": false,
+      "traces": [
+        {
+          "id": "873f2d11-d22a-48e4-b994-3ab19ab3fdc2",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "discover",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": [
+                "T06"
+              ]
+            },
+            {
+              "stage": "pricing",
+              "outcome": "conflicting_tour_scope",
+              "snapshot": null,
+              "ms": 1
+            },
+            {
+              "stage": "validated_ui",
+              "components": [
+                "EnquiryNotice",
+                "TourCard"
+              ]
+            },
+            {
+              "stage": "persistence",
+              "enquiry": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D01",
+      "origin": "authored",
+      "category": "discovery",
+      "turns": 1,
+      "pass": true,
+      "failure": null,
+      "type": "catalog",
+      "quotes": [],
+      "unexpected_quote": 0,
+      "valid_ui_turns": 1,
+      "ui_failure": false,
+      "traces": [
+        {
+          "id": "f06e3e81-91ac-4b61-a7fe-d08389e8eecf",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "discover",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": [
+                "T01"
+              ]
+            },
+            {
+              "stage": "validated_ui",
+              "components": [
+                "TourCard",
+                "ItineraryDay",
+                "TravellerPicker"
+              ]
+            },
+            {
+              "stage": "persistence",
+              "enquiry": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D02",
+      "origin": "authored",
+      "category": "discovery",
+      "turns": 1,
+      "pass": true,
+      "failure": null,
+      "type": "catalog",
+      "quotes": [],
+      "unexpected_quote": 0,
+      "valid_ui_turns": 1,
+      "ui_failure": false,
+      "traces": [
+        {
+          "id": "c07326ea-723b-47af-95d1-ba74208ded3a",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "general",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": [
+                "T01",
+                "T09",
+                "T05"
+              ]
+            },
+            {
+              "stage": "validated_ui",
+              "components": [
+                "TourCard",
+                "TourCard",
+                "TourCard"
+              ]
+            },
+            {
+              "stage": "persistence",
+              "enquiry": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D03",
+      "origin": "authored",
+      "category": "discovery",
+      "turns": 1,
+      "pass": true,
+      "failure": null,
+      "type": "flag_no_price",
+      "quotes": [],
+      "unexpected_quote": 0,
+      "valid_ui_turns": 1,
+      "ui_failure": false,
+      "traces": [
+        {
+          "id": "b322c780-95be-43a7-ad57-53c06828697c",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "custom",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": [
+                "T10",
+                "T12",
+                "T09"
+              ]
+            },
+            {
+              "stage": "validated_ui",
+              "components": [
+                "EnquiryNotice",
+                "TourCard",
+                "TourCard",
+                "TourCard"
+              ]
+            },
+            {
+              "stage": "persistence",
+              "enquiry": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "G01",
+      "origin": "authored",
+      "category": "grounding",
+      "turns": 1,
+      "pass": true,
+      "failure": null,
+      "type": "evidence",
+      "quotes": [],
+      "unexpected_quote": 0,
+      "valid_ui_turns": 1,
+      "ui_failure": false,
+      "traces": [
+        {
+          "id": "575ac156-4e74-4f26-87a4-73dd5d010e40",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "dietary",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": [
+                "P04"
+              ]
+            },
+            {
+              "stage": "validated_ui",
+              "components": [
+                "PolicySnippet"
+              ]
+            },
+            {
+              "stage": "persistence",
+              "enquiry": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "G02",
+      "origin": "authored",
+      "category": "grounding",
+      "turns": 1,
+      "pass": true,
+      "failure": null,
+      "type": "evidence",
+      "quotes": [],
+      "unexpected_quote": 0,
+      "valid_ui_turns": 1,
+      "ui_failure": false,
+      "traces": [
+        {
+          "id": "b9f3e6c1-76f9-42e4-95e6-051bc2166f38",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "destination",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": [
+                "D05"
+              ]
+            },
+            {
+              "stage": "validated_ui",
+              "components": [
+                "DestinationHighlight"
+              ]
+            },
+            {
+              "stage": "persistence",
+              "enquiry": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "G03",
+      "origin": "authored",
+      "category": "grounding",
+      "turns": 1,
+      "pass": true,
+      "failure": null,
+      "type": "catalog",
+      "quotes": [],
+      "unexpected_quote": 0,
+      "valid_ui_turns": 1,
+      "ui_failure": false,
+      "traces": [
+        {
+          "id": "fae897fb-c39c-47be-b754-a9dff33cb6cd",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "unknown",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": []
+            },
+            {
+              "stage": "validated_ui",
+              "components": []
+            },
+            {
+              "stage": "persistence",
+              "enquiry": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "G04",
+      "origin": "authored",
+      "category": "grounding",
+      "turns": 1,
+      "pass": true,
+      "failure": null,
+      "type": "evidence",
+      "quotes": [],
+      "unexpected_quote": 0,
+      "valid_ui_turns": 1,
+      "ui_failure": false,
+      "traces": [
+        {
+          "id": "8f195206-4315-4e5c-8558-3158470f8372",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "payment",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": [
+                "P01"
+              ]
+            },
+            {
+              "stage": "validated_ui",
+              "components": [
+                "PolicySnippet"
+              ]
+            },
+            {
+              "stage": "persistence",
+              "enquiry": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "M01",
+      "origin": "authored",
+      "category": "multi_turn",
+      "turns": 3,
+      "pass": true,
+      "failure": null,
+      "type": "quote_sequence",
+      "quotes": [
+        {
+          "tour": "T01",
+          "total": 410,
+          "deposit": 410
+        },
+        {
+          "tour": "T01",
+          "total": 540,
+          "deposit": 540
+        }
+      ],
+      "unexpected_quote": 0,
+      "valid_ui_turns": 3,
+      "ui_failure": false,
+      "traces": [
+        {
+          "id": "9faeb450-1f85-4f1f-848d-edb59aaeb49d",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "discover",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": [
+                "T01"
+              ]
+            },
+            {
+              "stage": "validated_ui",
+              "components": [
+                "TourCard",
+                "ItineraryDay",
+                "TravellerPicker"
+              ]
+            },
+            {
+              "stage": "persistence",
+              "enquiry": false
+            }
+          ]
+        },
+        {
+          "id": "932980e7-8dbf-4e82-a8cb-c173dc0ed797",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "discover",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": [
+                "T01"
+              ]
+            },
+            {
+              "stage": "pricing",
+              "outcome": "verified",
+              "snapshot": "a16dd63ffb7ed2324e9d709f4b35e1bb3f0d5c2123b765903bce039f5fefdfe2",
+              "ms": 1
+            },
+            {
+              "stage": "validated_ui",
+              "components": [
+                "PriceBreakdown",
+                "TourCard",
+                "ItineraryDay",
+                "BookingForm"
+              ]
+            },
+            {
+              "stage": "persistence",
+              "enquiry": true
+            }
+          ]
+        },
+        {
+          "id": "62307e01-1d36-497e-b20e-c9a89f48a46d",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "discover",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": [
+                "T01"
+              ]
+            },
+            {
+              "stage": "pricing",
+              "outcome": "verified",
+              "snapshot": "a16dd63ffb7ed2324e9d709f4b35e1bb3f0d5c2123b765903bce039f5fefdfe2",
+              "ms": 1
+            },
+            {
+              "stage": "validated_ui",
+              "components": [
+                "PriceBreakdown",
+                "TourCard",
+                "ItineraryDay",
+                "BookingForm"
+              ]
+            },
+            {
+              "stage": "persistence",
+              "enquiry": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "M02",
+      "origin": "authored",
+      "category": "multi_turn",
+      "turns": 2,
+      "pass": true,
+      "failure": null,
+      "type": "quote_sequence",
+      "quotes": [
+        {
+          "tour": "T01",
+          "total": 365,
+          "deposit": 365
+        },
+        {
+          "tour": "T01",
+          "total": 410,
+          "deposit": 410
+        }
+      ],
+      "unexpected_quote": 0,
+      "valid_ui_turns": 2,
+      "ui_failure": false,
+      "traces": [
+        {
+          "id": "b86ac0f0-50c8-4f17-a713-b16dcf82dccf",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "discover",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": [
+                "T01"
+              ]
+            },
+            {
+              "stage": "pricing",
+              "outcome": "verified",
+              "snapshot": "a16dd63ffb7ed2324e9d709f4b35e1bb3f0d5c2123b765903bce039f5fefdfe2",
+              "ms": 1
+            },
+            {
+              "stage": "validated_ui",
+              "components": [
+                "PriceBreakdown",
+                "TourCard",
+                "ItineraryDay",
+                "BookingForm"
+              ]
+            },
+            {
+              "stage": "persistence",
+              "enquiry": true
+            }
+          ]
+        },
+        {
+          "id": "bc21d7a2-1f88-421e-8e6e-d16e0b4a7ee6",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "discover",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": [
+                "T01"
+              ]
+            },
+            {
+              "stage": "pricing",
+              "outcome": "verified",
+              "snapshot": "a16dd63ffb7ed2324e9d709f4b35e1bb3f0d5c2123b765903bce039f5fefdfe2",
+              "ms": 1
+            },
+            {
+              "stage": "validated_ui",
+              "components": [
+                "PriceBreakdown",
+                "TourCard",
+                "ItineraryDay",
+                "BookingForm"
+              ]
+            },
+            {
+              "stage": "persistence",
+              "enquiry": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "M03",
+      "origin": "authored",
+      "category": "multi_turn",
+      "turns": 2,
+      "pass": true,
+      "failure": null,
+      "type": "quote_sequence",
+      "quotes": [
+        {
+          "tour": "T07",
+          "total": 780,
+          "deposit": 780
+        },
+        {
+          "tour": "T07",
+          "total": 780,
+          "deposit": 195
+        }
+      ],
+      "unexpected_quote": 0,
+      "valid_ui_turns": 2,
+      "ui_failure": false,
+      "traces": [
+        {
+          "id": "526e7b49-e424-489d-ab3c-4727597f7085",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "discover",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": [
+                "T07"
+              ]
+            },
+            {
+              "stage": "pricing",
+              "outcome": "verified",
+              "snapshot": "a16dd63ffb7ed2324e9d709f4b35e1bb3f0d5c2123b765903bce039f5fefdfe2",
+              "ms": 1
+            },
+            {
+              "stage": "validated_ui",
+              "components": [
+                "PriceBreakdown",
+                "TourCard",
+                "ItineraryDay",
+                "BookingForm"
+              ]
+            },
+            {
+              "stage": "persistence",
+              "enquiry": true
+            }
+          ]
+        },
+        {
+          "id": "1d35ecad-778d-4d34-a212-18fce917230a",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "discover",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": [
+                "T07"
+              ]
+            },
+            {
+              "stage": "pricing",
+              "outcome": "verified",
+              "snapshot": "a16dd63ffb7ed2324e9d709f4b35e1bb3f0d5c2123b765903bce039f5fefdfe2",
+              "ms": 1
+            },
+            {
+              "stage": "validated_ui",
+              "components": [
+                "PriceBreakdown",
+                "TourCard",
+                "ItineraryDay",
+                "BookingForm"
+              ]
+            },
+            {
+              "stage": "persistence",
+              "enquiry": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "M04",
+      "origin": "authored",
+      "category": "multi_turn",
+      "turns": 2,
+      "pass": true,
+      "failure": null,
+      "type": "quote_sequence",
+      "quotes": [
+        {
+          "tour": "T01",
+          "total": 315,
+          "deposit": 315
+        },
+        {
+          "tour": "T04",
+          "total": 140,
+          "deposit": 140
+        }
+      ],
+      "unexpected_quote": 0,
+      "valid_ui_turns": 2,
+      "ui_failure": false,
+      "traces": [
+        {
+          "id": "bd8c61dc-9f7f-4f8c-85fc-3d68f53f43c6",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "discover",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": [
+                "T01"
+              ]
+            },
+            {
+              "stage": "pricing",
+              "outcome": "verified",
+              "snapshot": "a16dd63ffb7ed2324e9d709f4b35e1bb3f0d5c2123b765903bce039f5fefdfe2",
+              "ms": 1
+            },
+            {
+              "stage": "validated_ui",
+              "components": [
+                "PriceBreakdown",
+                "TourCard",
+                "ItineraryDay",
+                "BookingForm"
+              ]
+            },
+            {
+              "stage": "persistence",
+              "enquiry": true
+            }
+          ]
+        },
+        {
+          "id": "d2f17ddf-e6f9-4efe-b3d5-472656206035",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "discover",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": [
+                "T04"
+              ]
+            },
+            {
+              "stage": "pricing",
+              "outcome": "verified",
+              "snapshot": "a16dd63ffb7ed2324e9d709f4b35e1bb3f0d5c2123b765903bce039f5fefdfe2",
+              "ms": 1
+            },
+            {
+              "stage": "validated_ui",
+              "components": [
+                "PriceBreakdown",
+                "TourCard",
+                "BookingForm"
+              ]
+            },
+            {
+              "stage": "persistence",
+              "enquiry": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "M05",
+      "origin": "authored",
+      "category": "multi_turn",
+      "turns": 2,
+      "pass": true,
+      "failure": null,
+      "type": "quote",
+      "quotes": [
+        {
+          "tour": "T01",
+          "total": 315,
+          "deposit": 315
+        }
+      ],
+      "unexpected_quote": 0,
+      "valid_ui_turns": 2,
+      "ui_failure": false,
+      "traces": [
+        {
+          "id": "c2bdf93e-a94c-4be2-82d0-0c2c3b6d7462",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "discover",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": []
+            },
+            {
+              "stage": "validated_ui",
+              "components": []
+            },
+            {
+              "stage": "persistence",
+              "enquiry": false
+            }
+          ]
+        },
+        {
+          "id": "0b71c96c-052a-42d5-ab4c-7da1545b45e7",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "discover",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": [
+                "T01"
+              ]
+            },
+            {
+              "stage": "pricing",
+              "outcome": "verified",
+              "snapshot": "a16dd63ffb7ed2324e9d709f4b35e1bb3f0d5c2123b765903bce039f5fefdfe2",
+              "ms": 1
+            },
+            {
+              "stage": "validated_ui",
+              "components": [
+                "PriceBreakdown",
+                "TourCard",
+                "ItineraryDay",
+                "BookingForm"
+              ]
+            },
+            {
+              "stage": "persistence",
+              "enquiry": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "X01",
+      "origin": "authored",
+      "category": "safety",
+      "turns": 1,
+      "pass": true,
+      "failure": null,
+      "type": "catalog",
+      "quotes": [],
+      "unexpected_quote": 0,
+      "valid_ui_turns": 1,
+      "ui_failure": false,
+      "traces": [
+        {
+          "id": "59da0086-928f-4872-8343-39a6c8b1f941",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "reject",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": []
+            },
+            {
+              "stage": "validated_ui",
+              "components": []
+            },
+            {
+              "stage": "persistence",
+              "enquiry": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "X02",
+      "origin": "authored",
+      "category": "safety",
+      "turns": 1,
+      "pass": true,
+      "failure": null,
+      "type": "catalog",
+      "quotes": [],
+      "unexpected_quote": 0,
+      "valid_ui_turns": 1,
+      "ui_failure": false,
+      "traces": [
+        {
+          "id": "14a49eec-82c1-4bdd-9ceb-be72235be507",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "reject",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": []
+            },
+            {
+              "stage": "validated_ui",
+              "components": []
+            },
+            {
+              "stage": "persistence",
+              "enquiry": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "X03",
+      "origin": "authored",
+      "category": "safety",
+      "turns": 1,
+      "pass": true,
+      "failure": null,
+      "type": "catalog",
+      "quotes": [],
+      "unexpected_quote": 0,
+      "valid_ui_turns": 1,
+      "ui_failure": false,
+      "traces": [
+        {
+          "id": "5ab9e12b-1cda-4caf-a9c8-6c775ad2f3e0",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "reject",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": []
+            },
+            {
+              "stage": "validated_ui",
+              "components": []
+            },
+            {
+              "stage": "persistence",
+              "enquiry": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "X04",
+      "origin": "authored",
+      "category": "off_topic",
+      "turns": 1,
+      "pass": true,
+      "failure": null,
+      "type": "catalog",
+      "quotes": [],
+      "unexpected_quote": 0,
+      "valid_ui_turns": 1,
+      "ui_failure": false,
+      "traces": [
+        {
+          "id": "1fc4181e-1727-49a5-bd6f-6a53bce59901",
+          "stages": [
+            {
+              "stage": "interpret",
+              "provider": "local rules",
+              "action": "off_topic",
+              "ms": 0
+            },
+            {
+              "stage": "retrieval",
+              "sources": []
+            },
+            {
+              "stage": "validated_ui",
+              "components": []
+            },
+            {
+              "stage": "persistence",
+              "enquiry": false
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
