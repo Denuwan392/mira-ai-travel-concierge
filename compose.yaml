@@ -1,0 +1,41 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment:
+      AS_OF_DATE: ${AS_OF_DATE:-2026-11-19}
+      MIRA_DATA: /sources/ceylon-compass-dataset
+      MIRA_DB: /state/mira.sqlite3
+      MIRA_ORIGIN: ${MIRA_ORIGIN:-http://127.0.0.1:3000}
+      MIRA_STAFF_TOKEN: ${MIRA_STAFF_TOKEN:-}
+      MIRA_EDITOR_TOKEN: ${MIRA_EDITOR_TOKEN:-}
+      MIRA_APPROVER_TOKEN: ${MIRA_APPROVER_TOKEN:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-}
+      LANGFUSE_PUBLIC_KEY: ${LANGFUSE_PUBLIC_KEY:-}
+      LANGFUSE_SECRET_KEY: ${LANGFUSE_SECRET_KEY:-}
+      LANGFUSE_BASE_URL: ${LANGFUSE_BASE_URL:-}
+    volumes:
+      - mira-state:/state
+      - ./GenAI-Intern-Take-Home-Assignment:/sources:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=2)"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+  web:
+    build:
+      context: apps/web
+      args:
+        MIRA_API_URL: http://api:8000
+    environment:
+      MIRA_API_URL: http://api:8000
+      MIRA_ORIGIN: ${MIRA_ORIGIN:-http://127.0.0.1:3000}
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+volumes:
+  mira-state:

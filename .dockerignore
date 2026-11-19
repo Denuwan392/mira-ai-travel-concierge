@@ -1,0 +1,7 @@
+**
+!apps/
+!apps/api/
+!apps/api/Dockerfile
+!apps/api/requirements.lock
+!apps/api/mira/
+!apps/api/mira/*.py
