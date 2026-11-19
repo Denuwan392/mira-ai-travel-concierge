@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { BrandMark } from "./brand";
+import { FloatingNav } from "./editorial/navigation";
 import "./style.css";
+import "./editorial.css";
 
 export const metadata: Metadata = {
   title: "Mira | Ceylon Compass Holidays",
@@ -10,24 +12,12 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" data-scroll-behavior="smooth">
+    <html lang="en">
       <body>
-        <header className="topbar">
-          <div className="frame header-inner">
-            <Link href="/" className="wordmark" aria-label="Ceylon Compass Holidays home">
-              <BrandMark /><span>Ceylon Compass<small>HOLIDAYS</small></span>
-            </Link>
-            <nav aria-label="Main navigation">
-              <Link href="/#explore">Explore</Link>
-              <Link href="/#how">How it works</Link>
-              <Link href="/my-trips">My trips</Link>
-            </nav>
-            <Link href="/plan" className="button dark header-cta">Plan a trip</Link>
-          </div>
-        </header>
+        <FloatingNav />
         {children}
         <footer className="frame footer"><Link className="wordmark" href="/"><BrandMark size={24} /> Ceylon Compass</Link>
-          <span>Fictional travel concierge · Demo booking only</span><Link href="/staff">Staff console</Link>
+          <span>Fictional travel concierge · Demo booking only</span><Link href="/credits">Photography</Link><Link href="/staff">Staff console</Link>
         </footer>
       </body>
     </html>
