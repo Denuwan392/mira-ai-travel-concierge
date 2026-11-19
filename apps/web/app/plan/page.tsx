@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+import { destinationMedia } from "../../lib/media-manifest";
 import { HttpAgent } from "@ag-ui/client";
 import { ArrowUp, FileText, Map, MessageCircle, Sparkles, X } from "lucide-react";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
@@ -176,8 +178,8 @@ export default function Plan() {
       </section>
       <section className="canvas" aria-label="Your journey">
         <h2>Your journey</h2>
-        {!turn?.components.length && <div className="canvas-empty">
-          <div className="empty-icon"><Map size={31} strokeWidth={1.4} /></div>
+        {!turn?.components.length && <div className="canvas-empty scenic">
+          <Image src={destinationMedia.ella.src} alt={destinationMedia.ella.alt} fill sizes="(max-width:740px) 96vw, 55vw"/>
           <h3>Start with a place or an idea</h3>
           <p>Tour details, travel options, and verified quotes will appear here as you plan.</p>
         </div>}

@@ -1,11 +1,12 @@
 "use client";
 
 import { ArrowRight, CalendarDays, Check, CircleHelp, MapPin } from "lucide-react";
+import { TourPhoto } from "../editorial/tour-photo";
 import { FormEvent, useState } from "react";
 import { api, money } from "../../lib/api";
 import type { Component, Quote, Tour } from "../../lib/catalog";
 
-export function MoneyPanel({ quote }: { quote: Quote }) {
+export function MoneyPanel({ quote, open }: { quote: Quote; open?: (id:string)=>void }) {
   return <section className="panel quote-panel" aria-label="Verified quote">
     <span className="verified"><Check size={16} /> Verified from workbook rates</span>
     <h3>{quote.title}</h3>
@@ -13,6 +14,7 @@ export function MoneyPanel({ quote }: { quote: Quote }) {
     <span className="quote-reference">Quote {quote.id.slice(0, 8)}</span>
     <div className="total">{money(quote.total)}</div>
     <dl><div><dt>Deposit</dt><dd>{money(quote.deposit)}</dd></div>{quote.balance > 0 && <div><dt>Balance</dt><dd>{money(quote.balance)}</dd></div>}</dl>
+    {open && <button className="text-button" onClick={()=>open(quote.source)}>View tour source <ArrowRight size={15}/></button>}
   </section>;
 }
 
@@ -71,7 +73,7 @@ function Booking({ id }: { id: string }) {
 
 export function JourneyCard({ tour, open, send, disabled }: { tour: Tour; open: (id: string) => void; send: (prompt: string, display?: string) => void; disabled: boolean }) {
   return <article className="panel journey-card">
-    <div className="eyebrow">{[tour.category, tour.duration].filter(Boolean).join(" · ")}</div>
+    <TourPhoto id={tour.id}/><div className="eyebrow">{[tour.category, tour.duration].filter(Boolean).join(" · ")}</div>
     <h3>{tour.title}</h3>
     <p>{tour.summary}</p>
     {tour.start && <p className="start"><MapPin size={16} /> {tour.start}</p>}
@@ -91,13 +93,13 @@ export function RenderComponent({ value, ...actions }: {
   switch (value.type) {
     case "TourCard": return <JourneyCard tour={value} {...actions} />;
     case "TravellerPicker": return <Picker value={value} {...actions} />;
-    case "PriceBreakdown": return <MoneyPanel quote={value.quote} />;
+    case "PriceBreakdown": return <MoneyPanel quote={value.quote} open={actions.open} />;
     case "BookingForm": return <Booking id={value.quote} />;
     case "EnquiryNotice": return <section className="panel notice"><CircleHelp size={22} /><div><h3>{value.text}</h3>{value.reference && <p>Enquiry {value.reference.slice(0, 8)}</p>}</div></section>;
     case "ItineraryDay":
     case "PolicySnippet":
     case "DestinationHighlight":
-      return <section className="panel excerpt"><h3>{value.heading}</h3><p>{value.text.replaceAll("**", "")}</p>
+      return <section className="panel excerpt">{value.type === "ItineraryDay" && <TourPhoto id={value.source} timeline/>}<h3>{value.heading}</h3><p>{value.text.replaceAll("**", "")}</p>
         <button className="text-button" onClick={() => actions.open(value.source)}>View source <ArrowRight size={16} /></button></section>;
   }
 }
