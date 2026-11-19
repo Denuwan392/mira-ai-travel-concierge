@@ -2,7 +2,7 @@ import Image from "next/image";
 import { destinationMedia } from "../../lib/media-manifest";
 
 const locations: Record<string,keyof typeof destinationMedia> = {
-  T01:"sigiriya",T04:"galle",T05:"mirissa",T06:"tea",T08:"galle",T09:"sigiriya",T10:"ella",T11:"mirissa",T12:"ella",T16:"sigiriya",
+  T01:"sigiriya",T04:"galle",T05:"mirissa",T06:"tea",T08:"tea",T09:"sigiriya",T10:"ella",T11:"mirissa",T12:"ella",T16:"sigiriya",
 };
 export function TourPhoto({id,timeline=false}:{id:string;timeline?:boolean}){
   const location=locations[id];

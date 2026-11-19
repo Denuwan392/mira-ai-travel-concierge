@@ -12,3 +12,5 @@ Each individual photo page displayed â€œFree to use under the Unsplash Licenseâ€
 | tea.webp | Erik Esly | [Nuwara Eliya](https://unsplash.com/photos/lush-green-tea-plantation-on-a-misty-hillside-ZWdrM9IBBIE) | Rows of bright green tea bushes and scattered trees on a misty hillside. |
 
 The wide, medium and mobile Sigiriya hero crops use the same photograph credited in the first row. The compass geometry is original. The four visual references are design inputs only.
+
+The offline locator uses the Sri Lanka polygon from [Natural Earth 1:50m Admin 0 Countries](https://www.naturalearthdata.com/downloads/50m-cultural-vectors/50m-admin-0-countries/). Natural Earth places its map data in the [public domain](https://www.naturalearthdata.com/about/terms-of-use/). River lines are from the Natural Earth 1:10m rivers and lake centerlines dataset. Points represent approximate town or park centres.
