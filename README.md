@@ -2,7 +2,9 @@
 
 A fictional Sri Lanka travel concierge. Mira turns a conversation into published journeys, an itinerary excerpt, a workbook-verified quote when supported, or a private request for a specialist.
 
-![Desktop Mira homepage](docs/screenshots/desktop-home.png)
+Try **Ella trip** and then **Compare these tours**. Open a tour to inspect its published itinerary, choose a map pin to explore a destination, or bookmark a journey for the current visit. [Screenshot report](docs/Mira-Trip-Planner-Review.pdf) · [Technical verification](docs/UI_REDESIGN_REPORT.md)
+
+![Mira trip planner with Ella results and destination map](docs/screenshots/after/advisor-ella-1440.jpg)
 
 ## Start
 
