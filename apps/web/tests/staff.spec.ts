@@ -1,0 +1,29 @@
+import { expect, test } from "@playwright/test";
+
+test("staff drafts remain private until an Approver publishes", async ({ page, request }) => {
+  const editor = process.env.MIRA_EDITOR_TOKEN;
+  const approver = process.env.MIRA_APPROVER_TOKEN;
+  test.skip(!editor || !approver, "Requires local Editor and Approver tokens.");
+  if (!editor || !approver) return;
+  expect((await request.get("/api/staff/enquiries")).status()).toBe(401);
+  await page.goto("/staff");
+  await page.getByLabel("Staff access token").fill(editor);
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
+  await page.getByRole("button", { name: "Content studio" }).click();
+  await page.getByLabel("Draft request").fill("Prepare a private Hill Country journey using published Ella material.");
+  await page.getByRole("button", { name: "Create draft" }).click();
+  await expect(page.getByRole("heading", { name: "Ella journey concept" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Approve and publish" })).toHaveCount(0);
+  const draftList = await request.get("/api/staff/drafts", { headers: { Authorization: `Bearer ${editor}` } });
+  const [draft] = await draftList.json();
+  expect(draft.status).toBe("draft");
+  expect((await request.get(`/api/sources/${draft.id}`)).status()).toBe(404);
+  await page.getByRole("button", { name: "Sign out" }).click();
+  await page.getByLabel("Staff access token").fill(approver);
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
+  await page.getByRole("button", { name: "Content studio" }).click();
+  await page.getByRole("button", { name: "Ella journey concept" }).first().click();
+  await page.getByRole("button", { name: "Approve and publish" }).click();
+  await expect(page.getByText(/The journey is now available/)).toBeVisible();
+  expect((await request.get(`/api/sources/${draft.id}`)).status()).toBe(200);
+});
