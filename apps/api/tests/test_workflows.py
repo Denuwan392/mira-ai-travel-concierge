@@ -170,3 +170,15 @@ def test_money_in_a_source_cannot_become_a_quote(app_client, monkeypatch):
     output = turn(app_client, "Tell me about Ella")
     assert not quotes(output)
     assert "USD 25" not in output.model_dump_json()
+
+
+def test_guide_uses_public_catalog_and_only_published_days(app_client):
+    guide = app_client.get("/api/guide").json()
+    public_ids = {row["id"] for row in app_client.get("/api/tours").json()}
+    tours = {row["id"]: row for row in guide["tours"]}
+    assert tours.keys() == public_ids
+    assert [day["number"] for day in tours["T08"]["days"]] == list(range(1, 9))
+    assert "Sigiriya" in tours["T08"]["days"][1]["title"]
+    assert tours["T10"]["days"] == []
+    assert all(place in guide["places"] for tour in tours.values() for place in tour["places"])
+    assert "USD" not in json.dumps(guide)

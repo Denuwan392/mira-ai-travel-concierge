@@ -19,6 +19,7 @@ from pydantic import Field
 from .agent import builder, run_context, visitor_context, working
 from .catalog import PublicQuote, Strict
 from .data import DATA, Unavailable, as_of, clean, price, public_text, tour_card
+from .guide import guide
 from .provider import generate_structured, model_available
 from .rates_repository import current_rates
 from .store import db, init, published_records
@@ -87,6 +88,11 @@ def health():
 @app.get("/api/tours")
 def tours():
     return [tour_card(row) for row in published_records().values() if row["type"] == "tour"]
+
+
+@app.get("/api/guide")
+def travel_guide():
+    return guide(published_records())
 
 
 @app.get("/api/sources/{key}")
