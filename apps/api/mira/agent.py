@@ -16,6 +16,7 @@ from .catalog import Breakdown, Booking, Card, Excerpt, Notice, Picker, PublicQu
 from .data import Unavailable, as_of, price, public_text, tour_card
 from .provider import rank
 from .rates_repository import current_rates
+from .surface import surface_messages
 from .store import db, encode, published_records
 
 visitor_context = ContextVar("visitor", default=None)
@@ -58,6 +59,7 @@ def section(row, heading=None, keyword=None):
 
 
 class GraphState(TypedDict, total=False):
+    surface: list[dict]
     messages: Annotated[list, add_messages]
     turn: dict
 
@@ -360,7 +362,7 @@ def persist():
                                   encode(w["context"].get("custom", {}) if w["action"] == "custom" else w["context"]),
                                   w.get("reason", "verified_quote")))
                 conn.execute("UPDATE visitors SET context=? WHERE id=?", (encode(w["context"]), visitor))
-    return {"turn": turn.model_dump(mode="json"), "messages": [AIMessage(content=turn.text, id=str(turn.trace))]}
+    return {"turn": turn.model_dump(mode="json"), "surface": surface_messages(turn), "messages": [AIMessage(content=turn.text, id=str(turn.trace))]}
 
 
 async def save(_):
