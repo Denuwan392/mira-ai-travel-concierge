@@ -4,7 +4,12 @@ test("Ella conversation opens published journeys and keeps earlier results avail
   page,
 }) => {
   await page.goto("/plan");
-  await page.getByRole("button", { name: "Ella trip", exact: true }).click();
+  await page
+    .getByRole("textbox", { name: "Ask Mira about a city or tour" })
+    .fill("Ella");
+  await page.getByRole("button", { name: "Ask Mira", exact: true }).click();
+  await expect(page).toHaveURL(/\/plan$/);
+  await expect(page.locator('[data-a2ui-version="v0.9"]')).toBeVisible();
   await expect(
     page.getByRole("heading", { name: "Ella journeys" }),
   ).toBeVisible();
@@ -45,6 +50,7 @@ test("day filters show published sections and two saved comparison choices", asy
   page,
 }) => {
   await page.goto("/plan");
+  await page.getByRole("button", { name: "Browse published journeys" }).click();
   const board = page.getByRole("region", { name: "Interactive journey guide" });
   await board.getByRole("button", { name: "Compare", exact: true }).click();
   await board.getByRole("button", { name: "Compare tour" }).nth(0).click();
@@ -70,7 +76,7 @@ test("phone exposes the map and updates the tour list without horizontal scrolli
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/plan");
-  await page.getByRole("button", { name: "Journey", exact: true }).click();
+  await page.getByRole("button", { name: "Browse published journeys" }).click();
   await page.getByRole("button", { name: "Map", exact: true }).click();
   await page.getByRole("button", { name: "Ella on map" }).click();
   await expect(

@@ -1,31 +1,39 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+
 import { ArrowUpRight } from "lucide-react";
-import { useRouter } from "next/navigation";
+
 import { useEffect, useState } from "react";
 import { api } from "../lib/api";
-import { queuePrompt } from "../lib/handoff";
+import { useMira } from "./plan/mira-shell";
 import type { Tour } from "../lib/catalog";
 import { destinationMedia } from "../lib/media-manifest";
 import { CinematicHero } from "./editorial/hero";
 import { DestinationPhotoDeck } from "./editorial/deck";
 
 export default function Home() {
-  const router = useRouter();
+  const plan = useMira();
   const [tours, setTours] = useState<Tour[]>();
   const [story, setStory] = useState<{ title: string; body: string }>();
   useEffect(() => {
     api<Tour[]>("/tours").then(setTours).catch(() => setTours([]));
     api<{ title: string; body: string }>("/sources/D05").then(setStory).catch(() => {});
   }, []);
-  function plan(s: string) { if (s.trim()) { queuePrompt(s.trim()); router.push("/plan"); } }
   const excerpt = story?.body.split("\n").find(line => line.trim() && !line.startsWith("#"));
 
   return (
     <main className="editorial-home">
       <CinematicHero plan={plan}/>
+      <section className="home-trip-strip" aria-label="Destination starters">
+        <header><span className="guide-kicker">Explore Sri Lanka</span><h2>Find your next escape</h2></header>
+        {(["ella","sigiriya","mirissa"] as const).map((place,index)=>{
+          const photo=destinationMedia[place];
+          return <button className="trip-pick" key={place} onClick={()=>plan(["Ella trip","A Sigiriya day trip","Tell me about Mirissa"][index])}>
+            <Image src={photo.src} alt={photo.alt} fill sizes="(max-width:900px) 30vw, 23vw"/><span>{photo.location}</span><ArrowUpRight size={18}/>
+          </button>;
+        })}
+      </section>
       <DestinationPhotoDeck tours={tours} plan={plan}/>
 
       {/* Field note — editorial asymmetric two-column */}
@@ -107,9 +115,9 @@ export default function Home() {
           <p className="editorial-closing-sub">
             Every great trip starts with a single conversation.
           </p>
-          <Link prefetch={false} href="/plan" className="lux-action editorial-closing-cta">
+          <button onClick={()=>plan()} className="lux-action editorial-closing-cta">
             Start planning with Mira <ArrowUpRight size={18}/>
-          </Link>
+          </button>
         </div>
       </section>
     </main>

@@ -9,7 +9,7 @@ test("homepage forwards a traveller's own words through the price workflow", asy
     const css = getComputedStyle(el, "::before");
     return [css.pointerEvents, css.animationDuration];
   });
-  expect(border).toEqual(["none", "0.17s"]);
+  expect(border).toEqual(["none", "0.85s"]);
   await submit.click();
   await expect(page.getByRole("region", { name: "Verified quote" })).toContainText("USD 315");
 });

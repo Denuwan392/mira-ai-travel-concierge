@@ -9,7 +9,9 @@ test("desktop lands, asks for details, prices, saves and simulates booking", asy
   await expect(page.getByRole("heading", { name: "Highlights of Sri Lanka" })).toBeVisible();
   if (capture) await page.screenshot({ path: "../../docs/screenshots/desktop-home.png", fullPage: true });
   await page.getByRole("button", { name: "A Sigiriya day trip" }).click();
-  await expect(page).toHaveURL(/\/plan$/);
+  await expect(page).toHaveURL(/\/$/);
+  await expect(page.locator('[data-a2ui-version="v0.9"]')).toBeVisible();
+  await expect(page.getByRole("region",{name:"Interactive journey guide"})).toHaveCount(0);
   await expect(page.getByRole("heading", { name: "Your travel details" })).toBeVisible({ timeout: 15000 });
   await page.getByRole("button", { name: "Tour details" }).click();
   await expect(page.getByRole("dialog")).toContainText("Sigiriya and Minneriya");
@@ -29,7 +31,7 @@ test("desktop lands, asks for details, prices, saves and simulates booking", asy
   await page.getByLabel("Simulation").selectOption("success");
   await page.getByRole("button", { name: "Try demo booking" }).click();
   await expect(page.getByText(/Demo booking confirmed/)).toBeVisible();
-  await page.getByRole("link", { name: "My trips" }).click();
+  await page.getByRole("link", { name: "My trips", exact: true }).click();
   await expect(page.getByRole("region", { name: "Verified quote" })).toContainText("USD 315");
 });
 

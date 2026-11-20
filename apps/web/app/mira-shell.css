@@ -1,0 +1,535 @@
+/* Traveller surfaces use straight edges. Small circular status and map markers retain their shape. */
+.mira-site
+  :is(
+    .mast-inner,
+    .hero-image-frame,
+    .travel-entry,
+    .photo-tile,
+    .tile-media,
+    .gallery-panel,
+    .editorial-fn-image,
+    .panel,
+    .canvas-empty,
+    .hero-location-label,
+    .hero-scene-controls,
+    .quote-panel,
+    input,
+    textarea,
+    select
+  ),
+.mira-dock
+  :is(
+    input,
+    textarea,
+    select,
+    .panel,
+    .bubble,
+    .guide-photo,
+    .guide-card,
+    .advisor-board,
+    .island-map,
+    .trip-day,
+    .journey-photo,
+    .timeline-photo,
+    .chat-avatar,
+    .quote-verified-badge,
+    .compose,
+    .compare-pair article,
+    .verified,
+    .chat-error,
+    .editorial-notice
+  ) {
+  border-radius: 0;
+}
+.lux-action::before {
+  background: conic-gradient(
+    from var(--runner-angle, 0deg),
+    #d88a4a,
+    #e5c598,
+    #d88a4a
+  );
+  border-radius: inherit;
+  transition: opacity 600ms ease;
+}
+.lux-action:is(:hover, :focus-visible, :active)::before {
+  animation: mira-tint 850ms ease-in-out both;
+}
+@keyframes mira-tint {
+  from {
+    --runner-angle: 0deg;
+  }
+  to {
+    --runner-angle: 80deg;
+  }
+}
+:root {
+  --mira-rail: clamp(300px, 27vw, 410px);
+}
+.mira-site.with-assistant {
+  margin-left: var(--mira-rail);
+}
+.mira-dock[hidden] {
+  display: none;
+}
+.mira-dock.advisor-workspace {
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: var(--mira-rail);
+  height: 100dvh;
+  z-index: 40;
+  margin: 0;
+  padding: 0;
+  background: #fff;
+  color: #17392f;
+  box-shadow: 3px 0 22px #102a251a;
+}
+.mira-dock.has-results {
+  width: 100%;
+}
+.dock-panels {
+  display: flex;
+  height: 100%;
+  min-height: 0;
+}
+.mira-dock .workspace-chat {
+  display: flex;
+  position: static;
+  flex-direction: column;
+  flex: 0 0 var(--mira-rail);
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-right: 1px solid #d9e0d9;
+  border-radius: 0;
+  box-shadow: none;
+}
+.mira-dock .chat-header {
+  flex: none;
+  background: linear-gradient(105deg, #17392f, #365546);
+  padding: 17px 18px;
+  border-radius: 0;
+}
+.dock-close,
+.dock-result-bar button,
+.dock-switch button {
+  border: 0;
+  padding: 8px;
+  background: transparent;
+  color: inherit;
+  min-width: 42px;
+  min-height: 42px;
+  cursor: pointer;
+}
+.dock-close {
+  margin-left: auto;
+  color: white;
+}
+.dock-links {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 7px 15px;
+  border-bottom: 1px solid #dae0da;
+  min-height: 42px;
+}
+.dock-links a,
+.dock-links button {
+  font: 600 12px/1.25 inherit;
+  color: #254537;
+  background: none;
+  border: 0;
+  padding: 5px 0;
+  font-size: 12px;
+}
+.mira-dock .messages {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+.mira-dock .composer,
+.mira-dock .remember {
+  flex: none;
+}
+.mira-dock .composer {
+  border-radius: 0;
+  background: #fafaf7;
+}
+.dock-results {
+  flex: 1;
+  min-width: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 0 clamp(14px, 2.4vw, 42px) 32px;
+  background: white;
+  animation: result-arrival 280ms ease-out;
+}
+@keyframes result-arrival {
+  from {
+    opacity: 0.6;
+    transform: translateX(28px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.mira-dock:not([hidden]) .workspace-chat {
+  animation: rail-arrival 250ms ease-out;
+}
+@keyframes rail-arrival {
+  from {
+    transform: translateX(-24px);
+    opacity: 0.65;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+.dock-result-bar {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 16px 0;
+  background: white;
+  border-bottom: 1px solid #d6ded6;
+  margin-bottom: 12px;
+}
+.dock-result-bar h2 {
+  font:
+    600 clamp(18px, 2vw, 28px)/1.18 Inter,
+    Arial,
+    sans-serif;
+  margin: 4px 0 0;
+  overflow-wrap: anywhere;
+}
+.dock-results .advisor-components {
+  display: grid;
+  gap: 12px;
+}
+.dock-results .advisor-components > .panel {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  margin: 0;
+}
+.dock-results .advisor-board {
+  border: 0;
+}
+.dock-results .guide-toolbar {
+  padding-left: 0;
+}
+.dock-results .guide-results {
+  padding-left: 0;
+}
+.dock-results .editorial-journey-card {
+  grid-template-columns: minmax(145px, 26%) 1fr;
+}
+.dock-results .editorial-excerpt .timeline-photo {
+  display: none;
+}
+.dock-results .guide-map-switch {
+  display: none;
+}
+.dock-switch {
+  display: none;
+}
+.planner-entry {
+  padding-block: clamp(46px, 9vh, 105px) 64px;
+}
+.planner-intro {
+  max-width: 740px;
+  margin: 0 auto 44px;
+  text-align: center;
+}
+.planner-intro .guide-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.planner-intro h1 {
+  font:
+    400 clamp(43px, 6.7vw, 94px)/1 Georgia,
+    serif;
+  color: #17392f;
+  letter-spacing: -0.055em;
+  margin: 20px 0;
+}
+.planner-intro p {
+  color: #46554a;
+}
+.planner-intro form {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+  background: white;
+  border: 1px solid #738779;
+  padding: 6px;
+  margin: 24px 0 12px;
+}
+.planner-intro input {
+  flex: 1;
+  min-width: 0;
+  padding: 12px;
+  border: 0;
+  background: white;
+  font-size: 16px;
+}
+.planner-entry h2 {
+  font:
+    400 32px Georgia,
+    serif;
+  color: #17392f;
+}
+.planner-ideas {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+.planner-ideas button {
+  border: 0;
+  background: white;
+  color: #17392f;
+  text-align: left;
+  padding: 0;
+}
+.planner-ideas img {
+  width: 100%;
+  height: clamp(100px, 15vw, 240px);
+  object-fit: cover;
+  display: block;
+}
+.planner-ideas span {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  border-bottom: 1px solid #cfd9ce;
+  font-weight: 600;
+}
+@media (max-width: 800px) {
+  .mira-site.with-assistant {
+    margin-left: 0;
+  }
+  .mira-dock.advisor-workspace,
+  .mira-dock.has-results {
+    width: 100%;
+  }
+  .dock-switch {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 12px;
+    border-bottom: 1px solid #d8ded6;
+  }
+  .dock-switch button[aria-pressed="true"] {
+    background: #234637;
+    color: white;
+  }
+  .dock-switch button:last-child {
+    margin-left: auto;
+  }
+  .dock-panels {
+    height: calc(100% - 51px);
+  }
+  .mira-dock .workspace-chat {
+    flex: 1;
+  }
+  .mira-dock .dock-close {
+    display: none;
+  }
+  .mira-dock.view-chat .dock-results,
+  .mira-dock.view-results.has-results .workspace-chat {
+    display: none;
+  }
+  .dock-results .guide-locator {
+    position: static;
+  }
+  .planner-ideas {
+    gap: 8px;
+  }
+  .planner-ideas span {
+    font-size: 12px;
+    padding: 8px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mira-dock .dock-results,
+  .mira-dock:not([hidden]) .workspace-chat,
+  .lux-action:is(:hover, :focus-visible, :active)::before {
+    animation: none;
+  }
+  .lux-action::before {
+    transition: none;
+  }
+}
+
+.mira-site {
+  isolation: isolate;
+}
+.mira-dock {
+  isolation: isolate;
+}
+.mira-site :is(button, .lux-action, .button, .hero-chip),
+.mira-dock :is(button,.composer-send,.chip,.refined-submit),
+.mira-dock .guide-actions button {
+  border-radius: 999px;
+}
+.mira-site .travel-entry {
+  border-radius: 18px;
+}
+.mira-dock .dock-links a,
+.mira-dock .dock-links button {
+  font-weight: 650;
+}
+.mira-dock .bubble.mira,
+.mira-dock .bubble.user {
+  border-radius: 4px;
+}
+.mira-dock .guide-board,
+.mira-dock .advisor-board {
+  border-radius: 0;
+}
+.editorial-home {
+  background:
+    radial-gradient(ellipse at 20% 0, #f5eee4, transparent 57%), #fcfaf6;
+}
+.editorial-home .cinematic-hero {
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.15fr);
+  gap: 16px;
+  width: min(1600px, 100%);
+  padding: 100px 0 32px clamp(20px, 4vw, 72px);
+  min-height: 0;
+}
+.editorial-home .hero-editorial-left {
+  padding-right: 8px;
+}
+.editorial-home .hero-editorial-right {
+  align-self: stretch;
+  min-height: 435px;
+}
+.editorial-home .hero-headline {
+  font-size: clamp(52px, 6.25vw, 108px);
+  line-height: 0.96;
+}
+.editorial-home .hero-image-frame {
+  height: 100%;
+  max-height: 560px;
+  aspect-ratio: auto;
+  border: 0;
+  border-radius: 95px 0 0 110px;
+  box-shadow: none;
+}
+.editorial-home .hero-image-frame::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, #f7f0e555, transparent 27%);
+  pointer-events: none;
+}
+.editorial-home .hero-editorial-left .hero-entry {
+  width: min(100%, 620px);
+  background: rgba(255, 255, 255, 0.87);
+}
+.editorial-home .hero-scene-photo {
+  object-position: 56% 47%;
+}
+.editorial-home .hero-location-label {
+  top: 25px;
+  left: 58px;
+}
+.home-trip-strip {
+  width: min(1460px, calc(100% - 8vw));
+  margin: 18px auto 30px;
+  display: grid;
+  grid-template-columns: minmax(145px, 0.72fr) repeat(3, 1fr);
+  gap: 12px;
+  align-items: stretch;
+}
+.home-trip-strip header {
+  align-self: center;
+}
+.home-trip-strip h2 {
+  font:
+    400 clamp(24px, 3vw, 48px)/1 Georgia,
+    serif;
+  margin: 8px 0 14px;
+  color: #17392f;
+}
+.home-trip-strip .trip-pick {
+  border: 0;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 144px;
+  background: #234437;
+  color: white;
+  text-align: left;
+  padding: 15px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+.home-trip-strip .trip-pick img {
+  object-fit: cover;
+  z-index: -2;
+}
+.home-trip-strip .trip-pick::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(transparent 30%, #122a20b5);
+  z-index: -1;
+}
+.home-trip-strip .trip-pick span {
+  font:
+    400 clamp(19px, 2.1vw, 31px) Georgia,
+    serif;
+}
+.mira-site .home-trip-strip .trip-pick {
+  border-radius: 12px;
+}
+@media (max-width: 900px) {
+  .editorial-home .cinematic-hero {
+    grid-template-columns: 1fr;
+    padding: 100px 20px 24px;
+    gap: 20px;
+  }
+  .editorial-home .hero-editorial-right {
+    min-height: 290px;
+  }
+  .editorial-home .hero-image-frame {
+    border-radius: 32px 0 0 32px;
+  }
+  .home-trip-strip {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .home-trip-strip header {
+    grid-column: 1/-1;
+  }
+}
+@media (max-width: 520px) {
+  .home-trip-strip .trip-pick {
+    padding: 8px;
+    min-height: 92px;
+  }
+  .home-trip-strip .trip-pick span {
+    font-size: 16px;
+  }
+  .home-trip-strip .trip-pick svg {
+    width: 12px;
+  }
+  .editorial-home .hero-editorial-right {
+    min-height: 235px;
+  }
+}
+
+@media (max-width: 610px) {
+  .dock-results .guide-map-switch { display: inline-flex; }
+}

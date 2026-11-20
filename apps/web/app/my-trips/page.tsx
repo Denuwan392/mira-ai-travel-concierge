@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowRight, Briefcase, Trash2 } from "lucide-react";
-import Link from "next/link";
+import { useMira } from "../plan/mira-shell";
 import { useEffect, useState } from "react";
 import { api } from "../../lib/api";
 import { Quote } from "../../lib/catalog";
@@ -10,6 +10,7 @@ import { MoneyPanel } from "../plan/components";
 type Saved = { current: true; quote: Quote } | { current: false; title: string; date: string };
 
 export default function MyTrips() {
+  const launch=useMira();
   const [quotes, setQuotes] = useState<Saved[]>();
   const [hasSession, setHasSession] = useState(false);
   const [message, setMessage] = useState("");
@@ -40,7 +41,7 @@ export default function MyTrips() {
       ? (() => { const parsed = Quote.safeParse(row.quote); return parsed.success ? <MoneyPanel key={parsed.data.id} quote={parsed.data} /> : null; })()
       : <section key={i} className="panel"><h3>{row.title}</h3><p>{row.date} · Rates need rechecking</p></section>)}</div>
     <div className="card-actions">
-      <Link href="/plan" className="button primary">Resume planning <ArrowRight size={17} /></Link>
+      <button onClick={()=>launch()} className="button primary">Resume planning <ArrowRight size={17} /></button>
       {hasSession && <button className="button outline" onClick={() => void forget()}><Trash2 size={16} /> Forget this browser</button>}
     </div>
   </main>;

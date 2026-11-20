@@ -6,6 +6,8 @@ import { useState, useEffect } from "react";
 import { ArrowUpRight, Menu, X, User } from "lucide-react";
 import { BrandMark } from "../brand";
 
+import { useMira } from "../plan/mira-shell";
+
 const NAV_LINKS = [
   { href: "/#explore",   label: "Explore" },
   { href: "/plan#destinations", label: "Destinations" },
@@ -14,6 +16,7 @@ const NAV_LINKS = [
 ] as const;
 
 export function FloatingNav() {
+  const launch=useMira();
   const pathname = usePathname();
   const [open, setOpen]       = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -62,7 +65,7 @@ export function FloatingNav() {
             <Link prefetch={false}
               key={href}
               href={href}
-              onClick={close}
+              onClick={e=>{close(); if(href==="/plan"){e.preventDefault();launch();} else if(href==="/plan#destinations"){e.preventDefault();launch(undefined,true);}}}
               aria-current={pathname === href ? "page" : undefined}
             >
               {label}
@@ -85,7 +88,7 @@ export function FloatingNav() {
         {/* ── CTA ── */}
         <Link prefetch={false}
           href="/plan"
-          onClick={close}
+          onClick={e=>{e.preventDefault();close();launch();}}
           className="lux-action mast-cta"
         >
           Plan a trip
@@ -108,6 +111,10 @@ export function FloatingNav() {
       {/* Inline styles for elements not covered by editorial.css */}
       <style>{`
         .mast-account-label { font-size: 13px; font-weight: 600; }
+        .mast-account {
+          border-radius: 9999px !important;
+          border: 1px solid rgba(28, 45, 39, 0.14) !important;
+        }
         .mast-scrolled .mast-inner {
           box-shadow: 0 10px 40px rgba(10,33,23,.18), 0 1px 0 rgba(255,255,255,.6) inset;
         }
