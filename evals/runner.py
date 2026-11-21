@@ -12,6 +12,7 @@ from mira import store
 from mira.catalog import Breakdown, Notice, Turn
 from mira.data import DATA
 from mira.main import app
+from mira.observability import configure, event
 
 ROOT = Path(__file__).parent
 NOW = "2026-11-19"
@@ -174,7 +175,8 @@ def run():
     lines += ["", "Sanitized trace stages are in report.json. Remote trace links were unavailable in this run.", "",
               "## Quality judge", "", report["human_judge"]]
     (out / "report.md").write_text("\n".join(lines) + "\n")
-    print(f"{report['pass']}/{len(results)} passed. Reports written to {out}")
+    event("TRACE", "evaluation.completed", passed=report["pass"], cases=len(results),
+          validated_turns=report["ui_turns"]["validated"], report=str(out))
     # Keep the historical sample disagreement visible while gating newly observed regressions.
     return int(any(not result["pass"] and (result is not sample_conflict or result["quotes"] != [
         {"tour": "T09", "total": 2965, "deposit": 742}
@@ -182,4 +184,5 @@ def run():
 
 
 if __name__ == "__main__":
+    configure()
     raise SystemExit(run())
