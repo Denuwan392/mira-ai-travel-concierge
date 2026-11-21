@@ -14,9 +14,11 @@ export NEXT_TELEMETRY_DISABLED=1
 export COPILOTKIT_TELEMETRY_DISABLED=1
 
 ./scripts/setup.sh
+compass_pid=
 api_pid=
 web_pid=
 cleanup() {
+  [ -z "$compass_pid" ] || kill "$compass_pid" 2>/dev/null || true
   [ -z "$api_pid" ] || kill "$api_pid" 2>/dev/null || true
   [ -z "$web_pid" ] || kill "$web_pid" 2>/dev/null || true
 }
@@ -36,4 +38,6 @@ for delay in 1 2 3 4 5 6 7 8 9 10; do
 done
 apps/web/node_modules/.bin/next dev apps/web --hostname 127.0.0.1 --port 3000 &
 web_pid=$!
-wait "$web_pid"
+(cd apps/ceylon-compass && exec ./node_modules/.bin/vite dev --host 127.0.0.1 --port 5175 --strictPort) &
+compass_pid=$!
+wait "$compass_pid"
