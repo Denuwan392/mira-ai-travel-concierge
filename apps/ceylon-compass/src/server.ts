@@ -1,6 +1,4 @@
-import "./lib/error-capture";
-
-import { consumeLastCapturedError } from "./lib/error-capture";
+import { reportFailure } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
 
 type ServerEntry = {
@@ -28,7 +26,7 @@ async function normalizeCatastrophicSsrResponse(response: Response): Promise<Res
   const body = await response.clone().text();
   if (!isH3SwallowedErrorBody(body)) return response;
 
-  console.error(consumeLastCapturedError() ?? new Error(`h3 swallowed SSR error: ${body}`));
+  reportFailure("ssr.invalid_response");
   return new Response(renderErrorPage(), {
     status: 500,
     headers: { "content-type": "text/html; charset=utf-8" },
@@ -49,27 +47,28 @@ function isH3SwallowedErrorBody(body: string): boolean {
 // twice and renders garbled.
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
+    const incoming = new URL(request.url);
+    const proxy = incoming.pathname.startsWith("/api/");
     try {
-      const incoming = new URL(request.url);
-      if (incoming.pathname.startsWith("/api/")) {
+      if (proxy) {
         const target = new URL(process.env["MIRA_API_URL"] || "http://127.0.0.1:8000");
         target.pathname = incoming.pathname;
         target.search = incoming.search;
         const headers = new Headers();
-        for (const name of ["accept", "content-type", "authorization", "origin"]) {
+        for (const name of ["accept", "content-type", "authorization", "origin", "x-request-id"]) {
           const value = request.headers.get(name);
           if (value) headers.set(name, value);
         }
         const visitor = request.headers.get("cookie")?.split(";").map(s=>s.trim()).find(s=>s.startsWith("mira_session="));
         if (visitor) headers.set("cookie", visitor);
         const body = ["GET","HEAD"].includes(request.method) ? undefined : await request.arrayBuffer();
-        return fetch(target,{method:request.method,headers,...(body ? {body}:{}),redirect:"manual",signal:request.signal});
+        return await fetch(target,{method:request.method,headers,...(body ? {body}:{}),redirect:"manual",signal:request.signal});
       }
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
       return await normalizeCatastrophicSsrResponse(response);
-    } catch (error) {
-      console.error(error);
+    } catch {
+      reportFailure(proxy ? "proxy.failed" : "ssr.failed", request.headers.get("x-request-id") ?? undefined, 500);
       return new Response(renderErrorPage(), {
         status: 500,
         headers: { "content-type": "text/html; charset=utf-8" },

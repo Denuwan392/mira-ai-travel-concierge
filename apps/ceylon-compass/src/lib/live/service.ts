@@ -1,3 +1,4 @@
+import { reportFailure } from "../error-capture";
 import { Turn } from "./catalog";
 import { readSurface } from "./surface";
 
@@ -7,6 +8,7 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
     cache: "no-store",
     headers: { "Content-Type": "application/json", ...options.headers },
   });
+  if (res.status >= 500) reportFailure("proxy.failed", res.headers.get("x-request-id") ?? undefined, res.status);
   if (!res.ok)
     throw new Error(
       res.status === 404

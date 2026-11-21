@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 
 import { Navbar } from "@/components/site/Navbar";
 import appCss from "../styles.css?url";
+import { reportFailure } from "../lib/error-capture";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
 function NotFoundComponent() {
@@ -36,12 +37,12 @@ function NotFoundComponent() {
   );
 }
 
-function ErrorComponent({ error, reset }: ErrorComponentProps) {
-  console.error(error);
+function ErrorComponent({ reset }: ErrorComponentProps) {
   const router = useRouter();
   useEffect(() => {
-    reportLovableError(error, { boundary: "tanstack_root_error_component" });
-  }, [error]);
+    reportFailure("ssr.failed");
+    reportLovableError();
+  }, []);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
