@@ -23,6 +23,7 @@ def clean(value: str) -> str:
 
 
 def public_text(value: str) -> str:
+    value = re.sub(r"<!--.*?(?:-->|$)", "", value, flags=re.S)
     return "\n".join(clean(line) for line in value.splitlines()
                      if not re.search(r"[$€£]|\b(?:USD|LKR|GP|margin|discount)\b|https?://", line, re.I))
 
@@ -40,6 +41,7 @@ def content():
                 duplicates.add(key)
             records[key] = {
                 **{k: meta[k] for k in ("id", "type", "title", "status")},
+                "last_updated": str(meta.get("last_updated","")),
                 "category": meta.get("category", ""), "duration": meta.get("duration", ""),
                 "start": meta.get("start", ""), "destinations": meta.get("destinations", []),
                 "body": body.strip(), "path": str(path.relative_to(DATA)),

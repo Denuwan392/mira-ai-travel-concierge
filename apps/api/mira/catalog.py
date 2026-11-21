@@ -37,6 +37,36 @@ class Excerpt(Strict):
     text: Text
 
 
+class DayStop(Strict):
+    source: Source
+    name: Text
+    passage: Text
+
+
+class Proposal(Strict):
+    type: Literal["JourneyPlan"] = "JourneyPlan"
+    days: list[DayStop] = Field(min_length=1,max_length=30)
+    selected: int = Field(default=0,ge=0,le=29)
+
+
+class RouteMap(Strict):
+    days: list[DayStop] = Field(min_length=1,max_length=30)
+    type: Literal["InteractiveMap"] = "InteractiveMap"
+    selected: int = Field(ge=0,le=29)
+
+
+class Departure(Strict):
+    type: Literal["DateSelector"] = "DateSelector"
+    value: CalendarDate | None = None
+
+
+class SourcePanel(Strict):
+    type: Literal["StayCard","ActivityCard","SourceReference","ComparisonPanel","ConfirmationPanel","DestinationCard"]
+    source: Source
+    heading: Text
+    text: Text
+
+
 class PublicQuote(Strict):
     id: UUID
     source: Source
@@ -66,7 +96,7 @@ class Notice(Strict):
     text: Text
 
 
-Component = Annotated[Card | Picker | Excerpt | Breakdown | Booking | Notice, Field(discriminator="type")]
+Component = Annotated[Card | Picker | Excerpt | Proposal | RouteMap | Departure | SourcePanel | Breakdown | Booking | Notice, Field(discriminator="type")]
 
 
 class Turn(Strict):
