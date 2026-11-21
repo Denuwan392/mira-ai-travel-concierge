@@ -1,0 +1,24 @@
+# Ceylon Compass delivery notes
+
+The imported Lovable project already had a photographic homepage, a planning canvas and browser-local sample journeys. The separate FastAPI and Next.js application already supplied a five-node graph, published catalogue, workbook pricing, studio approval, private staff queue and 56 passing API tests. The integration work connected the traveller experience to that backend. The historical evaluation baseline was 48/49.
+
+| Stage | Implementation and evidence | Verification and outstanding work |
+|---|---|---|
+| 1. Audit | Reviewed the imported application, original workbook and catalogue, source manifest and existing tests. See DATA_AUDIT.md and PRICING_RULES.md. | All 39 source files passed their recorded SHA-256 checksums. |
+| 2. Persistent trips | FastAPI routes in mira/main.py, transactions in mira/store.py, and Alembic revisions 0001 and 0002. Per-visitor ownership, idempotent turns, saved trip edits and superseded quotes. | API tests exercise ownership, replay, revisions, day selection and departure updates. Visitor identity is browser-specific. |
+| 3. Model and graph | mira/provider.py and mira/agent.py interpret requests and validate published IDs. The graph retrieves evidence, prices eligible tours, composes the surface and saves the turn. | Two real model responses with gemini-3.1-flash-lite produced a six-day proposal and a seven-day revision. An eight-second SDK timeout originally fell below the provider minimum. After that fix the original model returned HTTP 503. The verified model is the local default. |
+| 4. Interactive notebook | src/lib/live, components/plan and routes/plan.tsx use the AG-UI client, v0.9 A2UI messages and a browser-only React renderer. Seventeen registered component types include dates, travellers, itinerary, map, citations, enquiry and quote. | The production browser run exercised both conversation and generated controls. Keeping the renderer client-only fixed a server-rendering failure on direct visits and refresh. |
+| 5. Grounding and pricing | Published tours drive discovery. The existing workbook engine owns quote totals and deposits. Unsupported requests can be saved for staff review. | Four original quotations recalculated. All ten missing-rate cases withheld amounts. The original Q-1043 email and workbook disagree. |
+| 6. Staff operations | The existing Next.js staff console shares enquiries and trace data with the traveller site. Date and day edits propagate to the saved request. Editor and Approver actions remain role-gated. | API suite covers role isolation and publication. Booking outcomes are simulated. |
+| 7. Tracing and evaluation | SQLite records the local trace. The Langfuse exporter and independent judge runner are available. | 60 API tests and 11 frontend unit tests passed. The deterministic evaluation passed 48/49 cases across 58 validated UI turns. Hosted trace export requires credentials. Judge comparison requires independent human labels. |
+| 8. Brand and responsive experience | Applied the supplied logo, responsive lower hero radii (24–64px), locally bundled Geist and Instrument Serif fonts, and mobile chat/journey controls. Retained the requested saffron and maroon palette. | Real Chrome screenshots at desktop and mobile widths. Submitting the native prompt field preserves a trip entered before React hydration. |
+| 9. Delivery | Native startup, production Node preset and same-origin API forwarding, browser regression script, architecture diagram and demo outline. | Production Chrome run at both widths passed homepage, USD 315 quote, declined mock booking, refresh, My Trips and viewport overflow checks. Desktop also passed day selection, a changed departure and an additional day. Docker execution remains unverified on this host. |
+
+## Reproduce
+
+Run `make dev` and open the traveller site on port 5175. Staff tools are on port 3000 at `/staff`. Use `make lint`, `make eval` and `make build` for the project checks. Run `MIRA_SCREENSHOTS=1 make notebook-browser` against a running installation with Playwright Chromium, or point `MIRA_CHROME` at a local Chrome executable. The run creates fictional visitor trips in the configured database. Use a separate `MIRA_DB` for isolated checks. The production verification used the built Nitro server, FastAPI and a fresh database.
+
+- [Desktop homepage](screenshots/notebook-home-1440.jpg) and [mobile homepage](screenshots/notebook-home-390.jpg)
+- [Seven-day notebook after editing](screenshots/notebook-route-1440.jpg)
+- [Desktop quote](screenshots/notebook-quote-1440.jpg) and [mobile quote](screenshots/notebook-quote-390.jpg)
+- [Architecture](ARCHITECTURE.md), [five-minute and technical demos](DEMO_SCRIPT.md), [evaluation report](../evals/report/report.md) and [limitations](KNOWN_LIMITATIONS.md)

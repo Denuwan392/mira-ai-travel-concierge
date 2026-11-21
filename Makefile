@@ -11,6 +11,7 @@ setup:
 	./scripts/setup.sh
 
 test:
+	npm --prefix apps/ceylon-compass test
 	$(PYTHON) -m pytest -q apps/api/tests
 
 eval: test
@@ -19,8 +20,10 @@ eval: test
 lint:
 	$(PYTHON) -m compileall -q apps/api/mira evals
 	npm --prefix apps/web run typecheck
+	cd apps/ceylon-compass && ./node_modules/.bin/tsc --noEmit
 
 build:
+	npm --prefix apps/ceylon-compass run build
 	npm --prefix apps/web run build
 
 smoke:
@@ -32,3 +35,7 @@ browser:
 .PHONY: mcp-smoke
 mcp-smoke:
 	node apps/web/mcp/smoke.mjs
+
+.PHONY: notebook-browser
+notebook-browser:
+	node apps/ceylon-compass/tests/notebook.cjs

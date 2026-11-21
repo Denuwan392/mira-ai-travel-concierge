@@ -2,8 +2,8 @@
 
 ## Five-minute recording
 
-- **0:00–0:40** Open Mira and show the itinerary canvas. Show the architecture path from typed LangGraph nodes to Pydantic, the official AG-UI adapter, CopilotKit and browser rendering.
-- **0:40–1:45** Send “Sigiriya day trip for two adults on 10 January 2027.” Open the source, show USD 315 with full deposit, and choose the mock declined simulation before retrying successfully.
+- **0:00–0:40** Open the Ceylon Compass homepage on port 5175. Ask for six days of nature, trains and beaches, then add another day in Ella. Point to the seventh day in the generated canvas and reopen the notebook from My Trips.
+- **0:40–1:45** Start a fresh trip and send “Sigiriya day trip for two adults on 10 January 2027.” Open the source, show USD 315 with full deposit, and choose the mock declined simulation before retrying successfully.
 - **1:45–2:30** Send “Design a 10-day custom journey across Kandy and Ella for a family of four.” Show source-backed alternatives and the saved flag with no price.
 - **2:30–3:35** Open the staff console with Editor credentials. Generate an Ella draft and preview its provenance. Sign in as Approver, approve explicitly, and ask Mira for the published title. Explain local extractive mode when Gemini is absent.
 - **3:35–4:25** Visit the quote enquiry and expand its protected trace and cost breakdown. Use Langfuse only if a real trace is available in the configured project.

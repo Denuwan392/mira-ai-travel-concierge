@@ -12,12 +12,12 @@ from langchain_core.messages import AIMessage, HumanMessage
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.message import add_messages
 
-from .catalog import Breakdown, Booking, Card, Excerpt, Notice, Picker, PublicQuote, Turn
+from .catalog import Breakdown, Booking, Card, DayStop, Proposal, RouteMap, Departure, SourcePanel, Excerpt, Notice, Picker, PublicQuote, Turn
 from .data import Unavailable, as_of, price, public_text, tour_card
-from .provider import rank
+from .provider import rank, notebook_intent
 from .rates_repository import current_rates
 from .surface import surface_messages
-from .store import db, encode, published_records
+from .store import db, encode, published_records, is_current_notebook_turn
 
 visitor_context = ContextVar("visitor", default=None)
 run_context = ContextVar("run", default=None)
@@ -75,6 +75,11 @@ def interpret(state):
     run = run_context.get()
     with db() as conn:
         saved = conn.execute("SELECT context FROM visitors WHERE id = ?", (visitor,)).fetchone()
+        if trip_id := working.get().get("trip_id"):
+            saved = conn.execute("SELECT context,revision FROM trips WHERE id=? AND visitor=?", (trip_id,visitor)).fetchone()
+            if not saved:
+                raise ValueError("Journey unavailable")
+            working.get()["revision"] = saved["revision"]
         replay = conn.execute("SELECT result FROM traces WHERE visitor = ? AND run = ?", (visitor, run)).fetchone()
     if replay:
         turn = Turn.model_validate_json(replay["result"])
@@ -83,9 +88,10 @@ def interpret(state):
             try:
                 value = price(old_quote.source, old_quote.date, old_quote.adults, old_quote.ages, as_of(), current_rates())
                 with db() as conn:
+                    latest = is_current_notebook_turn(conn,str(turn.trace))
                     stored = conn.execute("SELECT internal FROM quotes WHERE id=?", (str(old_quote.id),)).fetchone()
                 snapshot = json.loads(stored["internal"])["snapshot"]
-                current = (value["total"], value["deposit"], value["snapshot"]) == (
+                current = latest and (value["total"], value["deposit"], value["snapshot"]) == (
                     old_quote.total, old_quote.deposit, snapshot)
             except (Unavailable, KeyError, TypeError):
                 current = False
@@ -198,8 +204,81 @@ def interpret(state):
                 action = "invalid_party"
             if action == "discover" and (ctx.get("kids", 0) > 30 or len(ctx.get("ages", [])) > 30):
                 action = "custom"
+    events = []
+    panel_action = None
+    if working.get().get("trip_id") and text.startswith("@") and not (match or select):
+        panel_action = "invalid"
+        if ctx.get("proposal"):
+            if chosen := re.fullmatch(r"@day (\d{1,2})",text):
+                day = int(chosen[1])-1
+                if 0 <= day < len(ctx["proposal"]):
+                    ctx["selected_day"] = day
+                    panel_action = "day"
+            elif depart := re.fullmatch(r"@depart (\d{4}-\d{2}-\d{2})",text):
+                try:
+                    departure = date.fromisoformat(depart[1])
+                    if departure < as_of():
+                        raise ValueError("past departure")
+                    ctx.setdefault("custom",{})["date"] = departure.isoformat()
+                    panel_action = "date"
+                except ValueError:
+                    pass
+        action = "proposal_view" if panel_action!="invalid" else "unknown"
+    if working.get().get("trip_id") and not (match or select or panel_action or named in tours) and action in {"general","custom","destination","discover"}:
+        destinations = {k:r["title"] for k,r in records.items() if r["type"]=="destination"}
+        previous = ctx.get("proposal", [])
+        evidence = {}
+        if re.search(r"\?|\b(?:what|where|tell me|when|why|can i)\b",text) and not re.search(r"quote|price|cost|deposit|payment",text):
+            words = set(re.findall(r"[a-z]{3,}",text)) - {"what","where","tell","when","about","the","can"}
+            candidates = []
+            for key,row in records.items():
+                if key=="P06":
+                    continue
+                for i,block in enumerate(public_text(row["body"]).split("\n\n")):
+                    block = block.strip()
+                    hits = len(words & set(re.findall(r"[a-z]{3,}",(row["title"]+" "+block).lower())))
+                    if hits and block and not block.startswith("#"):
+                        candidates.append((hits,f"{key}:{i}",block[:800]))
+            evidence = {k:v for _,k,v in sorted(candidates,reverse=True)[:14]}
+        intent = notebook_intent(message, previous, destinations, events, evidence)
+        if intent and intent.operation=="fact" and intent.evidence_key in evidence:
+            k=intent.evidence_key
+            working.get()["evidence"]=(k.split(":")[0],evidence[k])
+            action="sourced_answer"
+        elif intent and intent.operation=="unknown" and evidence:
+            action="unknown"
+        extend = re.search(r"(?:add|another|extra|one more).*?day",text) and previous
+        requested = re.search(rf"\b({COUNT})[- ]days?\b",text)
+        ids = [k for k,title in destinations.items() if re.search(r"\b"+re.escape(title.lower())+r"\b",text)]
+        plan_request = requested and named not in tours and action in {"general","custom","destination"}
+        route = None
+        if extend or (intent and intent.operation=="extend" and previous):
+            targets = ids or (intent.destinations if intent else []) or previous[-1:]
+            target = targets[0]
+            idx = max((i for i,k in enumerate(previous) if k==target),default=len(previous)-1)+1
+            n = min(intent.days if intent and intent.operation=="extend" and intent.days else 1,30-len(previous))
+            route = previous[:idx]+[target]*n+previous[idx:]
+        elif plan_request or (intent and intent.operation=="plan" and named not in tours):
+            if intent and intent.destinations:
+                ids = intent.destinations
+            if not ids:
+                ids = [key for pattern,key in [("train|nature","D05"),("beach|coast","D08"),("culture","D03")] if re.search(pattern,text) and key in destinations]
+            if not ids:
+                ids = list(destinations)[:2]
+            n = min(30,max(1,count(requested[1]) if requested else (intent.days if intent and intent.days else len(ids))))
+            route = [ids[min(len(ids)-1,i*len(ids)//n)] for i in range(n)]
+        if route:
+            ctx["proposal"] = route
+            ctx["selected_day"] = min(ctx.get("selected_day",0),len(route)-1)
+            ctx.pop("tour",None)
+            ctx["custom"] = {**ctx.get("custom",{}),"days":len(route),"destinations":list(dict.fromkeys(destinations[k] for k in route))}
+            if intent and intent.adults:
+                ctx["custom"]["party"] = intent.adults
+            action = "custom"
+    if select or match:
+        ctx.pop("proposal",None)
     working.get().update(context=ctx, basis=basis, records=records, tours=tours, action=action, named=named,
-                         select=bool(select), events=[{"stage": "interpret", "provider": "local rules",
+                         select=bool(select), panel_action=panel_action, events=[*events,{"stage": "interpret", "provider": "local rules",
                          "action": action, "ms": round((perf_counter()-started)*1000)}])
     return {}
 
@@ -223,7 +302,8 @@ def retrieve(_):
         if destinations:
             related = sorted(w["tours"], key=lambda key: -len(destinations.intersection(w["tours"][key]["destinations"])))
             ids = [key for key in related if destinations.intersection(w["tours"][key]["destinations"])][:3] or ids
-        ids = rank(w["tours"], trip, w["events"]) or ids
+        if not (w.get("trip_id") and ctx.get("proposal")):
+            ids = rank(w["tours"], trip, w["events"]) or ids
     w["rows"] = [records[key] for key in ids if key in records]
     if action in {"general", "destination", "custom", "compare"}:
         ctx["suggestions"] = [row["id"] for row in w["rows"] if row["type"] == "tour"]
@@ -297,7 +377,13 @@ def compose(_):
         text = "I’ve verified the quote for your travel date and group. You can review the deposit and try the demo booking."
     elif w.get("reason") or action == "custom":
         w["reason"] = w.get("reason", "custom_or_unsupported")
-        w["enquiry"] = uuid4()
+        prior = None
+        if w.get("trip_id") and action=="custom":
+            with db() as conn:
+                prior = conn.execute("""SELECT e.id FROM enquiries e JOIN trip_turns t ON t.trace=e.trace
+                    WHERE t.trip=? AND e.reason='custom_or_unsupported' AND e.status!='closed'
+                    ORDER BY t.rowid DESC LIMIT 1""",(w["trip_id"],)).fetchone()
+        w["enquiry"] = UUID(prior["id"]) if prior else uuid4()
         text = "A travel specialist will confirm the details. I’ve saved a private enquiry for our team."
         components.insert(0, Notice(reference=w["enquiry"], text="Specialist confirmation required"))
     elif action == "reject":
@@ -328,6 +414,41 @@ def compose(_):
         text = "I’ve noted your group. Which tour or part of Sri Lanka would you like to explore?"
     else:
         text = "I’m Mira, your Sri Lanka travel companion. Where would you like your journey to begin?"
+    if w.get("trip_id") and action in {"custom","proposal_view"} and ctx.get("proposal"):
+        days = [DayStop(source=k,name=w["records"][k]["title"],passage=section(w["records"][k])) for k in ctx["proposal"]]
+        selected = min(ctx.get("selected_day",0),len(days)-1)
+        components[:0] = [Proposal(days=days,selected=selected),RouteMap(days=days,selected=selected),
+                          Departure(value=ctx.get("custom",{}).get("date"))]
+        sources = list(dict.fromkeys([*(d.source for d in days),*sources]))[:6]
+        text = f"Your proposed journey now has {len(days)} days. I’ve saved the route for specialist confirmation."
+        if action=="proposal_view":
+            d = days[selected]
+            text = (f"Day {selected+1} takes you to {d.name}." if w["panel_action"]=="day"
+                    else f"I’ve updated your proposed departure to {ctx['custom']['date']}. Your route still needs specialist confirmation.")
+    if action=="sourced_answer":
+        source,passage=w["evidence"]
+        sources=[source]
+        components=[Excerpt(type="PolicySnippet",source=source,heading=w["records"][source]["title"],text=passage)]
+        text="Here is the passage from our published travel library that answers your question."
+    if w.get("trip_id") and sources:
+        first = sources[0]
+        if action=="compare" and len(rows)>1:
+            components.insert(0,SourcePanel(type="ComparisonPanel",source=first,heading="Compare journeys",
+                text=" · ".join(r["title"]+" ("+r["duration"]+")" for r in rows)))
+        if action=="discover" and rows and rows[0]["type"]=="tour":
+            record=rows[0]
+            for kind,pattern in [("StayCard",r"Accommodation:\*\* ([^\n]+)"),("ActivityCard",r"Entrance tickets included:\*\* ([^\n]+)")]:
+                hit=re.search(pattern,public_text(record["body"]))
+                if hit and hit[1].strip().lower() not in {"none","n/a"}:
+                    components.append(SourcePanel(type=kind,source=first,heading="Published stay" if kind=="StayCard" else "Included visits",text=hit[1]))
+        if w.get("quote"):
+            components.append(SourcePanel(type="ConfirmationPanel",source=first,heading="Quote saved",text="Your private enquiry is available to the travel team."))
+        components.append(SourcePanel(type="SourceReference",source=first,heading="From the travel library",text=w["records"][first]["title"]))
+        for i,item in enumerate(components):
+            if isinstance(item,Excerpt) and item.type=="DestinationHighlight":
+                components[i]=SourcePanel(**(item.model_dump()|{"type":"DestinationCard"}))
+    if any(e["stage"].startswith("gemini") and e.get("outcome") in {"fallback","unavailable","unconfigured"} for e in w["events"]):
+        text += " Limited service: I’m using the published catalogue."
     w["turn"] = Turn(trace=trace, text=text, sources=sources, components=components)
     w["events"].append({"stage": "validated_ui", "components": [c.type for c in components]})
     return {}
@@ -348,6 +469,10 @@ def persist():
                 turn = Turn.model_validate_json(previous["result"])
             else:
                 active = conn.execute("SELECT context FROM visitors WHERE id=?", (visitor,)).fetchone()
+                trip_id = w.get("trip_id")
+                if trip_id:
+                    active = conn.execute("SELECT context FROM trips WHERE id=? AND visitor=? AND revision=?",
+                                          (trip_id,visitor,w["revision"])).fetchone()
                 if not active or active["context"] != w["basis"]:
                     raise ValueError("Session changed during this turn")
                 conn.execute("INSERT INTO traces(id, visitor, run, events, result) VALUES(?,?,?,?,?)",
@@ -356,12 +481,23 @@ def persist():
                 if q:
                     conn.execute("INSERT INTO quotes(id, visitor, trace, public, internal) VALUES(?,?,?,?,?)",
                                  (str(q.id), visitor, str(turn.trace), q.model_dump_json(), encode(w["internal"])))
+                if trip_id and w.get("panel_action") == "date":
+                    conn.execute("""UPDATE enquiries SET trip=? WHERE id=(
+                        SELECT e.id FROM enquiries e JOIN trip_turns t ON t.trace=e.trace
+                        WHERE t.trip=? AND e.reason='custom_or_unsupported' ORDER BY t.rowid DESC LIMIT 1)""",
+                        (encode(w["context"].get("custom",{})),trip_id))
                 if q or w.get("reason"):
-                    conn.execute("INSERT INTO enquiries(id, trace, quote, trip, reason) VALUES(?,?,?,?,?)",
+                    conn.execute("INSERT INTO enquiries(id, trace, quote, trip, reason) VALUES(?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET trace=excluded.trace,trip=excluded.trip",
                                  (str(w.get("enquiry") or uuid4()), str(turn.trace), str(q.id) if q else None,
                                   encode(w["context"].get("custom", {}) if w["action"] == "custom" else w["context"]),
                                   w.get("reason", "verified_quote")))
-                conn.execute("UPDATE visitors SET context=? WHERE id=?", (encode(w["context"]), visitor))
+                if trip_id:
+                    conn.execute("INSERT INTO trip_turns(trip,trace,prompt) VALUES(?,?,?)",(trip_id,str(turn.trace),w["prompt"]))
+                    conn.execute("""UPDATE trips SET context=?,revision=revision+1,updated=CURRENT_TIMESTAMP,
+                        title=CASE WHEN revision=0 THEN ? ELSE title END WHERE id=?""",
+                        (encode(w["context"]),w["prompt"][:100],trip_id))
+                else:
+                    conn.execute("UPDATE visitors SET context=? WHERE id=?", (encode(w["context"]), visitor))
     return {"turn": turn.model_dump(mode="json"), "surface": surface_messages(turn), "messages": [AIMessage(content=turn.text, id=str(turn.trace))]}
 
 

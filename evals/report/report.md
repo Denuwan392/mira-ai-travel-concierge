@@ -21,7 +21,7 @@ Validated UI 58/58 turns.
 
 ## Failed cases
 
-- P03 · Expected [{'tour': 'T09', 'price_usd': 2680, 'deposit_usd': 670}], observed [{'tour': 'T09', 'price_usd': 2965, 'deposit_usd': 742}] · SQLite trace fd7dfd20-edff-4433-b147-62c55ef77596
+- P03 · Expected [{'tour': 'T09', 'price_usd': 2680, 'deposit_usd': 670}], observed [{'tour': 'T09', 'price_usd': 2965, 'deposit_usd': 742}] · SQLite trace e9b9e802-803d-4573-a0d3-5195216de230
 
 Sanitized trace stages are in report.json. Remote trace links were unavailable in this run.
 

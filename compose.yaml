@@ -37,5 +37,16 @@ services:
     depends_on:
       api:
         condition: service_healthy
+  compass:
+    build: apps/ceylon-compass
+    environment:
+      MIRA_API_URL: http://api:8000
+      PORT: 5175
+      HOST: 0.0.0.0
+    ports:
+      - "127.0.0.1:5175:5175"
+    depends_on:
+      api:
+        condition: service_healthy
 volumes:
   mira-state:

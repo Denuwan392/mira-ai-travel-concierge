@@ -22,7 +22,7 @@ from .data import DATA, Unavailable, as_of, clean, price, public_text, tour_card
 from .guide import guide
 from .provider import generate_structured, model_available
 from .rates_repository import current_rates
-from .store import db, init, published_records
+from .store import db, init, published_records, is_current_notebook_turn
 
 COOKIE = "mira_session"
 ROLES = ("staff", "editor", "approver")
@@ -44,7 +44,8 @@ app = FastAPI(title="Mira Travel Concierge", lifespan=lifespan)
 def website(request: Request):
     origin = request.headers.get("origin")
     expected = os.getenv("MIRA_ORIGIN", "http://127.0.0.1:3000")
-    if origin and origin != expected:
+    allowed = {expected, *os.getenv("MIRA_ADDITIONAL_ORIGINS", "http://127.0.0.1:5175").split(",")}
+    if origin and origin not in allowed:
         raise HTTPException(403, "Origin denied")
 
 
@@ -100,7 +101,8 @@ def source(key: str):
     row = published_records().get(key)
     if not row or key == "P06":
         raise HTTPException(404, "Source unavailable")
-    return {"title": row["title"], "body": public_text(row["body"]), "id": key}
+    return {"title": row["title"], "body": public_text(row["body"]), "id": key, "source": row["path"],
+            "status":"published","last_updated":row.get("last_updated")}
 
 
 class Consent(Strict):
@@ -146,10 +148,52 @@ def quote_current(public, internal, rates):
     return all(value[k] == internal[k] for k in ("snapshot", "total", "deposit"))
 
 
+@app.post("/api/trips", dependencies=[Depends(website)])
+def create_trip(key: str = Depends(visitor)):
+    trip_id = str(uuid4())
+    with db() as conn:
+        conn.execute("INSERT INTO trips(id,visitor) VALUES (?,?)", (trip_id,key))
+    return {"id": trip_id}
+
+
+@app.get("/api/trips")
+def trips(key: str = Depends(visitor)):
+    with db() as conn:
+        return [dict(r) for r in conn.execute(
+            "SELECT id,title,updated FROM trips WHERE visitor=? AND revision>0 ORDER BY updated DESC,rowid DESC", (key,))]
+
+
+@app.get("/api/trips/{trip_id}")
+def notebook(trip_id: UUID, key: str = Depends(visitor)):
+    from .catalog import Turn, Booking, Breakdown
+    from .surface import surface_messages
+    with db() as conn:
+        trip = conn.execute("SELECT * FROM trips WHERE id=? AND visitor=?", (str(trip_id),key)).fetchone()
+        if not trip:
+            raise HTTPException(404, "Journey unavailable")
+        rows = conn.execute("""SELECT t.prompt,r.result,q.internal FROM trip_turns t JOIN traces r ON r.id=t.trace
+            LEFT JOIN quotes q ON q.trace=r.id WHERE t.trip=? ORDER BY t.rowid""",(str(trip_id),)).fetchall()
+    history = []
+    for i,row in enumerate(rows):
+        turn = Turn.model_validate_json(row["result"])
+        quoted = next((item.quote for item in turn.components if isinstance(item,Breakdown)),None)
+        if quoted:
+            try:
+                valid = i == len(rows)-1 and quote_current(quoted,json.loads(row["internal"]),current_rates())
+            except Unavailable:
+                valid = False
+            if not valid:
+                turn = turn.model_copy(update={"components":[c for c in turn.components if not isinstance(c,(Booking,Breakdown))],
+                                               "text":"This earlier quote needs a fresh rate check."})
+        history.append({"prompt":row["prompt"],"turn":turn,"surface":surface_messages(turn)})
+    return {"id":str(trip_id),"title":trip["title"],"history":history}
+
+
 @app.get("/api/quotes")
 def saved_quotes(key: str = Depends(visitor)):
     with db() as conn:
         rows = conn.execute("SELECT * FROM quotes WHERE visitor=? ORDER BY rowid DESC LIMIT 25", (key,)).fetchall()
+        current = {r["id"] for r in rows if is_current_notebook_turn(conn,r["trace"])}
     try:
         rates = current_rates()
     except Unavailable:
@@ -157,7 +201,7 @@ def saved_quotes(key: str = Depends(visitor)):
     result = []
     for row in rows:
         q = PublicQuote.model_validate_json(row["public"])
-        if quote_current(q, json.loads(row["internal"]), rates):
+        if row["id"] in current and quote_current(q, json.loads(row["internal"]), rates):
             result.append({"current": True, "quote": q})
         else:
             result.append({"current": False, "title": q.title, "date": q.date})
@@ -189,7 +233,7 @@ def export_trace(w, trace):
 
 
 @app.post("/api/agent", dependencies=[Depends(website)])
-async def agui(payload: RunAgentInput, request: Request, key: str = Depends(visitor)):
+async def agui(payload: RunAgentInput, request: Request, key: str = Depends(visitor), trip_id: UUID | None = None):
     users = [m for m in payload.messages if m.role == "user"]
     if not users or not isinstance(users[-1].content, str) or not 1 <= len(users[-1].content.strip()) <= 1200:
         raise HTTPException(422, "Enter a message of 1–1200 characters")
@@ -204,13 +248,18 @@ async def agui(payload: RunAgentInput, request: Request, key: str = Depends(visi
     encoder = EventEncoder(accept=request.headers.get("accept"))
     trace = uuid4()
     with db() as conn:
+        if trip_id and not conn.execute("SELECT 1 FROM trips WHERE id=? AND visitor=?", (str(trip_id),key)).fetchone():
+            raise HTTPException(404, "Journey unavailable")
+        prior = conn.execute("SELECT t.trip FROM traces r LEFT JOIN trip_turns t ON t.trace=r.id WHERE r.visitor=? AND r.run=?", (key,run)).fetchone()
+        if prior and prior["trip"] != (str(trip_id) if trip_id else None):
+            raise HTTPException(409, "Turn belongs to a different journey")
         existing = conn.execute("SELECT id FROM traces WHERE visitor=? AND run=?", (key, run)).fetchone()
         if existing:
             trace = UUID(existing["id"])
 
     async def stream():
         tokens = [(visitor_context, visitor_context.set(key)), (run_context, run_context.set(run)),
-                  (working, working.set({"trace": trace}))]
+                  (working, working.set({"trace": trace, "trip_id": str(trip_id) if trip_id else None, "prompt": user.content}))]
         try:
             async for event in adapter.run(safe):
                 if event.type == EventType.RUN_ERROR:
@@ -245,6 +294,7 @@ def booking(body: Book, key: str = Depends(visitor)):
         if previous:
             return {"status": "success", "reference": previous["id"]}
         current = quote_current(PublicQuote.model_validate_json(quote["public"]), json.loads(quote["internal"]), rates)
+        current = current and is_current_notebook_turn(conn,quote["trace"])
         result = body.scenario if current else "expired"
         events = json.loads(conn.execute("SELECT events FROM traces WHERE id=?", (quote["trace"],)).fetchone()[0])
         conn.execute("UPDATE traces SET events=? WHERE id=?", (json.dumps(

@@ -13,3 +13,7 @@ if ! cmp -s apps/web/package-lock.json apps/web/node_modules/.mira-lock; then
   npm ci --prefix apps/web
   cp apps/web/package-lock.json apps/web/node_modules/.mira-lock
 fi
+if ! cmp -s apps/ceylon-compass/package-lock.json apps/ceylon-compass/node_modules/.mira-lock; then
+  npm ci --prefix apps/ceylon-compass
+  cp apps/ceylon-compass/package-lock.json apps/ceylon-compass/node_modules/.mira-lock
+fi
