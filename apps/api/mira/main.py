@@ -1,10 +1,13 @@
+import asyncio
 import hmac
+import logging
 import json
 import os
 import re
 import secrets
 from contextlib import asynccontextmanager
 from functools import lru_cache
+from time import perf_counter
 from typing import Literal
 from uuid import UUID, uuid4
 
@@ -20,6 +23,7 @@ from .agent import builder, run_context, visitor_context, working
 from .catalog import PublicQuote, Strict
 from .data import DATA, Unavailable, as_of, clean, price, public_text, tour_card
 from .guide import guide
+from .observability import RequestLogging, elapsed, event as log_event, request_id, trace_id
 from .provider import generate_structured, model_available
 from .rates_repository import current_rates
 from .store import db, init, published_records, is_current_notebook_turn
@@ -34,11 +38,12 @@ async def lifespan(_):
     try:
         current_rates()
     except Unavailable:
-        pass
+        log_event("PRICING", "rates.unavailable", level=logging.WARNING)
     yield
 
 
 app = FastAPI(title="Mira Travel Concierge", lifespan=lifespan)
+app.add_middleware(RequestLogging)
 
 
 def website(request: Request):
@@ -217,19 +222,21 @@ def remote_tracing():
 
 
 def export_trace(w, trace):
-    client = remote_tracing()
-    if not client or not w.get("events"):
+    if not w.get("events"):
         return None
     try:
+        client = remote_tracing()
+        if not client:
+            return None
         with client.start_as_current_observation(name="mira.turn",
-                trace_context={"trace_id": trace.hex}):
+                trace_context={"trace_id": trace.hex}, metadata={"request_id": request_id.get()}):
             for item in w["events"]:
                 with client.start_as_current_observation(name=item["stage"], metadata=item):
                     pass
-        return client.get_trace_url(trace_id=trace.hex)
+        log_event("TRACE", "trace.queued", destination="langfuse")
     except Exception:
-        # The committed SQLite trace remains authoritative when export fails.
-        return
+        log_event("TRACE", "trace.export_failed", level=logging.WARNING, exception=True)
+    return None
 
 
 @app.post("/api/agent", dependencies=[Depends(website)])
@@ -258,16 +265,26 @@ async def agui(payload: RunAgentInput, request: Request, key: str = Depends(visi
             trace = UUID(existing["id"])
 
     async def stream():
+        start = perf_counter()
+        outcome = "interrupted"
         tokens = [(visitor_context, visitor_context.set(key)), (run_context, run_context.set(run)),
+                  (trace_id, trace_id.set(str(trace))),
                   (working, working.set({"trace": trace, "trip_id": str(trip_id) if trip_id else None, "prompt": user.content}))]
+        log_event("AGENT", "workflow.started", notebook=trip_id is not None)
         try:
             async for event in adapter.run(safe):
                 if event.type == EventType.RUN_ERROR:
+                    outcome = "failed"
+                    log_event("ERROR", "workflow.run_error", level=logging.ERROR)
                     event = RunErrorEvent(type=EventType.RUN_ERROR, message="Mira couldn’t finish. Please retry.")
                 if event.type == EventType.RUN_FINISHED:
-                    export_trace(working.get(), trace)
+                    if outcome != "failed":
+                        outcome = "completed"
+                        if os.getenv("LANGFUSE_PUBLIC_KEY") and os.getenv("LANGFUSE_SECRET_KEY"):
+                            await asyncio.to_thread(export_trace, working.get(), trace)
                 yield encoder.encode(event)
         finally:
+            log_event("AGENT", "workflow.finished", outcome=outcome, duration_ms=elapsed(start))
             for var, token in reversed(tokens):
                 var.reset(token)
 

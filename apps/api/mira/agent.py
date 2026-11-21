@@ -1,8 +1,10 @@
 import asyncio
 import json
+import logging
 import re
 from contextvars import ContextVar
 from datetime import date
+from functools import wraps
 from time import perf_counter
 from uuid import UUID, uuid4
 from typing import Annotated, TypedDict
@@ -14,6 +16,7 @@ from langgraph.graph.message import add_messages
 
 from .catalog import Breakdown, Booking, Card, DayStop, Proposal, RouteMap, Departure, SourcePanel, Excerpt, Notice, Picker, PublicQuote, Turn
 from .data import Unavailable, as_of, price, public_text, tour_card
+from .observability import elapsed, event, request_id
 from .provider import rank, notebook_intent
 from .rates_repository import current_rates
 from .surface import surface_messages
@@ -98,6 +101,7 @@ def interpret(state):
             if not current:
                 turn = turn.model_copy(update={"text": "This saved quote needs to be refreshed. Check current rates.",
                     "components": [c for c in turn.components if not isinstance(c, (Breakdown, Booking))]})
+        event("TRACE", "turn.replayed")
         working.get().update(replay=turn)
         return {}
     basis = saved["context"] if saved else "{}"
@@ -280,10 +284,13 @@ def interpret(state):
     working.get().update(context=ctx, basis=basis, records=records, tours=tours, action=action, named=named,
                          select=bool(select), panel_action=panel_action, events=[*events,{"stage": "interpret", "provider": "local rules",
                          "action": action, "ms": round((perf_counter()-started)*1000)}])
+    party = "family" if ctx.get("kids") else "adult_party" if ctx.get("adults") else "unspecified"
+    event("AGENT", "intent.classified", intent=action, party_type=party, duration_ms=elapsed(started))
     return {}
 
 
 def retrieve(_):
+    started = perf_counter()
     w = working.get()
     records, ctx, action = w["records"], w["context"], w["action"]
     ids = {
@@ -307,7 +314,10 @@ def retrieve(_):
     w["rows"] = [records[key] for key in ids if key in records]
     if action in {"general", "destination", "custom", "compare"}:
         ctx["suggestions"] = [row["id"] for row in w["rows"] if row["type"] == "tour"]
-    w["events"].append({"stage": "retrieval", "sources": [r["id"] for r in w["rows"]]})
+    sources = [r["id"] for r in w["rows"]]
+    duration = elapsed(started)
+    w["events"].append({"stage": "retrieval", "sources": sources, "ms": duration})
+    event("RAG", "retrieval.completed", documents=len(sources), sources=sources, duration_ms=duration)
     return {}
 
 
@@ -324,6 +334,7 @@ def quote_node(_):
     w = working.get()
     ctx = w["context"]
     before = perf_counter()
+    event("PRICING", "pricing.started", level=logging.DEBUG, tour_id=ctx["tour"])
     try:
         value = price(ctx["tour"], date.fromisoformat(ctx["date"]), ctx["adults"], ctx.get("ages", []), as_of(), current_rates())
         w["internal"] = value
@@ -337,10 +348,15 @@ def quote_node(_):
     w["events"].append({"stage": "pricing", "outcome": w.get("reason", "verified"),
                         "snapshot": w.get("internal", {}).get("snapshot"),
                         "ms": round((perf_counter()-before)*1000)})
+    quote = w.get("quote")
+    reason = w.get("reason")
+    event("PRICING", "pricing.completed", tour_id=ctx["tour"], rate_status="verified" if quote else "unavailable",
+          quote_id=str(quote.id) if quote else None, rule=reason, duration_ms=elapsed(before))
     return {}
 
 
 def compose(_):
+    started = perf_counter()
     w = working.get()
     if "replay" in w:
         return {}
@@ -450,18 +466,26 @@ def compose(_):
     if any(e["stage"].startswith("gemini") and e.get("outcome") in {"fallback","unavailable","unconfigured"} for e in w["events"]):
         text += " Limited service: I’m using the published catalogue."
     w["turn"] = Turn(trace=trace, text=text, sources=sources, components=components)
-    w["events"].append({"stage": "validated_ui", "components": [c.type for c in components]})
+    duration = elapsed(started)
+    w["events"].append({"stage": "validated_ui", "components": [c.type for c in components], "ms": duration})
+    event("RAG", "grounding.completed", sources=sources, documents=len(sources))
+    event("AGENT", "ui.validated", components=len(components), duration_ms=duration)
     return {}
 
 
 def persist():
+    started = perf_counter()
     w = working.get()
     if "replay" in w:
         turn = w["replay"]
     else:
         turn = w["turn"]
         visitor, run = visitor_context.get(), run_context.get()
-        w["events"].append({"stage": "persistence", "enquiry": bool(w.get("reason") or w.get("quote"))})
+        enquiry = bool(w.get("reason") or w.get("quote"))
+        stage = {"stage": "persistence", "enquiry": enquiry}
+        if identifier := request_id.get():
+            stage["request_id"] = identifier
+        w["events"].append(stage)
         with db() as conn:
             conn.execute("BEGIN IMMEDIATE")
             previous = conn.execute("SELECT result FROM traces WHERE visitor=? AND run=?", (visitor, run)).fetchone()
@@ -498,20 +522,39 @@ def persist():
                         (encode(w["context"]),w["prompt"][:100],trip_id))
                 else:
                     conn.execute("UPDATE visitors SET context=? WHERE id=?", (encode(w["context"]), visitor))
+        if not previous:
+            event("TRACE", "turn.persisted", quote_id=str(q.id) if q else None, enquiry=enquiry,
+                  duration_ms=elapsed(started))
     return {"turn": turn.model_dump(mode="json"), "surface": surface_messages(turn), "messages": [AIMessage(content=turn.text, id=str(turn.trace))]}
 
 
 async def save(_):
-    result = await asyncio.to_thread(persist)
+    try:
+        result = await asyncio.to_thread(persist)
+    except Exception:
+        event("ERROR", "turn.persistence_failed", level=logging.ERROR, exception=True)
+        raise
     message = result["messages"][0]
     await adispatch_custom_event("manually_emit_message", {"message_id": message.id, "message": message.content})
     return result
 
 
+def log_node_errors(fn):
+    @wraps(fn)
+    def run(state):
+        try:
+            return fn(state)
+        except Exception:
+            event("ERROR", "workflow.node_failed", level=logging.ERROR, exception=True, node=fn.__name__)
+            raise
+
+    return run
+
+
 builder = StateGraph(GraphState)
 for name, fn in [("interpret", interpret), ("retrieve", retrieve), ("quote", quote_node),
                  ("compose", compose), ("save", save)]:
-    builder.add_node(name, fn)
+    builder.add_node(name, fn if name == "save" else log_node_errors(fn))
 builder.add_edge(START, "interpret")
 builder.add_conditional_edges("interpret", lambda _: "save" if "replay" in working.get() else "retrieve",
                               {"save": "save", "retrieve": "retrieve"})

@@ -1,8 +1,11 @@
+import logging
 import os
 from time import perf_counter
 from typing import Literal
 
 from pydantic import BaseModel, Field
+
+from .observability import elapsed, event
 
 
 class Suggestions(BaseModel):
@@ -14,17 +17,31 @@ def model_available():
 
 
 def generate_structured(schema, instructions):
-    from google import genai
-    from google.genai.types import GenerateContentConfig, HttpOptions, HttpRetryOptions
+    started = perf_counter()
+    operation = schema.__name__
+    fields = {"operation": operation}
+    if os.getenv("LOG_LLM_DETAILS", "false").lower() == "true":
+        # Record only bounded metadata from the selected operation.
+        fields["input_chars"] = len(instructions)
+    event("LLM", "gemini.started", level=logging.DEBUG, **fields)
+    try:
+        from google import genai
+        from google.genai.types import GenerateContentConfig, HttpOptions, HttpRetryOptions
 
-    with genai.Client(api_key=os.environ["GEMINI_API_KEY"], http_options=HttpOptions(timeout=18000, retry_options=HttpRetryOptions(attempts=2,initial_delay=0.25,max_delay=1,http_status_codes=[429,503]))) as client:
-        result = client.models.generate_content(
-            model=os.environ["GEMINI_MODEL"],
-            contents=instructions,
-            config=GenerateContentConfig(response_mime_type="application/json", response_json_schema=schema.model_json_schema(),
-                                         max_output_tokens=900),
-        )
-    return schema.model_validate_json(result.text)
+        with genai.Client(api_key=os.environ["GEMINI_API_KEY"], http_options=HttpOptions(timeout=18000, retry_options=HttpRetryOptions(attempts=2,initial_delay=0.25,max_delay=1,http_status_codes=[429,503]))) as client:
+            result = client.models.generate_content(
+                model=os.environ["GEMINI_MODEL"],
+                contents=instructions,
+                config=GenerateContentConfig(response_mime_type="application/json", response_json_schema=schema.model_json_schema(),
+                                             max_output_tokens=900),
+            )
+        answer = schema.model_validate_json(result.text)
+    except Exception:
+        event("LLM", "gemini.failed", level=logging.WARNING, exception=True,
+              duration_ms=elapsed(started), **fields)
+        raise
+    event("LLM", "gemini.completed", duration_ms=elapsed(started), **fields)
+    return answer
 
 
 def rank(tours, trip, events):
@@ -47,7 +64,9 @@ def rank(tours, trip, events):
     except Exception:
         return None
     finally:
-        events.append({"stage": "gemini_suggestions", "outcome": outcome, "ms": round((perf_counter()-started)*1000)})
+        events.append({"stage": "gemini_suggestions", "outcome": outcome, "ms": elapsed(started)})
+        if outcome == "fallback":
+            event("LLM", "gemini.fallback", level=logging.DEBUG, operation="Suggestions")
 
 class NotebookIntent(BaseModel):
     operation: Literal["catalogue", "plan", "extend", "fact", "unknown"]
@@ -61,6 +80,7 @@ def notebook_intent(prompt, previous, destinations, events, evidence=None):
     """Gemini returns identifiers and preferences only. Content and prices stay server-owned."""
     if not model_available():
         events.append({"stage":"gemini_intent","outcome":"unconfigured"})
+        event("LLM", "gemini.unconfigured", level=logging.DEBUG)
         return None
     import json
     started = perf_counter()
@@ -82,4 +102,6 @@ def notebook_intent(prompt, previous, destinations, events, evidence=None):
     except Exception:
         return None
     finally:
-        events.append({"stage":"gemini_intent","outcome":outcome,"ms":round((perf_counter()-started)*1000)})
+        events.append({"stage":"gemini_intent","outcome":outcome,"ms":elapsed(started)})
+        if outcome != "ok":
+            event("LLM", "gemini.fallback", level=logging.DEBUG, operation="NotebookIntent")
