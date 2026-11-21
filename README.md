@@ -2,9 +2,9 @@
 
 A fictional Sri Lanka travel concierge. Mira turns a conversation into published journeys, an itinerary excerpt, a workbook-verified quote when supported, or a private request for a specialist.
 
-Try **Ella trip** and then **Compare these tours**. Open a tour to inspect its published itinerary, choose a map pin to explore a destination, or bookmark a journey for the current visit. [Screenshot report](docs/Mira-Trip-Planner-Review.pdf) · [Technical verification](docs/UI_REDESIGN_REPORT.md)
+Start with “We have six days for nature, trains and beaches.” Select a day, set a departure, then ask “Add another day in Ella.” The itinerary is saved under My Trips. [Implementation and verification](docs/NOTEBOOK_DELIVERY.md)
 
-![Mira trip planner with Ella results and destination map](docs/screenshots/after/advisor-ella-1440.jpg)
+![Ceylon Compass homepage](docs/screenshots/notebook-home-1440.jpg)
 
 ## Start
 
@@ -14,7 +14,7 @@ Install Node.js 22+, npm, Python 3.13, `uv`, and `make`. Keep the supplied data 
 make dev
 ```
 
-Open [Mira](http://127.0.0.1:3000). The native command installs locked dependencies, starts both services, and prints the source and integration health. FastAPI listens on loopback port 8000. [Health](http://127.0.0.1:8000/api/health) and [OpenAPI](http://127.0.0.1:8000/docs) are available while it runs.
+Open [Ceylon Compass](http://127.0.0.1:5175) for the traveller experience or [Staff console](http://127.0.0.1:3000/staff) for enquiries, finance, trace inspection and content approval. The command starts both frontends and the API. FastAPI listens on loopback port 8000. [Health](http://127.0.0.1:8000/api/health) and [OpenAPI](http://127.0.0.1:8000/docs) are available while it runs.
 
 The demo clock defaults to **19 November 2026**, matching the assessment. Try “Sigiriya day trip for two adults on 10 January 2027” or “Design a 10-day custom journey across Kandy and Ella for a family of four.” The booking form uses simulations and accepts no payment information.
 
@@ -31,6 +31,7 @@ make eval
 make build
 make smoke
 make browser
+make notebook-browser
 make mcp-smoke
 shasum -a 256 -c docs/source-sha256.txt
 ```

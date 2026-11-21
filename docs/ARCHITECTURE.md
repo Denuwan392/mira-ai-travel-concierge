@@ -2,6 +2,10 @@
 
 ```mermaid
 flowchart LR
+    Traveller["Lovable / TanStack Start"] <-->|"AG-UI HttpAgent via same-origin proxy"| Graph
+    Graph --> Surface["A2UI v0.9 surface"]
+    Surface --> Renderer["Client-only React catalogue"]
+    Renderer --> Traveller
     Browser["Next.js · Zod catalog"] <-->|"AG-UI SSE and state"| Runtime["CopilotKit SSE runtime"]
     Runtime <-->|"Official AG-UI LangGraph adapter"| Graph["Typed LangGraph"]
     Graph --> Interpret["Interpret supported trip fields"]
@@ -14,12 +18,14 @@ flowchart LR
     Workbook["Original workbook · read-only"] --> Snapshot["Hashed SQLite snapshot"]
     Snapshot --> Pricing
     Published["Published Markdown / approved versions"] --> Retrieve
-    Retrieve -. optional .-> Gemini["Gemini · tour ranking"]
+    Retrieve -. optional .-> Gemini["Gemini · structured intent and published IDs"]
     Persist -. optional .-> Langfuse["Sanitized stage export"]
     Staff["Staff console"] --> Roles["FastAPI role gate"]
     Roles --> SQLite
     Roles -->|Explicit Approver action| Published
 ```
+
+The Lovable frontend consumes AG-UI directly and renders typed A2UI messages using the browser SDK. Its server forwards same-origin requests to FastAPI. The Next.js staff and alternate traveller frontend share that API.
 
 Five LangGraph nodes interpret, retrieve, price, compose and persist. The terminal graph state carries a Pydantic-validated version-1 catalogue. The official Python adapter converts graph events to AG-UI. The CopilotKit Next.js route consumes the stream and relays it through its SSE runtime. The browser uses the official AG-UI client and Zod before rendering.
 
@@ -39,7 +45,7 @@ The streaming integration emits lifecycle, graph step, text message and state ev
 
 - Next.js hosts the CopilotKit runtime and the interface in one web service. FastAPI owns all roles, state, quotes and bookings.
 - FastAPI constructs a fresh LangGraph checkpointer per run. SQLite owns cross-run session state and atomic saves. Client-supplied graph state, tools and configuration are discarded by the API boundary.
-- Use SQLite's standard driver, foreign keys and idempotent schema versioning. The small store and explicit SQL make private and public projections reviewable. A move to SQLAlchemy and Alembic remains future work.
+- Alembic applies schema revisions through SQLAlchemy. Parameterized SQLite operations persist visitor-owned notebooks, turns, quotes and staff enquiries. Replayed run IDs reuse the saved turn.
 - Use deterministic extraction for monetary intent and source-backed excerpts. Optional Gemini ranking chooses published tour IDs for suggestions. Optional Gemini draft generation cannot publish. Neither model path provides financial inputs.
 - A small catalogue is loaded by exact names, aliases, policy topics and destination metadata. Search currently scans this in-memory catalogue plus published studio records. Vector search and incremental FTS indexing are unnecessary for the current source size.
 - JSON and server-controlled enums keep HTML and arbitrary actions outside the interface contract. Compass art and destination illustration are original SVG/CSS.
