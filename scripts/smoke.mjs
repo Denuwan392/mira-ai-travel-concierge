@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { randomUUID } from "node:crypto";
 
 const base = process.env.MIRA_WEB_URL ?? "http://127.0.0.1:3000";
 const session = await fetch(`${base}/api/session`, {
@@ -7,8 +8,9 @@ const session = await fetch(`${base}/api/session`, {
 assert.equal(session.status, 200);
 const cookie = session.headers.get("set-cookie").split(";")[0];
 const id = crypto.randomUUID();
+const requestId = randomUUID();
 const stream = await fetch(`${base}/api/copilotkit/agent/mira/run`, {
-  method: "POST", headers: { "content-type": "application/json", accept: "text/event-stream", cookie },
+  method: "POST", headers: { "X-Request-Id": requestId, "content-type": "application/json", accept: "text/event-stream", cookie },
   body: JSON.stringify({
     threadId: id, runId: id, messages: [{ id, role: "user", content: "Sigiriya day trip for two adults on 10 January 2027" }],
     state: {}, tools: [], context: [], forwardedProps: {},
@@ -16,6 +18,7 @@ const stream = await fetch(`${base}/api/copilotkit/agent/mira/run`, {
 });
 const body = await stream.text();
 assert.equal(stream.status, 200, body.slice(-1200));
+assert.equal(stream.headers.get("x-request-id"), requestId);
 const events = body.split("\n").filter(line => line.startsWith("data: ")).map(line => JSON.parse(line.slice(6)));
 const turn = events.findLast(event => event.type === "STATE_SNAPSHOT" && event.snapshot.turn)?.snapshot.turn;
 assert.ok(turn, `CopilotKit did not deliver a turn: ${events.map(event => event.type + (event.message ? " " + event.message : "")).join(", ")}`);
