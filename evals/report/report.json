@@ -64,13 +64,13 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "5dc0d566-ca99-451c-84a3-4ab46ac4ee57",
+          "id": "660a498c-3033-448b-8118-7e4775802589",
           "stages": [
             {
               "stage": "interpret",
               "provider": "local rules",
               "action": "general",
-              "ms": 1
+              "ms": 2
             },
             {
               "stage": "retrieval",
@@ -116,7 +116,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "9ea11479-83c6-42e9-b7ce-71cad56b6383",
+          "id": "a2b12c1f-61f2-4b5e-a063-babfb27666d0",
           "stages": [
             {
               "stage": "interpret",
@@ -173,7 +173,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "1553901c-a6b9-4c8d-8691-e2502c885366",
+          "id": "80693b00-d4c8-4f49-bbfe-72740d44d00a",
           "stages": [
             {
               "stage": "interpret",
@@ -196,7 +196,7 @@
           ]
         },
         {
-          "id": "5a844516-0dab-4b58-b5b3-98dab5fcc3da",
+          "id": "f609d3e5-5483-4c3b-a504-f6bcc89fda76",
           "stages": [
             {
               "stage": "interpret",
@@ -247,7 +247,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "f150dabc-1481-4dcf-bc06-3131ea81b34e",
+          "id": "bfd141ff-cda9-45f2-af18-96b3b440d620",
           "stages": [
             {
               "stage": "interpret",
@@ -296,7 +296,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "cbd7815d-1e3d-4db2-a603-84ac8455f085",
+          "id": "48637381-7469-4f13-98b8-b1d4d8af6d7d",
           "stages": [
             {
               "stage": "interpret",
@@ -345,7 +345,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "2dbb472d-2ace-43c8-946a-9ccfab3e7fc7",
+          "id": "82e7fce9-7342-4396-97b1-30b927e50a46",
           "stages": [
             {
               "stage": "interpret",
@@ -394,7 +394,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "bb810656-ae7b-489d-9400-b4a96d7a990b",
+          "id": "2ef7d6ab-9dfb-47c7-abdc-ca11b7423e46",
           "stages": [
             {
               "stage": "interpret",
@@ -436,7 +436,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "15ca213a-626b-419a-a77f-7f4a43230b15",
+          "id": "9aff9191-1e94-4703-8801-036719164001",
           "stages": [
             {
               "stage": "interpret",
@@ -478,7 +478,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "6bcee206-a264-44d3-a83d-0730a45f7148",
+          "id": "c1bf1009-a591-4f78-988d-dd70aaf6f425",
           "stages": [
             {
               "stage": "interpret",
@@ -516,7 +516,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "6a7ae151-0bfa-4c18-87d4-4947c8826b5d",
+          "id": "adb8d4fd-03e0-4f95-be9a-7b766460bf0f",
           "stages": [
             {
               "stage": "interpret",
@@ -554,13 +554,13 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "a9a88ac1-d4b4-4131-88bd-ea47612f03a5",
+          "id": "e51ca0db-19fb-4189-b891-a290dd689ecf",
           "stages": [
             {
               "stage": "interpret",
               "provider": "local rules",
               "action": "custom",
-              "ms": 0
+              "ms": 1
             },
             {
               "stage": "retrieval",
@@ -601,7 +601,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "833ee43c-0fb4-4dbf-ba2c-c38856e4f0dd",
+          "id": "338eb66a-d90f-4e00-ae34-5bc95aa313ed",
           "stages": [
             {
               "stage": "interpret",
@@ -650,7 +650,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "79b49a83-3c6d-42dc-8b7f-6db8254935ad",
+          "id": "f0577952-2139-4834-9db7-f1f1e4a298ae",
           "stages": [
             {
               "stage": "interpret",
@@ -679,7 +679,7 @@
           ]
         },
         {
-          "id": "fac43494-5ed1-498b-8711-f823b136c585",
+          "id": "c22a814b-534d-420e-a8ec-abdf5ea10854",
           "stages": [
             {
               "stage": "interpret",
@@ -715,7 +715,7 @@
           ]
         },
         {
-          "id": "92db9982-8019-4732-a6ac-1c4495e9ba32",
+          "id": "13a102a9-ca66-40fe-9380-ef5162ddc64f",
           "stages": [
             {
               "stage": "interpret",
@@ -766,7 +766,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "f4d958a5-4ffb-4f61-95b8-7e443b6b5e0d",
+          "id": "eabdf107-8c43-4704-93cb-9a4589b55da2",
           "stages": [
             {
               "stage": "interpret",
@@ -810,7 +810,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "7d64cc1e-01fb-490c-8227-5d95a802c63c",
+          "id": "a32c3c7a-8dfb-4c8a-af48-c92858f58ba4",
           "stages": [
             {
               "stage": "interpret",
@@ -860,7 +860,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "f86b6642-1ab2-4b1f-9862-fdefdf4eb21c",
+          "id": "5a614ce3-c282-4169-a50f-f64b470284c1",
           "stages": [
             {
               "stage": "interpret",
@@ -907,7 +907,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "807a4eaa-a744-4d84-b98d-424dfcc434e9",
+          "id": "70a0fcdd-749a-4b2d-ada1-030e013703e7",
           "stages": [
             {
               "stage": "interpret",
@@ -957,7 +957,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "726c9ec6-a05b-4917-a8e0-1e3738e44579",
+          "id": "ddf4671a-5cf3-483b-a871-a3f3b44c40b4",
           "stages": [
             {
               "stage": "interpret",
@@ -1014,7 +1014,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "4b58e317-ae1c-49ba-bcb3-080f5dcd1f20",
+          "id": "a49e9edc-3dae-42bd-82a9-0ffd730df46f",
           "stages": [
             {
               "stage": "interpret",
@@ -1071,7 +1071,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "fd7dfd20-edff-4433-b147-62c55ef77596",
+          "id": "e9b9e802-803d-4573-a0d3-5195216de230",
           "stages": [
             {
               "stage": "interpret",
@@ -1128,7 +1128,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "0090bd91-b880-49d5-a9f9-d484420c3957",
+          "id": "19870590-6760-44e8-b085-e7668eb29d63",
           "stages": [
             {
               "stage": "interpret",
@@ -1179,7 +1179,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "f4cf5608-eaf3-4176-86b8-1df749ee1022",
+          "id": "4f7fee35-1b85-4d16-8a4b-ea3bdf7e67df",
           "stages": [
             {
               "stage": "interpret",
@@ -1229,7 +1229,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "f6cf24ad-6332-40b9-9186-b6b1de86e7a0",
+          "id": "3cc5b43a-3603-4c2f-8ac1-72e5abf1a8cd",
           "stages": [
             {
               "stage": "interpret",
@@ -1285,7 +1285,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "3a149031-5b07-4559-9d09-ec39239b0f85",
+          "id": "4981f457-9889-44b4-b9c4-44a4b0b60369",
           "stages": [
             {
               "stage": "interpret",
@@ -1342,7 +1342,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "7169b907-e628-4987-b1cd-a59be4ad84da",
+          "id": "00b043cb-18c7-4523-835b-48788555f60c",
           "stages": [
             {
               "stage": "interpret",
@@ -1399,7 +1399,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "802c2971-2c9f-4332-b226-936350de7701",
+          "id": "4c948ea6-9db5-442f-9a39-6d8cc01fb9f9",
           "stages": [
             {
               "stage": "interpret",
@@ -1456,7 +1456,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "49959e5e-1323-46d9-86b9-39224029d65f",
+          "id": "181d93a3-ef2a-46fc-a2fb-e99a9b713587",
           "stages": [
             {
               "stage": "interpret",
@@ -1513,7 +1513,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "ecd602e2-e335-4978-a27e-ae9953667d4b",
+          "id": "cd460652-2e57-4fe2-a270-619d855d0f8c",
           "stages": [
             {
               "stage": "interpret",
@@ -1570,7 +1570,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "40e92d3c-a1d3-4213-ac42-d87ace9459da",
+          "id": "ed39dd7e-024c-49e0-b61a-bb357648845c",
           "stages": [
             {
               "stage": "interpret",
@@ -1621,7 +1621,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "a2a6cf74-84ec-4b15-9e77-7cc69590c2de",
+          "id": "240ed57b-0866-47e8-8fc5-5ce2f9fc10a6",
           "stages": [
             {
               "stage": "interpret",
@@ -1677,7 +1677,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "0b1f1808-06ec-46d6-9907-99e896430d72",
+          "id": "fc4bdaee-576f-4e65-acdc-eea43bfdf2a6",
           "stages": [
             {
               "stage": "interpret",
@@ -1734,7 +1734,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "cee23d6a-c532-4ece-aa0d-7815665195c4",
+          "id": "f454310f-6709-46a2-8b70-b88f6ef80ca4",
           "stages": [
             {
               "stage": "interpret",
@@ -1785,7 +1785,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "873f2d11-d22a-48e4-b994-3ab19ab3fdc2",
+          "id": "0b5a0f8d-c96a-4fc6-9caf-db7449382201",
           "stages": [
             {
               "stage": "interpret",
@@ -1834,7 +1834,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "f06e3e81-91ac-4b61-a7fe-d08389e8eecf",
+          "id": "d0cb7d9e-3312-4b4c-84bf-e96d89b8f949",
           "stages": [
             {
               "stage": "interpret",
@@ -1878,7 +1878,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "c07326ea-723b-47af-95d1-ba74208ded3a",
+          "id": "0428d10a-0641-4a73-b237-cf901fcd88f9",
           "stages": [
             {
               "stage": "interpret",
@@ -1924,7 +1924,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "b322c780-95be-43a7-ad57-53c06828697c",
+          "id": "d0826969-293b-46b2-8035-bb3ee68ad837",
           "stages": [
             {
               "stage": "interpret",
@@ -1971,7 +1971,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "575ac156-4e74-4f26-87a4-73dd5d010e40",
+          "id": "3ed9915b-2342-4092-a16d-f4e9f27d2ba2",
           "stages": [
             {
               "stage": "interpret",
@@ -2013,7 +2013,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "b9f3e6c1-76f9-42e4-95e6-051bc2166f38",
+          "id": "422219f2-5140-4bf3-807b-5a119699eb7b",
           "stages": [
             {
               "stage": "interpret",
@@ -2024,13 +2024,17 @@
             {
               "stage": "retrieval",
               "sources": [
-                "D05"
+                "D05",
+                "T10",
+                "T12"
               ]
             },
             {
               "stage": "validated_ui",
               "components": [
-                "DestinationHighlight"
+                "DestinationHighlight",
+                "TourCard",
+                "TourCard"
               ]
             },
             {
@@ -2055,7 +2059,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "fae897fb-c39c-47be-b754-a9dff33cb6cd",
+          "id": "cd196373-88e4-42d3-a0a0-5e974a046304",
           "stages": [
             {
               "stage": "interpret",
@@ -2093,7 +2097,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "8f195206-4315-4e5c-8558-3158470f8372",
+          "id": "b8e7928c-31f7-491e-8afb-e3c165ba644a",
           "stages": [
             {
               "stage": "interpret",
@@ -2146,7 +2150,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "9faeb450-1f85-4f1f-848d-edb59aaeb49d",
+          "id": "381ad3c3-e07f-4e30-b042-256cd5395e21",
           "stages": [
             {
               "stage": "interpret",
@@ -2175,7 +2179,7 @@
           ]
         },
         {
-          "id": "932980e7-8dbf-4e82-a8cb-c173dc0ed797",
+          "id": "8eb6a6b0-2ec9-4014-bb13-166dbc3ffe87",
           "stages": [
             {
               "stage": "interpret",
@@ -2211,7 +2215,7 @@
           ]
         },
         {
-          "id": "62307e01-1d36-497e-b20e-c9a89f48a46d",
+          "id": "5df93a54-ca43-4bbb-b557-1f0a9cfc687d",
           "stages": [
             {
               "stage": "interpret",
@@ -2273,7 +2277,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "b86ac0f0-50c8-4f17-a713-b16dcf82dccf",
+          "id": "3383ac1d-8bbf-4263-b912-2e3d751ca5ed",
           "stages": [
             {
               "stage": "interpret",
@@ -2309,7 +2313,7 @@
           ]
         },
         {
-          "id": "bc21d7a2-1f88-421e-8e6e-d16e0b4a7ee6",
+          "id": "53a89a9f-b3bb-4d60-a1f6-efadc2dc1320",
           "stages": [
             {
               "stage": "interpret",
@@ -2371,7 +2375,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "526e7b49-e424-489d-ab3c-4727597f7085",
+          "id": "7c4d5078-ac4b-4767-a240-6f014ff51ea5",
           "stages": [
             {
               "stage": "interpret",
@@ -2407,7 +2411,7 @@
           ]
         },
         {
-          "id": "1d35ecad-778d-4d34-a212-18fce917230a",
+          "id": "796bb157-9817-481e-ab90-cd70a7f42019",
           "stages": [
             {
               "stage": "interpret",
@@ -2469,7 +2473,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "bd8c61dc-9f7f-4f8c-85fc-3d68f53f43c6",
+          "id": "aeb929c3-5f4a-46a9-b84e-ce05ac9813dc",
           "stages": [
             {
               "stage": "interpret",
@@ -2505,7 +2509,7 @@
           ]
         },
         {
-          "id": "d2f17ddf-e6f9-4efe-b3d5-472656206035",
+          "id": "883a4f0a-b69c-411d-bd4f-6f4ac32a7644",
           "stages": [
             {
               "stage": "interpret",
@@ -2561,7 +2565,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "c2bdf93e-a94c-4be2-82d0-0c2c3b6d7462",
+          "id": "d3a9144a-5c0b-40b9-983b-308f7d80eaf2",
           "stages": [
             {
               "stage": "interpret",
@@ -2584,7 +2588,7 @@
           ]
         },
         {
-          "id": "0b71c96c-052a-42d5-ab4c-7da1545b45e7",
+          "id": "0bdb7597-3b9e-44ab-bf17-2da5d21b563f",
           "stages": [
             {
               "stage": "interpret",
@@ -2635,7 +2639,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "59da0086-928f-4872-8343-39a6c8b1f941",
+          "id": "bcb165d6-cddf-494d-8cdd-bc1324d1aecc",
           "stages": [
             {
               "stage": "interpret",
@@ -2673,7 +2677,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "14a49eec-82c1-4bdd-9ceb-be72235be507",
+          "id": "c4454099-3d33-4445-b645-e8968f994347",
           "stages": [
             {
               "stage": "interpret",
@@ -2711,7 +2715,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "5ab9e12b-1cda-4caf-a9c8-6c775ad2f3e0",
+          "id": "51ceb643-9421-43cc-89c6-e52851134531",
           "stages": [
             {
               "stage": "interpret",
@@ -2749,7 +2753,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "1fc4181e-1727-49a5-bd6f-6a53bce59901",
+          "id": "753801eb-dd2b-40a9-b156-bdfe0cdcad49",
           "stages": [
             {
               "stage": "interpret",
