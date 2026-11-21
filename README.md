@@ -22,6 +22,39 @@ Copy `.env.example` to `.env` to configure staff and providers. Generate a diffe
 
 `docker compose up --build` is included for Docker hosts. The workbook is mounted read-only. Docker was unavailable during host validation. To isolate fixtures or repeat the demo independently, set `MIRA_DB=/absolute/path/to/new-demo.sqlite3` before starting.
 
+## Logging and observability
+
+`make dev` starts and supervises the three local services. The terminal labels Vite as `[WEB]`, Next.js as `[NEXT]` and FastAPI as `[API]`. Agent activity uses `[AGENT]`, `[LLM]`, `[RAG]`, `[PRICING]` and `[TRACE]`. Unhandled application failures use `[ERROR]`. Ctrl+C stops the managed process groups. `NO_COLOR=1` disables terminal colour.
+
+```sh
+make dev
+LOG_LEVEL=DEBUG make dev
+LOG_FORMAT=json make dev
+LOG_LLM_DETAILS=true LOG_LEVEL=DEBUG make dev
+```
+
+Values on the command line override the logging defaults in `.env`. JSON mode emits one object per application log line. The setup tools and Make still print their own console output. To start FastAPI independently with production-style logs, run `PYTHONPATH=apps/api LOG_FORMAT=json .venv/bin/python -m mira.serve --host 127.0.0.1 --port 8000` and supply any provider settings in the process environment. The API container defaults to JSON.
+
+### Correlate a request and trace
+
+Read `X-Request-Id` in the browser Network response headers, then search the terminal or log aggregator for that UUID. The API accepts valid UUIDs on incoming requests and generates an ID otherwise. The Vite proxy and Next.js CopilotKit route forward the correlation header. API request logs use the route template with elapsed milliseconds and HTTP status. For a long-lived stream, the request duration includes stream consumption. Use the stream's agent outcome and completion flag to distinguish a successful HTTP connection from a failed or interrupted turn.
+
+Direct AG-UI responses also carry `X-Trace-Id`. The turn carries the trace ID through either frontend. Use it to inspect the corresponding enquiry's **Trace** in the staff console or search the operational logs. SQLite stores the trace stages and links eligible quotes to the trace, with source IDs, measured stage times and the original request ID. Logs omit prompts, model responses, raw exception messages, visitor data and financial internals. `LOG_LLM_DETAILS=true` adds only a prompt character count to model events. Keep local databases and trace access private.
+
+### Optional external traces and metrics
+
+Set `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY` and `LANGFUSE_BASE_URL` for a private Langfuse project. Restart Mira and run a new conversation. Look up the trace using the UUID without hyphens. The SDK queues the trace and its sanitized stage observations. Stage latencies measured in the app appear in metadata. A queued event indicates local SDK submission. Confirm receipt in Langfuse. Export failures leave the local trace and traveller result available. Hosted delivery requires real credentials and has not been verified here.
+
+In a log aggregator, count `http.request` events by route and status, compute latency percentiles from `duration_ms`, and count failures from `workflow.finished` outcomes. Use `gemini.completed` and `gemini.failed` for provider latency and failure rates. These are log-based metrics. The app does not expose a metrics endpoint or bundled dashboards. Browser diagnostics stay in the developer console. Framework output outside the dev supervisor is controlled separately by its deployment.
+
+### Troubleshoot a port in use
+
+```sh
+lsof -nP -iTCP:3000 -iTCP:8000 -iTCP:5175 -sTCP:LISTEN
+```
+
+Stop the owning process from its terminal if it is yours, then run `make dev` again. The supervisor exits with an actionable error if any of those ports is occupied. If a service exits after startup, the supervisor stops the other two and returns an error.
+
 ## Check
 
 ```sh
