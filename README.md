@@ -14,13 +14,28 @@ Install Node.js 22+, npm, Python 3.13, `uv`, and `make`. Keep the supplied data 
 make dev
 ```
 
-Open [Ceylon Compass](http://127.0.0.1:5175) for the traveller experience or [Staff console](http://127.0.0.1:3000/staff) for enquiries, finance, trace inspection and content approval. The command starts both frontends and the API. FastAPI listens on loopback port 8000. [Health](http://127.0.0.1:8000/api/health) and [OpenAPI](http://127.0.0.1:8000/docs) are available while it runs.
+Open the [integrated traveller workspace](http://127.0.0.1:5175/dump.html) (`http://127.0.0.1:5175/workspace/index.html`) for the preferred React/Tailwind Travel Workspace, or open the unified [Staff & Admin Console](http://127.0.0.1:5175/staff) (also served at `http://127.0.0.1:3000/staff`) for enquiries, internal finance, quote revisions, trace inspection, user role administration, and Approver-only content publishing. The command starts both frontends and the API. FastAPI listens on loopback port 8000. [Health](http://127.0.0.1:8000/api/health) and [OpenAPI](http://127.0.0.1:8000/docs) are available while it runs.
+
+### Architecture & Demo Guide
+- **Frontend:** `apps/ceylon-compass/workspace/Workspace.jsx` (preferred Travel Workspace + unified `StaffConsole.tsx`) and `apps/web` (editorial notebook).
+- **Backend:** `apps/api/mira/` (FastAPI + 5-node LangGraph workflow + deterministic `Decimal` workbook pricing + SQLite persistence via Alembic `0006_enquiry_contact_fields`).
+- **Demo Walkthrough:** See [docs/DEMO_CHECKLIST.md](docs/DEMO_CHECKLIST.md), [docs/system-audit/IMPLEMENTATION_REPORT.md](docs/system-audit/IMPLEMENTATION_REPORT.md), and [docs/system-audit/FINAL_VERIFICATION.md](docs/system-audit/FINAL_VERIFICATION.md).
+- **Role Governance:** Only the `approver` role may review and publish AI content drafts; `admin` manages user roles in User Administration and cannot publish drafts directly.
+- **Known Limitations & AI Disclosure:** Local SQLite database and simulated mock booking/payment endpoints are intended for local/assignment demonstration rather than multi-instance production hosting. Without `GEMINI_API_KEY`, Mira uses deterministic local rules and extractive drafts. When `GEMINI_API_KEY` is configured, prompts and published excerpts are sent to the configured Gemini model; pricing always remains 100% deterministic from `rate_sheet_2026-27.xlsx`.
 
 The demo clock defaults to **19 November 2026**, matching the assessment. Try “Sigiriya day trip for two adults on 10 January 2027” or “Design a 10-day custom journey across Kandy and Ella for a family of four.” The booking form uses simulations and accepts no payment information.
 
 Copy `.env.example` to `.env` to configure staff and providers. Generate a different long random value for each staff role with `openssl rand -hex 32` and paste that role’s token into Staff console. Roles and publication are enforced by the API. Gemini suggestions, Gemini draft generation and Langfuse export need their corresponding credentials. With no secrets, the app uses rule-based discovery, extractive drafts and SQLite trace stages.
 
 `docker compose up --build` is included for Docker hosts. The workbook is mounted read-only. Docker was unavailable during host validation. To isolate fixtures or repeat the demo independently, set `MIRA_DB=/absolute/path/to/new-demo.sqlite3` before starting.
+
+## Integrated assignment frontend
+
+The supplied HTML entry opens the compiled Travel Workspace. Its React components and local Tailwind theme live in `apps/ceylon-compass/workspace`. The existing editorial notebook remains available at the root URL. The two frontends share the FastAPI catalogue, visitor sessions, LangGraph, A2UI schemas, rate repository and private enquiry database. The browser bundles all runtime dependencies locally.
+
+Run `make eval` for deterministic checks and reports. Run `make workspace-browser` to build the production frontend and exercise Chrome against a temporary SQLite database and loopback servers on ports 15175 and 18008. The staff fixture uses a generated password. Use an installed Chrome through `MIRA_CHROME` or a Playwright Chromium installation.
+
+The [integration audit and demo](docs/WORKSPACE_INTEGRATION.md) lists API contracts, implementation changes, evaluation evidence and remaining verification. For email/password access at [the staff dashboard](http://127.0.0.1:5175/staff), configure `MIRA_ADMIN_EMAIL` and `MIRA_ADMIN_PASSWORD` before first startup. An administrator can assign staff and approver roles to registered demo accounts. Only an Approver may approve or publish. The token-based console at port 3000 is also available.
 
 ## Logging and observability
 
@@ -87,7 +102,7 @@ For a quote trace, open the verified quote’s corresponding entry in Staff cons
 
 ### Optional live judge
 
-Independently review the ten IDs in `evals/judges/review-set.json`. Create a local JSON array with `id`, `reviewed_on`, `reason` and boolean `grounded`, `relevant`, `helpful` and `non_invented` for each case. With an authorized Gemini configuration, run `PYTHONPATH=apps/api .venv/bin/python evals/judge.py --labels /path/to/review.json`. This sends the selected fictional prompts and source excerpts to the configured provider. The committed report records the absence of an independent human review and live judge run.
+Independently review the ten IDs in `evals/judges/review-set.json`. Create a local JSON array with `id`, `reviewed_on`, `reason` and boolean `grounded`, `relevant`, `helpful` and `non_invented` for each case. With an authorized Gemini configuration, run `PYTHONPATH=apps/api .venv/bin/python evals/judge.py --labels /path/to/review.json`. This sends the selected fictional prompts and source excerpts to the configured provider. The [live judge report](evals/report/judge.json) contains independent model scores. Human calibration is pending. Add `--resume evals/report/judge.json` to compare completed labels with the saved scores for the same worksheet.
 
 ### Local MCP bonus
 

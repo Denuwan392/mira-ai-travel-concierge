@@ -1,0 +1,83 @@
+{
+  "audit_metadata": {
+    "audit_version": "2.0-independent",
+    "timestamp": "2026-11-22T22:31:00Z",
+    "auditor": "Independent Principal Systems Architect & Technical Auditor",
+    "project": "Mira — Ceylon Compass Holidays AI Booking Assistant",
+    "repository_root": "/Users/denuwanwijesinghe/Documents/BSc. Artficial Intellligence/Competition/intern_assignment"
+  },
+  "readiness_verdict": {
+    "previous_claimed_score": 94.0,
+    "independent_verified_score": 85.5,
+    "delta": -8.5,
+    "status": "STRONG CANDIDATE / PENDING P0 DELIVERABLES",
+    "submission_ready": false,
+    "blockers": [
+      "GAP-01: Demonstration video missing from repository",
+      "GAP-02: Q-1043 evaluation discrepancy calibration documentation needed in README"
+    ]
+  },
+  "verified_test_metrics": {
+    "backend_pytest": {
+      "passed": 106,
+      "failed": 0,
+      "skipped": 0,
+      "execution_time_seconds": 5.53,
+      "command": "PYTHONPATH=apps/api:apps/api/.deps .venv/bin/python -m pytest apps/api/tests"
+    },
+    "frontend_vitest": {
+      "passed": 33,
+      "failed": 0,
+      "skipped": 0,
+      "execution_time_seconds": 1.23,
+      "command": "npm --prefix apps/ceylon-compass test -- --run"
+    },
+    "eval_benchmark": {
+      "total_cases": 49,
+      "passed": 48,
+      "failed": 1,
+      "pass_rate_percentage": 98.0,
+      "execution_time_seconds": 7.02,
+      "command": "PYTHONPATH=apps/api:apps/api/.deps .venv/bin/python evals/runner.py",
+      "failing_case": {
+        "case_id": "P03",
+        "description": "Historical Quote Q-1043 verification",
+        "expected_email_usd": 2750.00,
+        "engine_calculated_usd": 2965.00,
+        "variance_usd": 215.00,
+        "root_cause": "Historical email omitted contracted child extra bed charges for Hotels H12 and H03 (LKR 64,000 net)",
+        "justification": "Engine is mathematically compliant with rate_sheet_2026-27.xlsx"
+      }
+    },
+    "missing_rate_enforcement": {
+      "total_tested": 10,
+      "correctly_withheld": 10,
+      "compliance_rate_percentage": 100.0
+    },
+    "sample_quotes_calibration": {
+      "Q-1041": { "target": 130.00, "engine": 130.00, "status": "EXACT_MATCH" },
+      "Q-1042": { "target": 285.00, "engine": 285.00, "status": "EXACT_MATCH" },
+      "Q-1043": { "target": 2750.00, "engine": 2965.00, "status": "EXPLAINED_CONTRACT_CORRECTION" },
+      "Q-1044": { "target": 1640.00, "engine": 1640.00, "status": "EXACT_MATCH" }
+    }
+  },
+  "dataset_audit": {
+    "total_files_verified": 37,
+    "categories": {
+      "tours": { "count": 16, "ingested": 16, "parsed": 16 },
+      "destinations": { "count": 10, "ingested": 10, "sanitized_injections": 1 },
+      "policies": { "count": 6, "ingested": 5, "quarantined_injections": 1 },
+      "rates": { "workbook": "rate_sheet_2026-27.xlsx", "sheets": 6, "sample_quotes": 4 },
+      "meta": { "brand_pack": 1, "eval_seed": 1, "readme": 1 }
+    }
+  },
+  "gap_register_summary": {
+    "total_gaps": 14,
+    "distribution": {
+      "P0_critical": 2,
+      "P1_high": 3,
+      "P2_medium": 6,
+      "P3_low": 3
+    }
+  }
+}

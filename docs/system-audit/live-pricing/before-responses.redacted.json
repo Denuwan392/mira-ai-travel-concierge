@@ -1,0 +1,117 @@
+[
+  {
+    "case": "A",
+    "method": "POST",
+    "url": "/api/agent?trip_id=[redacted]",
+    "user_message_content": {
+      "type": "REQUEST_QUOTE",
+      "payload": {
+        "tourId": "T01",
+        "date": "2027-01-10",
+        "adults": 2,
+        "childAges": []
+      }
+    },
+    "stored_turn": {
+      "text": "A travel specialist will confirm the details. I’ve saved a private enquiry for our team.",
+      "sources": [
+        "T03",
+        "T04",
+        "T02"
+      ],
+      "notice": {
+        "type": "EnquiryNotice",
+        "reference": "4fa58796…",
+        "text": "Specialist confirmation required"
+      }
+    },
+    "recorded_stages": [
+      "gemini_intent",
+      "interpret",
+      "gemini_suggestions",
+      "retrieval",
+      "validated_ui",
+      "persistence"
+    ],
+    "http_status": null
+  },
+  {
+    "case": "B",
+    "method": "POST",
+    "url": "/api/agent?trip_id=[redacted]",
+    "user_message_content": {
+      "type": "REQUEST_QUOTE",
+      "payload": {
+        "tourId": "T01",
+        "date": "2027-01-10",
+        "adults": 4,
+        "childAges": []
+      }
+    },
+    "stored_turn": {
+      "text": "A travel specialist will confirm the details. I’ve saved a private enquiry for our team.",
+      "sources": [
+        "T03",
+        "T09",
+        "T08"
+      ],
+      "notice": {
+        "type": "EnquiryNotice",
+        "reference": "4fa58796…",
+        "text": "Specialist confirmation required"
+      }
+    },
+    "recorded_stages": [
+      "gemini_intent",
+      "interpret",
+      "gemini_suggestions",
+      "retrieval",
+      "validated_ui",
+      "persistence"
+    ],
+    "http_status": null
+  },
+  {
+    "case": "C",
+    "method": "POST",
+    "url": "/api/agent?trip_id=[redacted]",
+    "user_message_content": {
+      "type": "REQUEST_QUOTE",
+      "payload": {
+        "tourId": "T03",
+        "date": "2027-01-10",
+        "adults": 2,
+        "childAges": [
+          7,
+          7,
+          7,
+          7,
+          7,
+          7
+        ]
+      }
+    },
+    "stored_turn": {
+      "text": "A travel specialist will confirm the details. I’ve saved a private enquiry for our team.",
+      "sources": [
+        "T03",
+        "T09",
+        "T08"
+      ],
+      "notice": {
+        "type": "EnquiryNotice",
+        "reference": "4fa58796…",
+        "text": "Specialist confirmation required"
+      }
+    },
+    "recorded_stages": [
+      "gemini_intent",
+      "interpret",
+      "gemini_suggestions",
+      "retrieval",
+      "validated_ui",
+      "persistence"
+    ],
+    "http_status": null
+  }
+]

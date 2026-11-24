@@ -1,0 +1,27 @@
+{
+  "request": {
+    "type": "REQUEST_QUOTE",
+    "payload": {
+      "tourId": "T01",
+      "date": "2027-01-10",
+      "adults": 4,
+      "childAges": []
+    }
+  },
+  "status": 200,
+  "evaluated_config": {
+    "tour_id": "T01",
+    "tour_title": "Sigiriya and Minneriya Day Tour from Kandy",
+    "date": "2027-01-10",
+    "adults": 4,
+    "child_ages": [],
+    "infants": 0,
+    "as_of": "2026-11-19"
+  },
+  "outcome": "PRICE_VERIFIED",
+  "total": 540,
+  "deposit": 540,
+  "rate_digest": "a16dd63ffb7ed2324e9d709f4b35e1bb3f0d5c2123b765903bce039f5fefdfe2",
+  "enquiry_reference": "[redacted]",
+  "component": "PriceBreakdown"
+}

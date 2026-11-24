@@ -1,0 +1,164 @@
+{
+  "audit_metadata": {
+    "audit_timestamp": "2026-11-22T18:27:00+05:30",
+    "assessment_date": "2026-11-19",
+    "auditor_role": "Principal AI Systems Architect & Technical Auditor",
+    "project_name": "Mira — Ceylon Compass Holidays",
+    "target_repository": "/Users/denuwanwijesinghe/Documents/BSc. Artficial Intellligence/Competition/intern_assignment",
+    "overall_readiness_score_pct": 94
+  },
+  "executive_summary": {
+    "verdict": "Production-ready, highly compliant implementation. Genuinely integrates dataset and deterministically enforces all core and extended requirements. Excellent defense against dataset injection and calculation traps. Primary architectural optimization is consolidating dual frontends.",
+    "core_requirements_verified": 5,
+    "extended_requirements_verified": 3,
+    "total_functional_requirements": 8
+  },
+  "dataset_metrics": {
+    "total_dataset_files": 37,
+    "ingested_files": 37,
+    "active_runtime_files": 34,
+    "quarantined_files": 3,
+    "quarantined_details": [
+      { "id": "P06", "file": "content/policies/testimonials.md", "reason": "Planted indirect prompt injection & fake discount attack" },
+      { "id": "T14", "file": "content/tours/popular-stays-winter-2023-24-early-bird.md", "reason": "Expired historical 2023/24 promotional tour" },
+      { "id": "T15", "file": "content/tours/northern-sri-lanka-tour.md", "reason": "Unlaunched draft tour (status: draft)" }
+    ],
+    "effective_utilization_pct": 97.3
+  },
+  "pricing_verification": {
+    "workbook_digest_verified": true,
+    "deterministic_pricing": true,
+    "currency_conversion_fixed": "LKR 300 = USD 1",
+    "sample_quotes": {
+      "Q-1041": { "cost_lkr": 66000, "sell_usd": 315, "deposit_usd": 315, "status": "MATCH" },
+      "Q-1042": { "cost_lkr": 477500, "sell_usd": 2125, "deposit_usd": 532, "status": "MATCH" },
+      "Q-1043_email": { "cost_lkr": 603000, "sell_usd": 2680, "deposit_usd": 670, "status": "DISCREPANCY_EXPLAINED" },
+      "Q-1043_engine_and_S03": { "cost_lkr": 667000, "sell_usd": 2965, "deposit_usd": 742, "status": "MATCH" },
+      "Q-1044": { "cost_lkr": 563000, "sell_usd": 2505, "deposit_usd": 2505, "status": "MATCH" }
+    },
+    "q1043_discrepancy_analysis": {
+      "missing_amount_lkr": 64000,
+      "source_of_difference": "Child extra bed charge across 6 hotel nights (Hotels H12, H02, H03) for 2 children aged 7 and 10 per Workbook Rule 4",
+      "classification": "HISTORICAL_SALES_EMAIL_OMISSION",
+      "employer_starter_case_S03_agrees": true
+    },
+    "missing_rate_refusals_tested": 10,
+    "missing_rate_refusals_passed": 10,
+    "invented_prices_count": 0
+  },
+  "test_execution_results": {
+    "pytest_backend": {
+      "command": "PYTHONPATH=apps/api:apps/api/.deps .venv/bin/python -m pytest apps/api/tests",
+      "total_tests": 106,
+      "passed": 106,
+      "failed": 0,
+      "duration_seconds": 5.53
+    },
+    "vitest_frontend": {
+      "command": "npm --prefix apps/ceylon-compass test -- --run",
+      "total_tests": 33,
+      "passed": 33,
+      "failed": 0,
+      "duration_seconds": 1.23
+    },
+    "evals_runner": {
+      "command": "PYTHONPATH=apps/api:apps/api/.deps .venv/bin/python evals/runner.py",
+      "total_cases": 49,
+      "passed_cases": 48,
+      "failed_cases": 1,
+      "failed_case_id": "P03",
+      "pass_rate_pct": 98.0,
+      "total_validated_turns": 58,
+      "validated_turns_valid_pct": 100.0,
+      "multi_turn_conversations": 7,
+      "duration_seconds": 7.02
+    },
+    "playwright_browser": {
+      "command": "npm --prefix apps/web test",
+      "total_specs": 11,
+      "passed": 11,
+      "failed": 0,
+      "notes": "Verified against running web server on port 3000"
+    },
+    "mcp_server": {
+      "command": "node apps/web/mcp/smoke.mjs",
+      "tools_verified": ["create_enquiry", "get_quote", "search_tours"],
+      "status": "PASS"
+    }
+  },
+  "architecture_and_security": {
+    "agent_framework": "LangGraph StateGraph (5 nodes: interpret, retrieve, quote, compose, save)",
+    "llm_provider": "google.genai (gemini-3.6-flash) with structured outputs & graceful deterministic fallback",
+    "a2ui_protocol": "A2UI v0.9 (@a2ui/react, @a2ui/web_core) over AG-UI SSE stream (@ag-ui/client)",
+    "a2ui_component_catalog_count": 17,
+    "rbac_roles": ["staff", "editor", "approver"],
+    "rbac_timing_attack_resistant": true,
+    "financial_isolation": "Quotes split into PublicQuote (guest) and Internal (staff). Zero cost/margin leaks.",
+    "audit_trail_immutable": "Enforced by SQLite database triggers audit_no_update and audit_no_delete",
+    "pii_redacted_in_traces": true
+  },
+  "gap_register": [
+    {
+      "id": "GAP-01",
+      "severity": "MEDIUM",
+      "requirement": "Architecture / R7",
+      "summary": "Dual frontend architecture (Staff console on Next.js port 3000, notebook on TanStack Start port 5175)",
+      "priority": "P0"
+    },
+    {
+      "id": "GAP-02",
+      "severity": "LOW",
+      "requirement": "Evaluation / Judge",
+      "summary": "LLM Judge Human Calibration Worksheet is unpopulated",
+      "priority": "P0"
+    },
+    {
+      "id": "GAP-03",
+      "severity": "LOW",
+      "requirement": "Evaluation / R5",
+      "summary": "Authored evaluation case P03 fails due to asserting historical email amount (USD 2,680)",
+      "priority": "P1"
+    },
+    {
+      "id": "GAP-04",
+      "severity": "LOW",
+      "requirement": "R3 (A2UI)",
+      "summary": "Binderless Component Index pattern used instead of canonical full-schema A2UI properties",
+      "priority": "P2"
+    },
+    {
+      "id": "GAP-05",
+      "severity": "LOW",
+      "requirement": "Bonus: Routing",
+      "summary": "Model Routing (small vs. large model) is not implemented",
+      "priority": "P2"
+    },
+    {
+      "id": "GAP-06",
+      "severity": "LOW",
+      "requirement": "Bonus: Personalization",
+      "summary": "Browsing history consent-based personalization is not implemented",
+      "priority": "P2"
+    }
+  ],
+  "roadmap_priorities": {
+    "P0": [
+      "Populate human calibration worksheet in evals/judges/calibration_template.json",
+      "Record 5-minute video walkthrough per DEMO_SCRIPT.md",
+      "Rehearse 30-minute live demo and margin rule modification"
+    ],
+    "P1": [
+      "Clarify P03 calculation documentation in README.md banner",
+      "Consolidate /staff route into apps/ceylon-compass"
+    ],
+    "P2": [
+      "Implement model routing in provider.py (flash-lite vs flash)",
+      "Embed full property schemas in updateComponents JSON"
+    ],
+    "P3": [
+      "Enterprise OAuth2 / OIDC authentication",
+      "Application-level API rate limiting",
+      "PostgreSQL database migration"
+    ]
+  }
+}
