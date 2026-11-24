@@ -9,12 +9,16 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
     headers: { "Content-Type": "application/json", ...options.headers },
   });
   if (res.status >= 500) reportFailure("proxy.failed", res.headers.get("x-request-id") ?? undefined, res.status);
-  if (!res.ok)
-    throw new Error(
-      res.status === 404
-        ? "This journey is unavailable in this visitor session."
-        : "Mira’s service is unavailable. Please retry.",
-    );
+  if (!res.ok) {
+    let message = "Mira’s service is unavailable. Please retry.";
+    try {
+      const err = await res.json();
+      if (err?.detail) message = typeof err.detail === "string" ? err.detail : JSON.stringify(err.detail);
+    } catch {
+      if (res.status === 404) message = "This resource is unavailable.";
+    }
+    throw new Error(message);
+  }
   return res.json();
 }
 let pending: Promise<unknown> | undefined;

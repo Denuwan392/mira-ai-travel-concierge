@@ -10,8 +10,11 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "test": "vitest run --pool=threads",
+    "test:watch": "vitest",
+    "workspace:build": "vite build --config workspace/vite.config.mjs",
+    "prebuild": "npm run workspace:build",
+    "predev": "npm run workspace:build"
   },
   "overrides": {
     "rolldown": "1.2.1",

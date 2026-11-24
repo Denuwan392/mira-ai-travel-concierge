@@ -14,6 +14,13 @@ import curry from "@/assets/photos/curry.jpg";
 import bungalow from "@/assets/photos/bungalow.jpg";
 import elephants from "@/assets/photos/elephants.jpg";
 import villa from "@/assets/photos/villa.jpg";
+import sigiriyaAerial2k from "@/assets/photos/sigiriya-aerial-2k.jpg";
+import nineArchesTrain2k from "@/assets/photos/nine-arches-train-2k.jpg";
+import nineArchesBridge2k from "@/assets/photos/nine-arches-bridge-2k.jpg";
+import galleLighthouse2k from "@/assets/photos/galle-lighthouse-2k.jpg";
+import galleRamparts2k from "@/assets/photos/galle-ramparts-2k.jpg";
+import coastPalms2k from "@/assets/photos/coast-palms-2k.jpg";
+import landscapeArch2k from "@/assets/photos/ceylon-landscape-architecture-2k.jpg";
 
 export type Photo = { src: string; alt: string };
 
@@ -33,6 +40,13 @@ export const photos = {
   bungalow: { src: bungalow, alt: "Tea planter's bungalow verandah overlooking misty valleys" },
   elephants: { src: elephants, alt: "Wild elephants gathering at Minneriya reservoir at sunset" },
   villa: { src: villa, alt: "Beachfront villa pool meeting the Indian Ocean at sunset" },
+  sigiriyaAerial: { src: sigiriyaAerial2k, alt: "Aerial view of Sigiriya Rock Fortress rising above the jungle" },
+  nineArchesTrain: { src: nineArchesTrain2k, alt: "Train crossing the historic Nine Arches Bridge in Ella" },
+  nineArchesBridge: { src: nineArchesBridge2k, alt: "Scenic view of the Nine Arches Bridge surrounded by lush tea hills" },
+  galleLighthouse: { src: galleLighthouse2k, alt: "Galle Fort lighthouse overlooking the Indian Ocean coast" },
+  galleRamparts: { src: galleRamparts2k, alt: "Historic stone ramparts and bastion of Galle Fort" },
+  coastPalms: { src: coastPalms2k, alt: "Tropical coastline lined with coconut palms and turquoise water" },
+  landscapeArch: { src: landscapeArch2k, alt: "Sri Lankan tropical landscape and traditional architecture" },
 } satisfies Record<string, Photo>;
 
 export type PhotoKey = keyof typeof photos;

@@ -1,0 +1,631 @@
+[
+  {
+    "id": "T01",
+    "slug": "sigiriya-minneriya-day-tour-from-kandy",
+    "title": "Sigiriya and Minneriya Day Tour from Kandy",
+    "category": "Day tour",
+    "duration": "1 day",
+    "start": "Your hotel in Kandy",
+    "destinations": [
+      "sigiriya",
+      "minneriya"
+    ],
+    "description": "A long, rewarding day from Kandy into the Cultural Triangle: climb the Sigiriya rock fortress in the morning, then look for wild elephants on an afternoon jeep safari in Minneriya National Park.",
+    "accent": "brand-orange",
+    "imgClass": "tour-img-t01 tour-img-1",
+    "itinerary": [
+      {
+        "day": 1,
+        "title": "Sigiriya and Minneriya Day Tour from Kandy",
+        "description": "A long, rewarding day from Kandy into the Cultural Triangle: climb the Sigiriya rock fortress in the morning, then look for wild elephants on an afternoon jeep safari in Minneriya National Park."
+      }
+    ],
+    "inclusions": {
+      "included": [
+        "Pick-up and drop-off at your Kandy hotel",
+        "Private air-conditioned vehicle and English-speaking guide",
+        "Sigiriya entrance and Minneriya park entrance with safari jeep",
+        "Lunch and bottled water"
+      ],
+      "optional": [
+        "Optional activities and upgrades"
+      ],
+      "not_included": [
+        "Personal expenses",
+        "Tips and gratuities"
+      ]
+    }
+  },
+  {
+    "id": "T02",
+    "slug": "kandy-city-tour",
+    "title": "Kandy City Tour",
+    "category": "City tour",
+    "duration": "1 day",
+    "start": "Your hotel in Kandy",
+    "destinations": [
+      "kandy"
+    ],
+    "description": "A full day around Sri Lanka's last royal capital: Kandy Lake, the market, a gem museum, the Peradeniya botanical gardens and the Temple of the Sacred Tooth Relic, ending with a Kandyan dance show.",
+    "accent": "brand-teal",
+    "imgClass": "tour-img-t02 tour-img-2",
+    "itinerary": [
+      {
+        "day": 1,
+        "title": "Kandy City Tour",
+        "description": "A full day around Sri Lanka's last royal capital: Kandy Lake, the market, a gem museum, the Peradeniya botanical gardens and the Temple of the Sacred Tooth Relic, ending with a Kandyan dance show."
+      }
+    ],
+    "inclusions": {
+      "included": [
+        "Private vehicle and guide",
+        "Entrance to the temple, Peradeniya gardens and the cultural show",
+        "Lunch"
+      ],
+      "optional": [
+        "Optional activities and upgrades"
+      ],
+      "not_included": [
+        "Personal expenses",
+        "Tips and gratuities"
+      ]
+    }
+  },
+  {
+    "id": "T03",
+    "slug": "colombo-city-tour",
+    "title": "Colombo City Tour",
+    "category": "City tour",
+    "duration": "1 day",
+    "start": "Your hotel in Colombo or Negombo",
+    "destinations": [
+      "colombo"
+    ],
+    "description": "Colombo's landmarks in a day: the Fort district, the Old Parliament, Independence Square, Gangaramaya Temple, Viharamahadevi Park and Galle Face Green, with free time for shopping at the end.",
+    "accent": "brand-orange",
+    "imgClass": "tour-img-t03 tour-img-3",
+    "itinerary": [
+      {
+        "day": 1,
+        "title": "Colombo City Tour",
+        "description": "Colombo's landmarks in a day: the Fort district, the Old Parliament, Independence Square, Gangaramaya Temple, Viharamahadevi Park and Galle Face Green, with free time for shopping at the end."
+      }
+    ],
+    "inclusions": {
+      "included": [
+        "Private vehicle and guide",
+        "Temple entrance",
+        "Lunch"
+      ],
+      "optional": [
+        "Optional activities and upgrades"
+      ],
+      "not_included": [
+        "Personal expenses",
+        "Tips and gratuities"
+      ]
+    }
+  },
+  {
+    "id": "T04",
+    "slug": "galle-fort-walking-tour",
+    "title": "Galle Fort Walking Tour",
+    "category": "City tour",
+    "duration": "Half day",
+    "start": "Galle Fort main gate",
+    "destinations": [
+      "galle"
+    ],
+    "description": "Explore the ramparts, bastions, churches and cobbled lanes of Galle's 17th-century fort on foot, with time for its boutiques and caf\u00e9s.",
+    "accent": "brand-teal",
+    "imgClass": "tour-img-t04 tour-img-4",
+    "itinerary": [
+      {
+        "day": 1,
+        "title": "Galle Fort Walking Tour",
+        "description": "Explore the ramparts, bastions, churches and cobbled lanes of Galle's 17th-century fort on foot, with time for its boutiques and caf\u00e9s."
+      }
+    ],
+    "inclusions": {
+      "included": [
+        "Guide",
+        "Transfers from hotels in Galle, Unawatuna or Hikkaduwa",
+        "Lunch at a caf\u00e9 inside the fort"
+      ],
+      "optional": [
+        "Optional activities and upgrades"
+      ],
+      "not_included": [
+        "Personal expenses",
+        "Tips and gratuities"
+      ]
+    }
+  },
+  {
+    "id": "T05",
+    "slug": "mirissa-whale-dolphin-watching",
+    "title": "Whale and Dolphin Watching Tour in Mirissa",
+    "category": "Day tour",
+    "duration": "1 day",
+    "start": "Your beach hotel on the south or south-west coast",
+    "destinations": [
+      "mirissa"
+    ],
+    "description": "An early boat trip out of Mirissa harbour to look for blue whales, sperm whales and spinner dolphins, returning to your beach hotel by early afternoon.",
+    "accent": "brand-orange",
+    "imgClass": "tour-img-t05 tour-img-5",
+    "itinerary": [
+      {
+        "day": 1,
+        "title": "Whale and Dolphin Watching Tour in Mirissa",
+        "description": "An early boat trip out of Mirissa harbour to look for blue whales, sperm whales and spinner dolphins, returning to your beach hotel by early afternoon."
+      }
+    ],
+    "inclusions": {
+      "included": [
+        "Transfers from your beach hotel",
+        "Shared whale-watching boat with life jackets",
+        "Light breakfast on board and lunch on return"
+      ],
+      "optional": [
+        "Optional activities and upgrades"
+      ],
+      "not_included": [
+        "Personal expenses",
+        "Tips and gratuities"
+      ]
+    }
+  },
+  {
+    "id": "T06",
+    "slug": "kandy-nuwara-eliya-train-day-tour",
+    "title": "Train and Day Tour from Kandy to Nuwara Eliya",
+    "category": "Day tour",
+    "duration": "1 night / 2 days",
+    "start": "Your hotel in Kandy",
+    "destinations": [
+      "kandy",
+      "nuwara-eliya"
+    ],
+    "description": "Take the morning hill-country train from Kandy through misty tea estates, then explore Nuwara Eliya, the town known as \"Little England\".",
+    "accent": "brand-teal",
+    "imgClass": "tour-img-t06 tour-img-6",
+    "itinerary": [
+      {
+        "day": 1,
+        "title": "Train and Day Tour from Kandy to Nuwara Eliya",
+        "description": "Take the morning hill-country train from Kandy through misty tea estates, then explore Nuwara Eliya, the town known as \"Little England\"."
+      }
+    ],
+    "inclusions": {
+      "included": [
+        "Second-class train ticket, Kandy to Nanu Oya",
+        "High tea",
+        "Private vehicle and guide; pick-up and drop-off in Kandy",
+        "Tea-factory entrance"
+      ],
+      "optional": [
+        "Optional activities and upgrades"
+      ],
+      "not_included": [
+        "Personal expenses",
+        "Tips and gratuities"
+      ]
+    }
+  },
+  {
+    "id": "T07",
+    "slug": "kandy-heritage-stay",
+    "title": "Kandy Heritage Stay",
+    "category": "Short stay",
+    "duration": "2 nights / 3 days",
+    "start": "Kandy",
+    "destinations": [
+      "kandy"
+    ],
+    "description": "A short, unhurried stay in Kandy in a colonial-era hotel by the lake, with a city tour, the Temple of the Tooth and a cultural show.",
+    "accent": "brand-orange",
+    "imgClass": "tour-img-t07 tour-img-1",
+    "itinerary": [
+      {
+        "day": 1,
+        "title": "Arrive in Kandy",
+        "description": "Check in and walk around Kandy Lake. Evening visit to the Temple of the Tooth.\n\n- Meals: Dinner\n- Accommodation: Hotel Suisse or similar\n- Entrance tickets included: Temple of the Tooth\n- Other inclusions: Air-conditioned vehicle and English-speaking guide"
+      },
+      {
+        "day": 2,
+        "title": "Kandy city tour",
+        "description": "Peradeniya gardens, the market and a gem museum. Kandyan dance show in the evening.\n\n- Meals: Breakfast, lunch, dinner\n- Accommodation: Hotel Suisse or similar\n- Entrance tickets included: Peradeniya gardens, cultural show\n- Other inclusions: Air-conditioned vehicle and English-speaking guide"
+      },
+      {
+        "day": 3,
+        "title": "Departure",
+        "description": "Free morning, then drop-off anywhere in Kandy.\n\n- Meals: Breakfast\n- Accommodation: None\n- Entrance tickets included: None\n- Other inclusions: Air-conditioned vehicle and English-speaking guide"
+      }
+    ],
+    "inclusions": {
+      "included": [
+        "Accommodation as listed, or a hotel of the same class if it is unavailable (confirmed at booking)",
+        "Meals as listed for each day",
+        "Private air-conditioned vehicle throughout",
+        "English-speaking guide",
+        "Entrance tickets for the sites listed, except those marked *optional*",
+        "Two 500 ml bottles of water per person per day",
+        "24-hour emergency line"
+      ],
+      "optional": [
+        "Optional activities and upgrades"
+      ],
+      "not_included": [
+        "Personal expenses",
+        "Tips and gratuities"
+      ]
+    }
+  },
+  {
+    "id": "T08",
+    "slug": "highlights-of-sri-lanka-7-nights",
+    "title": "Highlights of Sri Lanka",
+    "category": "Round trip",
+    "duration": "7 nights / 8 days",
+    "start": "Bandaranaike International Airport (CMB)",
+    "destinations": [
+      "sigiriya",
+      "minneriya",
+      "kandy",
+      "nuwara-eliya",
+      "galle",
+      "colombo"
+    ],
+    "description": "For first-time visitors who want to see a bit of everything: the Cultural Triangle, wild elephants, the hill country by train, the south coast and Colombo.",
+    "accent": "brand-teal",
+    "imgClass": "tour-img-t08 tour-img-2",
+    "itinerary": [
+      {
+        "day": 1,
+        "title": "Airport to Negombo",
+        "description": "Meet and greet at the airport and transfer to Negombo.\n\n- Meals: None\n- Accommodation: Suriya Resort, Amaluna or similar\n- Entrance tickets included: None\n- Other inclusions: Air-conditioned vehicle and English-speaking guide"
+      },
+      {
+        "day": 2,
+        "title": "Negombo to Sigiriya",
+        "description": "Dambulla cave temple, then an evening jeep safari in Minneriya National Park.\n\n- Meals: Breakfast, dinner\n- Accommodation: Sigiriya Village, Oak Ray Elephant Lake or similar\n- Entrance tickets included: Dambulla cave temple, Minneriya safari\n- Other inclusions: Air-conditioned vehicle and English-speaking guide"
+      },
+      {
+        "day": 3,
+        "title": "Sigiriya and Polonnaruwa",
+        "description": "Climb Sigiriya at sunrise, village tour with lunch on lotus leaves, afternoon at Polonnaruwa.\n\n- Meals: Breakfast, lunch, dinner\n- Accommodation: Sigiriya Village, Oak Ray Elephant Lake or similar\n- Entrance tickets included: Sigiriya, village tour, Polonnaruwa\n- Other inclusions: Air-conditioned vehicle and English-speaking guide"
+      },
+      {
+        "day": 4,
+        "title": "Sigiriya to Kandy",
+        "description": "Spice garden, Kandy city tour, Temple of the Tooth and a cultural show.\n\n- Meals: Breakfast, dinner\n- Accommodation: Hotel Suisse, Hotel Topaz or similar\n- Entrance tickets included: Spice garden, Temple of the Tooth, cultural show\n- Other inclusions: Air-conditioned vehicle and English-speaking guide"
+      },
+      {
+        "day": 5,
+        "title": "Train to Nuwara Eliya",
+        "description": "Scenic train from Kandy to Nanu Oya, tea factory visit, Nuwara Eliya city tour.\n\n- Meals: Breakfast, dinner\n- Accommodation: Heaven Seven or similar\n- Entrance tickets included: Train ticket (2nd class), tea factory\n- Other inclusions: Air-conditioned vehicle and English-speaking guide"
+      },
+      {
+        "day": 6,
+        "title": "Nuwara Eliya to the south-west coast",
+        "description": "Long drive to the coast. *Optional:* white-water rafting or a jungle walk at Kitulgala on the way.\n\n- Meals: Breakfast, dinner\n- Accommodation: Hikka Tranz by Cinnamon, Avani Kalutara or similar\n- Entrance tickets included: None\n- Other inclusions: Air-conditioned vehicle and English-speaking guide"
+      },
+      {
+        "day": 7,
+        "title": "South coast",
+        "description": "Madu River mangrove boat safari, turtle hatchery, stilt fishermen and Galle Fort.\n\n- Meals: Breakfast, dinner\n- Accommodation: Hikka Tranz by Cinnamon, Avani Kalutara or similar\n- Entrance tickets included: Madu River safari, turtle hatchery, Galle Fort\n- Other inclusions: Air-conditioned vehicle and English-speaking guide"
+      },
+      {
+        "day": 8,
+        "title": "Colombo and departure",
+        "description": "Colombo city tour and shopping, then drop-off at the airport.\n\n- Meals: Breakfast\n- Accommodation: None\n- Entrance tickets included: Colombo city tour\n- Other inclusions: Air-conditioned vehicle and English-speaking guide"
+      }
+    ],
+    "inclusions": {
+      "included": [
+        "Accommodation as listed, or a hotel of the same class if it is unavailable (confirmed at booking)",
+        "Meals as listed for each day",
+        "Private air-conditioned vehicle throughout",
+        "English-speaking guide",
+        "Entrance tickets for the sites listed, except those marked *optional*",
+        "Two 500 ml bottles of water per person per day",
+        "24-hour emergency line"
+      ],
+      "optional": [
+        "Optional activities and upgrades"
+      ],
+      "not_included": [
+        "Personal expenses",
+        "Tips and gratuities"
+      ]
+    }
+  },
+  {
+    "id": "T09",
+    "slug": "cultural-triangle-6-nights",
+    "title": "Cultural Triangle Sri Lanka Package",
+    "category": "Round trip",
+    "duration": "6 nights / 7 days",
+    "start": "Colombo or Negombo",
+    "destinations": [
+      "anuradhapura",
+      "sigiriya",
+      "kandy"
+    ],
+    "description": "The ancient kingdoms in a week: Anuradhapura, Polonnaruwa, the Sigiriya rock fortress, the Dambulla cave temple and the last royal capital, Kandy.",
+    "accent": "brand-orange",
+    "imgClass": "tour-img-t09 tour-img-3",
+    "itinerary": [
+      {
+        "day": 1,
+        "title": "Colombo to Anuradhapura",
+        "description": "Drive north and visit Wilpattu's edge villages on the way.\n\n- Meals: Dinner\n- Accommodation: Anuradhapura Heritage Lodge or similar\n- Entrance tickets included: None\n- Other inclusions: Air-conditioned vehicle and English-speaking guide"
+      },
+      {
+        "day": 2,
+        "title": "Anuradhapura",
+        "description": "The sacred city by bicycle: Sri Maha Bodhi, Ruwanwelisaya and the great dagobas.\n\n- Meals: Breakfast, lunch, dinner\n- Accommodation: Anuradhapura Heritage Lodge or similar\n- Entrance tickets included: Anuradhapura sacred city\n- Other inclusions: Air-conditioned vehicle and English-speaking guide"
+      },
+      {
+        "day": 3,
+        "title": "Anuradhapura to Sigiriya",
+        "description": "Mihintale on the way, afternoon village tour.\n\n- Meals: Breakfast, dinner\n- Accommodation: Sigiriya Village or similar\n- Entrance tickets included: Mihintale, village tour\n- Other inclusions: Air-conditioned vehicle and English-speaking guide"
+      },
+      {
+        "day": 4,
+        "title": "Sigiriya and Polonnaruwa",
+        "description": "Sigiriya at sunrise, Polonnaruwa in the afternoon.\n\n- Meals: Breakfast, dinner\n- Accommodation: Sigiriya Village or similar\n- Entrance tickets included: Sigiriya, Polonnaruwa\n- Other inclusions: Air-conditioned vehicle and English-speaking guide"
+      },
+      {
+        "day": 5,
+        "title": "Dambulla to Kandy",
+        "description": "Dambulla cave temple and a spice garden, evening at the Temple of the Tooth.\n\n- Meals: Breakfast, dinner\n- Accommodation: Hotel Suisse, Hotel Topaz or similar\n- Entrance tickets included: Dambulla, spice garden, Temple of the Tooth\n- Other inclusions: Air-conditioned vehicle and English-speaking guide"
+      },
+      {
+        "day": 6,
+        "title": "Kandy",
+        "description": "Peradeniya gardens and a Kandyan dance show.\n\n- Meals: Breakfast, dinner\n- Accommodation: Hotel Suisse, Hotel Topaz or similar\n- Entrance tickets included: Peradeniya gardens, cultural show\n- Other inclusions: Air-conditioned vehicle and English-speaking guide"
+      },
+      {
+        "day": 7,
+        "title": "Kandy to Colombo",
+        "description": "Drive back to Colombo or the airport.\n\n- Meals: Breakfast\n- Accommodation: None\n- Entrance tickets included: None\n- Other inclusions: Air-conditioned vehicle and English-speaking guide"
+      }
+    ],
+    "inclusions": {
+      "included": [
+        "Accommodation as listed, or a hotel of the same class if it is unavailable (confirmed at booking)",
+        "Meals as listed for each day",
+        "Private air-conditioned vehicle throughout",
+        "English-speaking guide",
+        "Entrance tickets for the sites listed, except those marked *optional*",
+        "Two 500 ml bottles of water per person per day",
+        "24-hour emergency line"
+      ],
+      "optional": [
+        "Optional activities and upgrades"
+      ],
+      "not_included": [
+        "Personal expenses",
+        "Tips and gratuities"
+      ]
+    }
+  },
+  {
+    "id": "T10",
+    "slug": "instafamous-sri-lanka",
+    "title": "Instafamous Sri Lanka",
+    "category": "Round trip",
+    "duration": "10 nights / 11 days",
+    "start": "Bandaranaike International Airport (CMB)",
+    "destinations": [
+      "sigiriya",
+      "kandy",
+      "ella",
+      "mirissa",
+      "galle"
+    ],
+    "description": "Eleven days of the island's most photographed places: Sigiriya at sunrise, the Nine Arches Bridge, the Kandy to Ella train, Coconut Tree Hill in Mirissa and Galle Fort's lighthouse at dusk. We plan every stop around the best light.",
+    "accent": "brand-teal",
+    "imgClass": "tour-img-t10 tour-img-4",
+    "itinerary": [],
+    "inclusions": {
+      "included": [
+        "Private air-conditioned transport",
+        "English-speaking driver-guide",
+        "Sightseeing as described"
+      ],
+      "optional": [
+        "Optional activities and upgrades"
+      ],
+      "not_included": [
+        "Personal expenses",
+        "Tips and gratuities"
+      ]
+    }
+  },
+  {
+    "id": "T11",
+    "slug": "sri-lanka-beach-stay-mirissa",
+    "title": "Sri Lanka Beach Stay \u2013 Mirissa",
+    "category": "Beach stay",
+    "duration": "6 nights / 7 days",
+    "start": "Bandaranaike International Airport (CMB)",
+    "destinations": [
+      "mirissa"
+    ],
+    "description": "Sun, sand and sea for a week: six nights at a beachfront villa resort in Mirissa with breakfast and dinner, airport transfers and a chauffeur on call for short trips.",
+    "accent": "brand-orange",
+    "imgClass": "tour-img-t11 tour-img-5",
+    "itinerary": [
+      {
+        "day": 1,
+        "title": "Sri Lanka Beach Stay \u2013 Mirissa",
+        "description": "Sun, sand and sea for a week: six nights at a beachfront villa resort in Mirissa with breakfast and dinner, airport transfers and a chauffeur on call for short trips."
+      }
+    ],
+    "inclusions": {
+      "included": [
+        "6 nights at Mirissa Bay Villas or similar, breakfast and dinner",
+        "Airport transfers and a chauffeur-driven vehicle",
+        "*Optional:* whale watching (November to April)"
+      ],
+      "optional": [
+        "Optional activities and upgrades"
+      ],
+      "not_included": [
+        "Personal expenses",
+        "Tips and gratuities"
+      ]
+    }
+  },
+  {
+    "id": "T12",
+    "slug": "treasures-of-sri-lanka",
+    "title": "Treasures of Sri Lanka",
+    "category": "Round trip",
+    "duration": "13 nights / 14 days",
+    "start": "Bandaranaike International Airport (CMB)",
+    "destinations": [
+      "anuradhapura",
+      "sigiriya",
+      "kandy",
+      "nuwara-eliya",
+      "ella",
+      "yala",
+      "galle"
+    ],
+    "description": "Our grand tour: ancient cities, temples, tea hills, the hill-country train, a leopard safari and the southern coast in two unhurried weeks.",
+    "accent": "brand-teal",
+    "imgClass": "tour-img-t12 tour-img-6",
+    "itinerary": [
+      {
+        "day": 1,
+        "title": "Negombo",
+        "description": "Suriya Resort or similar"
+      },
+      {
+        "day": 2,
+        "title": "Anuradhapura",
+        "description": "Anuradhapura Heritage Lodge or similar"
+      },
+      {
+        "day": 3,
+        "title": "Sigiriya (2 nights)",
+        "description": "Sigiriya Village or similar"
+      },
+      {
+        "day": 4,
+        "title": "Kandy (2 nights)",
+        "description": "Hotel Suisse or similar"
+      },
+      {
+        "day": 5,
+        "title": "Nuwara Eliya",
+        "description": "Heritance Tea Factory (no substitute; this is a signature stay)"
+      },
+      {
+        "day": 6,
+        "title": "Ella (2 nights)",
+        "description": "Ella Gap View Lodge or similar"
+      },
+      {
+        "day": 7,
+        "title": "Yala",
+        "description": "Cinnamon Wild Yala or similar"
+      },
+      {
+        "day": 8,
+        "title": "Galle (2 nights)",
+        "description": "Galle Fort Hotel or similar"
+      },
+      {
+        "day": 9,
+        "title": "Hikkaduwa",
+        "description": "Hikka Tranz by Cinnamon or similar"
+      }
+    ],
+    "inclusions": {
+      "included": [
+        "Accommodation as listed, or a hotel of the same class if it is unavailable (confirmed at booking)",
+        "Meals as listed for each day",
+        "Private air-conditioned vehicle throughout",
+        "English-speaking guide",
+        "Entrance tickets for the sites listed, except those marked *optional*",
+        "Two 500 ml bottles of water per person per day",
+        "24-hour emergency line"
+      ],
+      "optional": [
+        "Optional activities and upgrades"
+      ],
+      "not_included": [
+        "Personal expenses",
+        "Tips and gratuities"
+      ]
+    }
+  },
+  {
+    "id": "T13",
+    "slug": "wildlife-photography-tour",
+    "title": "Wildlife Photography Tour",
+    "category": "Special interest",
+    "duration": "6 nights / 7 days",
+    "start": "Colombo",
+    "destinations": [
+      "yala"
+    ],
+    "description": "For photographers: elephants at Udawalawe, leopards and sloth bears at Yala, and water birds at Bundala, with a naturalist who knows where the light is.",
+    "accent": "brand-orange",
+    "imgClass": "tour-img-t13 tour-img-1",
+    "itinerary": [],
+    "inclusions": {
+      "included": [
+        "Accommodation as listed, or a hotel of the same class if it is unavailable (confirmed at booking)",
+        "Meals as listed for each day",
+        "Private air-conditioned vehicle throughout",
+        "English-speaking guide",
+        "Entrance tickets for the sites listed, except those marked *optional*",
+        "Two 500 ml bottles of water per person per day",
+        "24-hour emergency line"
+      ],
+      "optional": [
+        "Optional activities and upgrades"
+      ],
+      "not_included": [
+        "Personal expenses",
+        "Tips and gratuities"
+      ]
+    }
+  },
+  {
+    "id": "T16",
+    "slug": "cultural-triangle-tour-5-nights",
+    "title": "Cultural Triangle Tour",
+    "category": "Round trip",
+    "duration": "5 nights / 6 days",
+    "start": "Colombo",
+    "destinations": [
+      "sigiriya",
+      "kandy"
+    ],
+    "description": "Five nights through Sigiriya, Polonnaruwa, Dambulla and Kandy, with an elephant safari at Kaudulla.",
+    "accent": "brand-teal",
+    "imgClass": "tour-img-t16 tour-img-2",
+    "itinerary": [],
+    "inclusions": {
+      "included": [
+        "Private air-conditioned transport",
+        "English-speaking driver-guide",
+        "Sightseeing as described"
+      ],
+      "optional": [
+        "Optional activities and upgrades"
+      ],
+      "not_included": [
+        "Personal expenses",
+        "Tips and gratuities"
+      ]
+    }
+  }
+]

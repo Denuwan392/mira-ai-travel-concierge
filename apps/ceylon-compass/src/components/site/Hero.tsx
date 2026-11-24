@@ -84,7 +84,7 @@ export function Hero() {
               src={photos[HERO_SLIDES[prev]!.photo].src}
               alt=""
               aria-hidden
-              className="h-full w-full scale-[0.94] object-cover brightness-75 transition-[transform,filter] duration-700 ease-editorial"
+              className="h-full w-full scale-[0.94] object-cover brightness-75 transition-[transform,filter] duration-150 ease-editorial"
               style={{ transformOrigin: "70% 50%" }}
             />
           </div>
@@ -93,7 +93,7 @@ export function Hero() {
           <img
             src={photos[slide.photo].src}
             alt={photos[slide.photo].alt}
-            className="h-full w-full object-cover transition-transform duration-300 ease-out"
+            className="h-full w-full object-cover transition-transform duration-150 ease-out"
             style={{ objectPosition: "65% 50%" }}
             fetchPriority={active === 0 ? "high" : undefined}
           />
@@ -120,30 +120,30 @@ export function Hero() {
             <br />
             <span className="serif-italic font-normal tracking-[-0.03em]">without limits.</span>
           </h1>
-          <p className="mt-6 max-w-[440px] text-[15px] leading-relaxed text-on-dark/80 md:text-base">
+          <p className="mt-6 max-w-[440px] text-sm leading-relaxed text-on-dark/80 md:text-base">
             Describe the trip you're imagining. Mira sketches a route in seconds, and a specialist makes every detail real.
           </p>
           <div className="mt-7 flex flex-wrap items-center gap-2">
             <Link
               to="/plan"
-              className="inline-flex min-h-12 items-center gap-2 rounded-full bg-saffron px-6 text-[15px] font-medium text-ink transition-colors duration-150 hover:bg-saffron-bright"
+              className="inline-flex min-h-12 items-center gap-2 rounded-full bg-saffron px-6 text-sm font-semibold text-ink transition-colors duration-150 hover:bg-saffron-bright"
             >
               <MiraSparkle className="text-ink" /> Plan with Mira
             </Link>
             <Link
               to="/journeys"
-              className="group inline-flex min-h-12 items-center gap-2 rounded-full px-4 text-[15px] text-on-dark underline-offset-4 hover:underline"
+              className="group inline-flex min-h-12 items-center gap-2 rounded-full px-4 text-sm text-on-dark underline-offset-4 hover:underline"
             >
               Explore journeys <ArrowRight className="size-4 transition-transform duration-150 group-hover:translate-x-0.5" aria-hidden />
             </Link>
           </div>
         </div>
 
-        <div className="mt-auto grid min-w-0 grid-cols-[minmax(0,1fr)] items-end gap-6 pt-7 lg:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="mt-auto grid min-w-0 grid-cols-[minmax(0,1fr)] items-end gap-6 pt-7 lg:grid-cols-[minmax(0,1fr)_max-content]">
           <PromptBar className="w-full min-w-0 max-w-[760px]" />
 
           {/* Editorial caption + index */}
-          <div className="order-first min-w-0 lg:order-none" role="group" aria-label="Choose a destination" onKeyDown={onKeys}>
+          <div className="order-first min-w-0 lg:order-none lg:max-w-[28rem]" role="group" aria-label="Choose a destination" onKeyDown={onKeys}>
             <div key={slide.id} className={cn("mb-4 hidden lg:block", !reduced && "animate-rise")} aria-live="polite">
               <div className={cn("h-px w-10", accentBg[slide.accent])} />
               <p className="mt-3 serif-italic text-2xl leading-tight">{slide.caption}</p>
@@ -170,8 +170,8 @@ export function Hero() {
                         isActive ? "text-on-dark" : "text-on-dark/55 hover:text-on-dark/90",
                       )}
                     >
-                      <span className={cn("tabular text-[11px]", isActive && accentText[s.accent])}>{s.index}</span>
-                      <span className="text-sm font-medium tracking-[-0.01em]">{s.name}</span>
+                      <span className={cn("tabular text-xs", isActive && accentText[s.accent])}>{s.index}</span>
+                      <span className="text-sm font-semibold tracking-[-0.01em]">{s.name}</span>
                       {isActive && !reduced && !paused && (
                         <span className="absolute inset-x-0 top-0 hidden h-px overflow-hidden lg:block" aria-hidden>
                           <span

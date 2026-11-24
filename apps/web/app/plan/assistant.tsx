@@ -110,7 +110,7 @@ export default function Assistant({
     setAlert("");
     retry.current = request;
     const abortController = new AbortController();
-    const timer = setTimeout(() => abortController.abort(), 18000);
+    const timer = setTimeout(() => abortController.abort(), 40000);
     try {
       const session = await ensureSession();
       setRemember(session.remember);

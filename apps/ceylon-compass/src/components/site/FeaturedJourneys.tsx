@@ -40,11 +40,11 @@ export function FeaturedJourneys({ showHeading = true }: { showHeading?: boolean
                 src={photos[j.photo].src}
                 alt={photos[j.photo].alt}
                 loading="lazy"
-                className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-editorial group-hover:scale-[1.04]"
+                className="absolute inset-0 h-full w-full object-cover transition-transform duration-150 ease-editorial group-hover:scale-[1.04]"
               />
               <div className="absolute inset-0 bg-card-bottom" aria-hidden />
               <div className="absolute inset-x-0 top-0 flex items-start justify-between p-5">
-                <span className="rounded-full bg-on-dark px-3 py-1 text-xs font-medium text-ink">{j.category}</span>
+                <span className="rounded-full bg-on-dark px-3 py-1 text-xs font-semibold text-ink">{j.category}</span>
                 <span className="tabular rounded-full border border-on-dark/40 px-3 py-1 text-xs">{j.duration}</span>
               </div>
               <div className="absolute inset-x-0 bottom-0 p-5 md:p-6">
@@ -57,7 +57,7 @@ export function FeaturedJourneys({ showHeading = true }: { showHeading?: boolean
                     </span>
                   ))}
                 </p>
-                <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100">
+                <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100">
                   Shape this with Mira <ArrowUpRight className="size-4" aria-hidden />
                 </span>
               </div>

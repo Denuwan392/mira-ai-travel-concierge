@@ -6,7 +6,7 @@ const ages = z.array(z.number().int().min(0).max(120)).max(30);
 export const Tour = z.strictObject({ id: src, title: text, summary: text, duration: text, category: text, start: text, source: src });
 export const Quote = z.strictObject({
   id: z.uuid(), source: src, title: text, date: z.iso.date(), adults: z.number().int().positive(), ages,
-  currency: z.literal("USD"), total: z.number().int().positive(), deposit: z.number().int().positive(), balance: z.number().int().nonnegative(),
+  enquiry: z.uuid().nullish(), enquiry_reference: z.string().nullish(), validity: z.literal("recheck_before_booking").optional(), currency: z.literal("USD"), total: z.number().int().positive(), deposit: z.number().int().positive(), balance: z.number().int().nonnegative(),
 }).refine(q => q.total === q.deposit + q.balance);
 const component = z.discriminatedUnion("type", [
   Tour.extend({ type: z.literal("TourCard") }),
@@ -15,7 +15,17 @@ const component = z.discriminatedUnion("type", [
   z.strictObject({ type: z.enum(["ItineraryDay", "PolicySnippet", "DestinationHighlight"]), source: src, heading: text, text }),
   z.strictObject({ type: z.literal("PriceBreakdown"), quote: Quote }),
   z.strictObject({ type: z.literal("BookingForm"), quote: z.uuid() }),
-  z.strictObject({ type: z.literal("EnquiryNotice"), reference: z.uuid().nullable(), text }),
+  z.strictObject({
+    type: z.literal("EnquiryNotice"),
+    reference: z.uuid().nullable(),
+    public_reference: text.nullish(),
+    outcome: z
+      .enum(["PRICE_UNAVAILABLE", "PRICE_VALIDATION_ERROR", "PRICING_SERVICE_ERROR", "SPECIALIST_HANDOFF"])
+      .nullish(),
+    reason_code: text.nullish(),
+    tour_id: src.nullish(),
+    text,
+  }),
 ]);
 export const Turn = z.strictObject({
   catalog_version: z.literal(1), trace: z.uuid(), text,

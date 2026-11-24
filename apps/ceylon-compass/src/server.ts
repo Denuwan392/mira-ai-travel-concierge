@@ -59,8 +59,9 @@ export default {
           const value = request.headers.get(name);
           if (value) headers.set(name, value);
         }
-        const visitor = request.headers.get("cookie")?.split(";").map(s=>s.trim()).find(s=>s.startsWith("mira_session="));
-        if (visitor) headers.set("cookie", visitor);
+        const cookies = request.headers.get("cookie")?.split(";")
+          .map(value => value.trim()).filter(value => /^(mira_session|mira_auth)=/.test(value));
+        if (cookies?.length) headers.set("cookie", cookies.join("; "));
         const body = ["GET","HEAD"].includes(request.method) ? undefined : await request.arrayBuffer();
         return await fetch(target,{method:request.method,headers,...(body ? {body}:{}),redirect:"manual",signal:request.signal});
       }

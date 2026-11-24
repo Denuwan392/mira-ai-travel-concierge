@@ -1,0 +1,82 @@
+[
+  {
+    "id": "D09",
+    "slug": "anuradhapura",
+    "title": "Anuradhapura",
+    "description": "Sri Lanka's first great capital, founded in the 4th century BCE. Its sacred city holds the Sri Maha Bodhi tree and vast dagobas such as Ruwanwelisaya. It is best explored by bicycle.",
+    "imgClass": "destination-img-anuradhapura",
+    "accent": "brand-teal"
+  },
+  {
+    "id": "D10",
+    "slug": "colombo",
+    "title": "Colombo",
+    "description": "Sri Lanka's commercial capital: the colonial Fort district, Pettah's markets, Gangaramaya Temple and the seafront at Galle Face Green.",
+    "imgClass": "destination-img-colombo",
+    "accent": "brand-sun"
+  },
+  {
+    "id": "D05",
+    "slug": "ella",
+    "title": "Ella",
+    "description": "A relaxed hill town known for the Nine Arches Bridge, Little Adam's Peak and some of the most scenic stretches of the hill-country railway.",
+    "imgClass": "destination-img-ella",
+    "accent": "brand-teal"
+  },
+  {
+    "id": "D07",
+    "slug": "galle",
+    "title": "Galle",
+    "description": "Galle Fort is a walled 17th-century town on the south-west coast and a UNESCO World Heritage Site, full of boutique hotels, caf\u00e9s, galleries and churches.",
+    "imgClass": "destination-img-galle",
+    "accent": "brand-sky"
+  },
+  {
+    "id": "D03",
+    "slug": "kandy",
+    "title": "Kandy",
+    "description": "Kandy was the last royal capital of Sri Lanka. The Temple of the Sacred Tooth Relic sits beside a calm lake ringed by hills. The Royal Botanical Gardens at Peradeniya are just outside the city.",
+    "imgClass": "destination-img-kandy",
+    "accent": "brand-leaf"
+  },
+  {
+    "id": "D02",
+    "slug": "minneriya",
+    "title": "Minneriya National Park",
+    "description": "Minneriya is famous for \"the gathering\": in the dry season, roughly August to October, hundreds of elephants come to the shrinking reservoir to drink and graze. Safaris are by jeep in the late afternoon.",
+    "imgClass": "destination-img-minneriya",
+    "accent": "brand-leaf"
+  },
+  {
+    "id": "D08",
+    "slug": "mirissa",
+    "title": "Mirissa",
+    "description": "Mirissa is a crescent-shaped beach on the south coast, known for blue-whale and dolphin watching between November and April, surf breaks and Coconut Tree Hill at sunset.",
+    "imgClass": "destination-img-mirissa",
+    "accent": "brand-coral"
+  },
+  {
+    "id": "D04",
+    "slug": "nuwara-eliya",
+    "title": "Nuwara Eliya",
+    "description": "At about 1,900 metres, Nuwara Eliya is the heart of tea country, with a cool climate, colonial buildings, Lake Gregory and a golf course. Nights can be cold.",
+    "imgClass": "destination-img-nuwara-eliya",
+    "accent": "brand-teal"
+  },
+  {
+    "id": "D01",
+    "slug": "sigiriya",
+    "title": "Sigiriya",
+    "description": "The rock fortress of Sigiriya rises about 200 metres above the plains of the Cultural Triangle. King Kashyapa built his palace on the summit in the 5th century; its frescoes and Lion Gate are among Sri Lanka's best-known sights. The neighbouring Dambulla cave temple is a short drive away.",
+    "imgClass": "destination-img-sigiriya",
+    "accent": "brand-sun"
+  },
+  {
+    "id": "D06",
+    "slug": "yala",
+    "title": "Yala National Park",
+    "description": "Yala, in the dry south-east, has one of the highest densities of leopards in the world, as well as elephants, sloth bears, crocodiles and over 200 bird species. Safaris run at dawn and in the late afternoon.",
+    "imgClass": "destination-img-yala",
+    "accent": "brand-coral"
+  }
+]

@@ -50,13 +50,13 @@ export function EditorialSlideshow() {
                 <span className="font-semibold">{slide.title}</span>
               </h2>
               <p className="mt-6 max-w-md text-lg leading-relaxed text-muted-foreground">{slide.body}</p>
-              <p className="mt-4 text-sm font-medium text-maroon">{slide.detail}</p>
+              <p className="mt-4 text-sm font-semibold text-maroon">{slide.detail}</p>
             </div>
             <div className="flex flex-wrap items-center justify-between gap-4">
               <Link
                 to="/plan"
                 search={{ q: `I'd like to include ${slide.place}` }}
-                className="inline-flex min-h-11 items-center rounded-full bg-ink px-5 text-sm font-medium text-on-dark transition-colors duration-150 hover:bg-charcoal-soft"
+                className="inline-flex min-h-11 items-center rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground transition-colors duration-150 hover:bg-saffron-bright"
               >
                 Add {slide.place} to a plan
               </Link>
@@ -73,7 +73,7 @@ export function EditorialSlideshow() {
         </div>
         <div className="mx-auto mt-4 flex max-w-[1440px] gap-1.5 px-2" aria-hidden>
           {EDITORIAL.map((s, k) => (
-            <span key={s.id} className={cn("h-[3px] flex-1 rounded-full transition-colors duration-200", k === i ? "bg-saffron" : "bg-border")} />
+            <span key={s.id} className={cn("h-[3px] flex-1 rounded-full transition-colors duration-150", k === i ? "bg-saffron" : "bg-border")} />
           ))}
         </div>
       </div>

@@ -3,6 +3,7 @@ import { Menu } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 
+import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 import { Logo } from "./Logo";
 import { MiraSparkle } from "./MiraSparkle";
@@ -38,6 +39,7 @@ function useNavTheme(pathname: string): NavTheme {
 export function Navbar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const theme = useNavTheme(pathname);
+  const { user, isAuthenticated, isStaff } = useAuth();
 
   const [open, setOpen] = useState(false);
   const onDark = theme !== "light";
@@ -48,7 +50,7 @@ export function Navbar() {
     <header
       data-theme={theme}
       className={cn(
-        "fixed inset-x-0 top-0 z-50 transition-[background-color,color,border-color] duration-200",
+        "fixed inset-x-0 top-0 z-50 transition-[background-color,color,border-color] duration-150",
         theme === "hero" && "border-b border-transparent bg-transparent text-on-dark",
         theme === "dark" && "border-b border-line-dark bg-charcoal text-on-dark",
         theme === "light" && "border-b border-border bg-paper text-ink",
@@ -62,10 +64,10 @@ export function Navbar() {
               <Link
                 to={l.to}
                 className={cn(
-                  "inline-flex min-h-11 items-center rounded-full px-3.5 text-[14px] transition-colors duration-150",
+                  "inline-flex min-h-11 items-center rounded-full px-3.5 text-sm transition-colors duration-150",
                   onDark ? "text-on-dark/80 hover:text-on-dark" : "text-ink/70 hover:text-ink",
                 )}
-                activeProps={{ className: onDark ? "!text-on-dark" : "!text-ink font-medium" }}
+                activeProps={{ className: onDark ? "!text-on-dark" : "!text-ink font-semibold" }}
               >
                 {l.label}
               </Link>
@@ -76,7 +78,7 @@ export function Navbar() {
           <Link
             to="/plan"
             className={cn(
-              "hidden min-h-11 items-center gap-2 rounded-full px-4 text-[14px] font-medium transition-colors duration-150 md:inline-flex",
+              "hidden min-h-11 items-center gap-2 rounded-full px-4 text-sm font-semibold transition-colors duration-150 md:inline-flex",
               onDark ? "hover:bg-on-dark/10" : "hover:bg-paper-deep",
             )}
           >
@@ -85,21 +87,53 @@ export function Navbar() {
           <Link
             to="/trips"
             className={cn(
-              "hidden min-h-11 items-center rounded-full px-4 text-[14px] transition-colors duration-150 md:inline-flex",
+              "hidden min-h-11 items-center rounded-full px-4 text-sm transition-colors duration-150 md:inline-flex",
               onDark ? "text-on-dark/80 hover:text-on-dark" : "text-ink/70 hover:text-ink",
             )}
           >
             My Trips
           </Link>
           <Link
-            to="/sign-in"
+            to="/quotes"
             className={cn(
-              "hidden min-h-11 items-center rounded-full border px-5 text-[14px] font-medium transition-colors duration-150 sm:inline-flex",
-              onDark ? "border-on-dark/35 hover:border-on-dark hover:bg-on-dark/10" : "border-ink/20 hover:border-ink",
+              "hidden min-h-11 items-center rounded-full px-4 text-sm transition-colors duration-150 lg:inline-flex",
+              onDark ? "text-on-dark/80 hover:text-on-dark" : "text-ink/70 hover:text-ink",
             )}
           >
-            Visitor profile
+            My Quotes
           </Link>
+          {isStaff && (
+            <Link
+              to="/staff"
+              className={cn(
+                "hidden min-h-11 items-center rounded-full px-4 text-sm font-semibold transition-colors duration-150 md:inline-flex",
+                onDark ? "text-saffron hover:bg-on-dark/10" : "text-amber-700 hover:bg-paper-deep",
+              )}
+            >
+              Staff Console
+            </Link>
+          )}
+          {isAuthenticated ? (
+            <Link
+              to="/profile"
+              className={cn(
+                "hidden min-h-11 items-center rounded-full border px-5 text-sm font-semibold transition-colors duration-150 sm:inline-flex",
+                onDark ? "border-on-dark/35 hover:border-on-dark hover:bg-on-dark/10" : "border-ink/20 hover:border-ink",
+              )}
+            >
+              {user?.full_name ? user.full_name.split(" ")[0] : "Profile"}
+            </Link>
+          ) : (
+            <Link
+              to="/login"
+              className={cn(
+                "hidden min-h-11 items-center rounded-full border px-5 text-sm font-semibold transition-colors duration-150 sm:inline-flex",
+                onDark ? "border-on-dark/35 hover:border-on-dark hover:bg-on-dark/10" : "border-ink/20 hover:border-ink",
+              )}
+            >
+              Sign In
+            </Link>
+          )}
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
               <button
@@ -125,13 +159,15 @@ export function Navbar() {
 
 /** Reusable full-screen mobile navigation. */
 export function MobileNav() {
+  const { user, isAuthenticated, isStaff } = useAuth();
+
   return (
     <div className="flex h-full flex-col px-7 pt-8 pb-safe">
       <SheetTitle className="eyebrow text-on-dark-muted">Menu</SheetTitle>
       <ul className="mt-8 space-y-1">
         {NAV_LINKS.map((l, i) => (
           <li key={l.to}>
-            <Link to={l.to} className="flex min-h-12 items-baseline gap-4 rounded-full text-[28px] font-semibold tracking-[-0.04em]">
+            <Link to={l.to} className="flex min-h-12 items-baseline gap-4 rounded-full text-2xl font-semibold tracking-[-0.04em]">
               <span className="tabular w-6 text-xs font-normal text-on-dark-muted">0{i + 1}</span>
               {l.label}
             </Link>
@@ -139,16 +175,34 @@ export function MobileNav() {
         ))}
       </ul>
       <div className="mt-auto space-y-2 pt-10">
-        <Link to="/plan" className="flex min-h-12 items-center justify-center gap-2 rounded-full bg-saffron font-medium text-ink">
+        <Link to="/plan" className="flex min-h-12 items-center justify-center gap-2 rounded-full bg-saffron font-semibold text-ink">
           <MiraSparkle className="text-ink" /> Ask Mira
         </Link>
         <div className="grid grid-cols-2 gap-2">
           <Link to="/trips" className="flex min-h-12 items-center justify-center rounded-full border border-line-dark">
             My Trips
           </Link>
-          <Link to="/sign-in" className="flex min-h-12 items-center justify-center rounded-full border border-line-dark">
-            Visitor profile
+          <Link to="/quotes" className="flex min-h-12 items-center justify-center rounded-full border border-line-dark">
+            My Quotes
           </Link>
+          {isAuthenticated ? (
+            <Link to="/profile" className="flex min-h-12 items-center justify-center rounded-full border border-line-dark">
+              {user?.full_name ? user.full_name.split(" ")[0] : "Profile"}
+            </Link>
+          ) : (
+            <Link to="/login" className="flex min-h-12 items-center justify-center rounded-full border border-line-dark font-semibold text-saffron">
+              Sign In
+            </Link>
+          )}
+          {isStaff ? (
+            <Link to="/staff" className="flex min-h-12 items-center justify-center rounded-full border border-line-dark">
+              Staff Console
+            </Link>
+          ) : !isAuthenticated ? (
+            <Link to="/register" className="flex min-h-12 items-center justify-center rounded-full border border-line-dark">
+              Register
+            </Link>
+          ) : null}
         </div>
       </div>
     </div>

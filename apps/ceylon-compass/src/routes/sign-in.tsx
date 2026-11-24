@@ -43,9 +43,14 @@ function Profile() {
         Remember this browser
       </label>
       <p role="status">{status}</p>
-      <Link className="gold" to="/trips">
-        Open my trips →
-      </Link>
+      <div className="flex gap-4 flex-wrap mt-6">
+        <Link className="gold" to="/profile">
+          Manage Account & Profile →
+        </Link>
+        <Link className="pill" to="/trips">
+          Open my trips
+        </Link>
+      </div>
     </main>
   );
 }

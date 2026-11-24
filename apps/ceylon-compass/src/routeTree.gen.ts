@@ -15,8 +15,13 @@ import { Route as DestinationsRouteImport } from './routes/destinations'
 import { Route as ExperiencesRouteImport } from './routes/experiences'
 import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as JourneysRouteImport } from './routes/journeys'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as PlanRouteImport } from './routes/plan'
+import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as QuotesRouteImport } from './routes/quotes'
+import { Route as RegisterRouteImport } from './routes/register'
 import { Route as SignInRouteImport } from './routes/sign-in'
+import { Route as StaffRouteImport } from './routes/staff'
 import { Route as TripsRouteImport } from './routes/trips'
 
 const IndexRoute = IndexRouteImport.update({
@@ -49,14 +54,39 @@ const JourneysRoute = JourneysRouteImport.update({
   path: '/journeys',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PlanRoute = PlanRouteImport.update({
   id: '/plan',
   path: '/plan',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const QuotesRoute = QuotesRouteImport.update({
+  id: '/quotes',
+  path: '/quotes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegisterRoute = RegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SignInRoute = SignInRouteImport.update({
   id: '/sign-in',
   path: '/sign-in',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StaffRoute = StaffRouteImport.update({
+  id: '/staff',
+  path: '/staff',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TripsRoute = TripsRouteImport.update({
@@ -72,8 +102,13 @@ export interface FileRoutesByFullPath {
   '/experiences': typeof ExperiencesRoute
   '/explore': typeof ExploreRoute
   '/journeys': typeof JourneysRoute
+  '/login': typeof LoginRoute
   '/plan': typeof PlanRoute
+  '/profile': typeof ProfileRoute
+  '/quotes': typeof QuotesRoute
+  '/register': typeof RegisterRoute
   '/sign-in': typeof SignInRoute
+  '/staff': typeof StaffRoute
   '/trips': typeof TripsRoute
 }
 export interface FileRoutesByTo {
@@ -83,8 +118,13 @@ export interface FileRoutesByTo {
   '/experiences': typeof ExperiencesRoute
   '/explore': typeof ExploreRoute
   '/journeys': typeof JourneysRoute
+  '/login': typeof LoginRoute
   '/plan': typeof PlanRoute
+  '/profile': typeof ProfileRoute
+  '/quotes': typeof QuotesRoute
+  '/register': typeof RegisterRoute
   '/sign-in': typeof SignInRoute
+  '/staff': typeof StaffRoute
   '/trips': typeof TripsRoute
 }
 export interface FileRoutesById {
@@ -95,8 +135,13 @@ export interface FileRoutesById {
   '/experiences': typeof ExperiencesRoute
   '/explore': typeof ExploreRoute
   '/journeys': typeof JourneysRoute
+  '/login': typeof LoginRoute
   '/plan': typeof PlanRoute
+  '/profile': typeof ProfileRoute
+  '/quotes': typeof QuotesRoute
+  '/register': typeof RegisterRoute
   '/sign-in': typeof SignInRoute
+  '/staff': typeof StaffRoute
   '/trips': typeof TripsRoute
 }
 export interface FileRouteTypes {
@@ -108,8 +153,13 @@ export interface FileRouteTypes {
     | '/experiences'
     | '/explore'
     | '/journeys'
+    | '/login'
     | '/plan'
+    | '/profile'
+    | '/quotes'
+    | '/register'
     | '/sign-in'
+    | '/staff'
     | '/trips'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -119,8 +169,13 @@ export interface FileRouteTypes {
     | '/experiences'
     | '/explore'
     | '/journeys'
+    | '/login'
     | '/plan'
+    | '/profile'
+    | '/quotes'
+    | '/register'
     | '/sign-in'
+    | '/staff'
     | '/trips'
   id:
     | '__root__'
@@ -130,8 +185,13 @@ export interface FileRouteTypes {
     | '/experiences'
     | '/explore'
     | '/journeys'
+    | '/login'
     | '/plan'
+    | '/profile'
+    | '/quotes'
+    | '/register'
     | '/sign-in'
+    | '/staff'
     | '/trips'
   fileRoutesById: FileRoutesById
 }
@@ -142,8 +202,13 @@ export interface RootRouteChildren {
   ExperiencesRoute: typeof ExperiencesRoute
   ExploreRoute: typeof ExploreRoute
   JourneysRoute: typeof JourneysRoute
+  LoginRoute: typeof LoginRoute
   PlanRoute: typeof PlanRoute
+  ProfileRoute: typeof ProfileRoute
+  QuotesRoute: typeof QuotesRoute
+  RegisterRoute: typeof RegisterRoute
   SignInRoute: typeof SignInRoute
+  StaffRoute: typeof StaffRoute
   TripsRoute: typeof TripsRoute
 }
 
@@ -191,6 +256,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof JourneysRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/plan': {
       id: '/plan'
       path: '/plan'
@@ -198,11 +270,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlanRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/quotes': {
+      id: '/quotes'
+      path: '/quotes'
+      fullPath: '/quotes'
+      preLoaderRoute: typeof QuotesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sign-in': {
       id: '/sign-in'
       path: '/sign-in'
       fullPath: '/sign-in'
       preLoaderRoute: typeof SignInRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/staff': {
+      id: '/staff'
+      path: '/staff'
+      fullPath: '/staff'
+      preLoaderRoute: typeof StaffRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/trips': {
@@ -222,8 +322,13 @@ const rootRouteChildren: RootRouteChildren = {
   ExperiencesRoute: ExperiencesRoute,
   ExploreRoute: ExploreRoute,
   JourneysRoute: JourneysRoute,
+  LoginRoute: LoginRoute,
   PlanRoute: PlanRoute,
+  ProfileRoute: ProfileRoute,
+  QuotesRoute: QuotesRoute,
+  RegisterRoute: RegisterRoute,
   SignInRoute: SignInRoute,
+  StaffRoute: StaffRoute,
   TripsRoute: TripsRoute,
 }
 export const routeTree = rootRouteImport

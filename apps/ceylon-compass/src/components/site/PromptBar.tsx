@@ -32,12 +32,12 @@ export function PromptBar({ tone = "light", showStarters = true, className, id =
           id={id}
           maxLength={1200}
           placeholder="Where would you like Sri Lanka to take you? e.g. 10 days, tea country, leopards, a quiet beach"
-          className="min-h-12 min-w-0 flex-1 bg-transparent px-3 text-[15px] placeholder:text-muted-foreground focus:outline-none sm:text-base"
+          className="min-h-12 min-w-0 flex-1 bg-transparent px-3 text-sm placeholder:text-muted-foreground focus:outline-none sm:text-base"
           autoComplete="off"
         />
         <button
           type="submit"
-          className="inline-flex min-h-12 shrink-0 items-center gap-2 rounded-full bg-ink px-5 text-sm font-medium text-on-dark transition-colors duration-150 hover:bg-charcoal-soft"
+          className="inline-flex min-h-12 shrink-0 items-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground transition-colors duration-150 hover:bg-saffron-bright"
         >
           <span className="hidden sm:inline">Ask Mira</span>
           <ArrowRight aria-hidden className="size-4" />
@@ -51,7 +51,7 @@ export function PromptBar({ tone = "light", showStarters = true, className, id =
               key={s.label}
               type="button"
               onClick={() => go(s.brief)}
-              className="inline-flex min-h-11 shrink-0 items-center rounded-full border border-border px-4 text-[13px] text-ink/80 transition-colors duration-150 hover:border-ink hover:text-ink"
+              className="inline-flex min-h-11 shrink-0 items-center rounded-full border border-border px-4 text-xs text-ink/80 transition-colors duration-150 hover:border-ink hover:text-ink"
             >
               {s.label === "Surprise Me" && <MiraSparkle className="mr-1.5 size-3" />}
               {s.label}

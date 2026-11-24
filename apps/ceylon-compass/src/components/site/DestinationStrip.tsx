@@ -23,7 +23,7 @@ export function DestinationStrip() {
   };
 
   return (
-    <section data-nav-theme="light" className="bg-background py-24 md:py-32">
+    <section data-nav-theme="light" className="bg-background pt-12 pb-6">
       <div className="mx-auto max-w-[1440px] px-5 md:px-10">
         <div className="grid gap-6 md:grid-cols-[1.3fr_1fr] md:items-end">
           <SectionHeading eyebrow="Destinations" title="Find your kind of" italic="Sri Lanka." />
@@ -46,7 +46,7 @@ export function DestinationStrip() {
                 key={d.id}
                 onMouseEnter={() => setActive(i)}
                 className={cn(
-                  "group relative min-h-[72px] overflow-hidden rounded-photo bg-charcoal text-on-dark transition-[flex-grow] duration-500 ease-editorial",
+                  "group relative min-h-[72px] overflow-hidden rounded-photo bg-charcoal text-on-dark transition-[flex-grow] duration-150 ease-editorial",
                   isActive ? "flex-[4.2] md:flex-[3.4]" : "flex-1",
                 )}
               >
@@ -55,7 +55,7 @@ export function DestinationStrip() {
                   alt={photo.alt}
                   loading="lazy"
                   className={cn(
-                    "absolute inset-0 h-full w-full object-cover transition-[transform,filter] duration-700 ease-editorial",
+                    "absolute inset-0 h-full w-full object-cover transition-[transform,filter] duration-150 ease-editorial",
                     isActive ? "scale-[1.04]" : "scale-100 brightness-[0.72]",
                   )}
                 />
@@ -73,17 +73,17 @@ export function DestinationStrip() {
                 />
                 <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 p-5 md:p-7">
                   <span className="tabular text-xs text-on-dark/70">0{i + 1}</span>
-                  <h3 className={cn("mt-1 font-semibold tracking-[-0.04em] transition-[font-size] duration-300", isActive ? "text-3xl md:text-5xl" : "text-lg md:text-xl")}>
+                  <h3 className={cn("mt-1 font-semibold tracking-[-0.04em] transition-[font-size] duration-150", isActive ? "text-3xl md:text-5xl" : "text-lg md:text-xl")}>
                     {d.name}
                   </h3>
-                  <div className={cn("grid transition-[grid-template-rows,opacity] duration-500 ease-editorial", isActive ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0")}>
+                  <div className={cn("grid transition-[grid-template-rows,opacity] duration-150 ease-editorial", isActive ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0")}>
                     <div className="overflow-hidden">
                       <p className="mt-2 max-w-sm text-sm text-on-dark/80 md:text-base">{d.subtitle}</p>
                       <Link
                         to="/plan"
                         search={{ q: d.brief }}
                         tabIndex={isActive ? 0 : -1}
-                        className="pointer-events-auto mt-4 inline-flex min-h-11 items-center gap-1.5 rounded-full bg-on-dark px-5 text-sm font-medium text-ink transition-colors duration-150 hover:bg-saffron"
+                        className="pointer-events-auto mt-4 inline-flex min-h-11 items-center gap-1.5 rounded-full bg-on-dark px-5 text-sm font-semibold text-ink transition-colors duration-150 hover:bg-saffron"
                       >
                         Explore {d.name} <ArrowUpRight className="size-4" aria-hidden />
                       </Link>

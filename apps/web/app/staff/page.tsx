@@ -1,7 +1,7 @@
 "use client";
 
 import { ClipboardList, Compass, FilePenLine, LogOut, Shield } from "lucide-react";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { api } from "../../lib/api";
 
 const statuses = ["new", "contacted", "waiting", "closed"];
@@ -23,8 +23,25 @@ export default function Staff() {
   const [busy, setBusy] = useState(false);
   const [preview, setPreview] = useState<Draft>();
 
-  const auth = (key = token) => ({ Authorization: `Bearer ${key}` });
-  const call = <T,>(path: string, options: RequestInit = {}) => api<T>(`/staff${path}`, { ...options, headers: auth() });
+  useEffect(() => {
+    api<{ role: string }>("/staff/me")
+      .then((identity) => {
+        if (["staff", "editor", "approver", "admin"].includes(identity.role)) {
+          setRole(identity.role);
+          setToken("session");
+          api<Row[]>("/staff/enquiries").then(setRows).catch(() => {});
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const auth = (key = token): Record<string, string> =>
+    key && key !== "session" ? { Authorization: `Bearer ${key}` } : {};
+  const call = <T,>(path: string, options: RequestInit = {}) =>
+    api<T>(`/staff${path}`, {
+      ...options,
+      headers: { ...auth(), ...(options.headers as Record<string, string> | undefined) },
+    });
   const error = (e: unknown) => setMessage(e instanceof Error ? e.message : "This action couldn’t complete.");
 
   async function login(e: FormEvent<HTMLFormElement>) {
