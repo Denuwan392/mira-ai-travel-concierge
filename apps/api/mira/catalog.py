@@ -38,6 +38,7 @@ class Excerpt(Strict):
 
 
 class DayStop(Strict):
+    evidence: Source | None = None
     source: Source
     name: Text
     passage: Text
@@ -68,12 +69,15 @@ class SourcePanel(Strict):
 
 
 class PublicQuote(Strict):
+    enquiry: UUID | None = None
+    enquiry_reference: str | None = None
     id: UUID
     source: Source
     title: Text
     date: CalendarDate
     adults: int
     ages: list[int]
+    validity: Literal["recheck_before_booking"] = "recheck_before_booking"
     currency: Literal["USD"] = "USD"
     total: Annotated[int, Field(gt=0)]
     deposit: Annotated[int, Field(gt=0)]
@@ -93,6 +97,15 @@ class Booking(Strict):
 class Notice(Strict):
     type: Literal["EnquiryNotice"] = "EnquiryNotice"
     reference: UUID | None = None
+    public_reference: str | None = None
+    outcome: Literal[
+        "PRICE_UNAVAILABLE",
+        "PRICE_VALIDATION_ERROR",
+        "PRICING_SERVICE_ERROR",
+        "SPECIALIST_HANDOFF",
+    ] | None = None
+    reason_code: str | None = None
+    tour_id: str | None = None
     text: Text
 
 

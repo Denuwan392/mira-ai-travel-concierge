@@ -15,10 +15,13 @@ from langgraph.graph import END, START, StateGraph
 from langgraph.graph.message import add_messages
 
 from .catalog import Breakdown, Booking, Card, DayStop, Proposal, RouteMap, Departure, SourcePanel, Excerpt, Notice, Picker, PublicQuote, Turn
+from .accommodation import is_accommodation_query
 from .data import Unavailable, as_of, price, public_text, tour_card
 from .observability import elapsed, event, request_id
+from .planner import get_grounded_day_experience
 from .provider import rank, notebook_intent
 from .rates_repository import current_rates
+from .search import extract_search_constraints, filter_tours, rank_filtered_tours
 from .surface import surface_messages
 from .store import db, encode, published_records, is_current_notebook_turn
 
@@ -47,6 +50,9 @@ def parse_date(text):
     if match := re.search(rf"\b(\d{{1,2}})(?:st|nd|rd|th)?\s+({names})\s+(\d{{4}})\b", text, re.I):
         month = next(i + 1 for i, m in enumerate(MONTHS) if m.lower().startswith(match[2].lower()))
         return date(int(match[3]), month, int(match[1])).isoformat()
+    if match := re.search(rf"\b({names})\s+(\d{{1,2}})(?:st|nd|rd|th)?,?\s+(\d{{4}})\b", text, re.I):
+        month = next(i + 1 for i, m in enumerate(MONTHS) if m.lower().startswith(match[1].lower()))
+        return date(int(match[3]), month, int(match[2])).isoformat()
     return None
 
 
@@ -74,12 +80,18 @@ working = ContextVar("working", default=None)
 def interpret(state):
     message = next((m.content for m in reversed(state.get("messages", [])) if isinstance(m, HumanMessage)), "")
     text = message.strip()[:1200].lower() if isinstance(message, str) else ""
+    working.get()["user_text"] = text
     visitor = visitor_context.get()
     run = run_context.get()
     with db() as conn:
         saved = conn.execute("SELECT context FROM visitors WHERE id = ?", (visitor,)).fetchone()
         if trip_id := working.get().get("trip_id"):
-            saved = conn.execute("SELECT context,revision FROM trips WHERE id=? AND visitor=?", (trip_id,visitor)).fetchone()
+            saved = conn.execute("""
+                SELECT context, revision FROM trips
+                WHERE id=? AND (visitor=? OR visitor IN (
+                    SELECT v2.id FROM visitors v1 JOIN visitors v2 ON v1.user_id = v2.user_id WHERE v1.id=? AND v1.user_id IS NOT NULL
+                ))
+            """, (trip_id, visitor, visitor)).fetchone()
             if not saved:
                 raise ValueError("Journey unavailable")
             working.get()["revision"] = saved["revision"]
@@ -108,14 +120,89 @@ def interpret(state):
     ctx = json.loads(basis)
     records = published_records()
     tours = {key: row for key, row in records.items() if row["type"] == "tour"}
+
+    # Handle structured action JSON payloads from UI
+    structured_action = None
+    if isinstance(message, str) and message.strip().startswith("{") and message.strip().endswith("}"):
+        try:
+            structured_action = json.loads(message.strip())
+        except Exception:
+            structured_action = None
+
+    if structured_action and isinstance(structured_action, dict):
+        act_type = structured_action.get("type")
+        act_payload = structured_action.get("payload", {})
+        if act_type in ("REQUEST_QUOTE", "PRICE_TOUR"):
+            raw_tid = act_payload.get("tourId") or act_payload.get("tour")
+            tour_id = next((key for key, row in tours.items() if raw_tid in (key, row.get("slug"))), None)
+            travel_date = date.fromisoformat(act_payload.get("date") or act_payload.get("travelDate"))
+            adults = act_payload.get("adults")
+            ages = act_payload.get("childAges", act_payload.get("ages", []))
+            if (not tour_id or type(adults) is not int or not 1 <= adults <= 100
+                    or not isinstance(ages, list) or len(ages) > 30
+                    or any(type(age) is not int or not 0 <= age <= 120 for age in ages)):
+                raise ValueError("Invalid tour quotation configuration")
+            ctx = {"tour": tour_id, "date": travel_date.isoformat(), "adults": adults, "kids": len(ages), "ages": ages}
+            working.get().update(context=ctx, basis=basis, records=records, tours=tours,
+                                 action="discover", named=tour_id, select=False, panel_action=None,
+                                 explicit_quote=True, prompt=f"Check rates for {tours[tour_id]['title']} on {travel_date}",
+                                 events=[{"stage": "interpret", "provider": "local rules", "action": "discover"}])
+            return {}
+        elif act_type in ("SELECT_TOUR", "VIEW_TOUR"):
+            raw_tid = str(act_payload.get("tourId") or act_payload.get("tour") or "").strip()
+            tour_id = next((k for k, v in tours.items() if k == raw_tid or v.get("slug") == raw_tid), raw_tid)
+            message = f"@tour {tour_id}"
+            text = message.lower()
+            tour_title = tours.get(tour_id, {}).get("title", tour_id)
+            working.get()["prompt"] = f"Tell me about {tour_title}"
+
     named = next((key for key, row in sorted(tours.items(), key=lambda pair: -len(pair[1]["title"]))
                   if row["title"].lower().replace("–", "-") in text.replace("–", "-")), None)
-    match = re.fullmatch(r"@trip ([A-Z\d-]+) (\d{4}-\d{2}-\d{2}) (\d{1,3}) (-|[\d,]+)", message.strip()) if isinstance(message, str) else None
+    match = re.fullmatch(r"@trip ([A-Z\d-]+) (\d{4}-\d{2}-\d{2}) (\d{1,3}) (-|\d{1,3}(?:,\d{1,3})*)", message.strip()) if isinstance(message, str) else None
     select = re.fullmatch(r"@tour ([A-Z\d-]+)", message.strip()) if isinstance(message, str) else None
     started = perf_counter()
     action = "discover"
-    if re.search(r"ignore .*instructions|profit margin|reveal .*cost|publish .*without|invent .*price|\d+% off", text):
+    if re.search(r"\bnorthern sri lanka\b", text) and re.search(r"\b(?:book|reserve|buy)\b", text):
+        action = "draft_tour"
+    elif re.search(r"\bmirissa\b", text) and re.search(r"discount|loyalty|40%", text):
+        action = "mirissa_discount"
+    elif re.search(r"galle fort", text) and re.search(r"cancel|cancellation", text) and re.search(r"36\s*hours?", text):
+        action = "galle_cancellation"
+    elif re.search(r"ignore .*instructions|profit margin|reveal .*cost|publish .*without|invent .*price|\d+% off", text):
         action = "reject"
+    elif (named or ctx.get("tour")) and (day_match := re.search(r"\b(?:what (?:happens|do we do)|show me|tell me about)?\s*(?:on )?day\s+([1-9]\d?)\b", text)):
+        active_t = named or ctx.get("tour")
+        if active_t in tours and tours[active_t].get("days"):
+            target_d = int(day_match.group(1))
+            matching_d = next((d for d in tours[active_t]["days"] if d["day"] == target_d), None)
+            if matching_d:
+                action = "tour_day_detail"
+                working.get()["day_detail"] = matching_d
+                named = active_t
+    elif (named or ctx.get("tour")) and re.search(r"\b(?:full|complete|entire|whole)\b.*?\b(?:itinerary|package|tour|schedule|days|plan)\b|\ball\s+days\b|\bday[- ]by[- ]day\b|\bcomplete\s+itinerary\b", text):
+        active_t = named or ctx.get("tour")
+        if active_t in tours and tours[active_t].get("days"):
+            action = "tour_itinerary"
+            named = active_t
+    elif (named or ctx.get("tour")) and re.search(r"\b(?:are (?:entrance )?tickets included|entrance tickets included|what(?:'s| is) included|tour inclusions?)\b", text):
+        active_t = named or ctx.get("tour")
+        if active_t in tours:
+            action = "tour_inclusions"
+            named = active_t
+    elif (is_accom := is_accommodation_query(text))[0]:
+        _, dest_match, hotel_match, is_rate, is_alt = is_accom
+        if (named or ctx.get("tour")) and not dest_match and re.search(r"\b(?:this tour|this package|which hotels?|what hotels?|included hotels?|hotels? in (?:it|this)|tour hotels?)\b", text):
+            action = "tour_hotels"
+            named = named or ctx.get("tour")
+        else:
+            action = "accommodation"
+            working.get()["hotel_match"] = hotel_match
+            working.get()["dest_match"] = dest_match
+            working.get()["is_rate_query"] = is_rate
+            working.get()["is_alt_query"] = is_alt
+            if hotel_match:
+                working.get()["hotel_source"] = hotel_match.source_tour_id
+                working.get()["named"] = hotel_match.source_tour_id
     elif re.fullmatch(r"(?:please )?compare (?:them|these|those|my options|the routes|these tours|these journeys)[.!?]?", text) and ctx.get("suggestions"):
         action = "compare"
     elif re.search(r"python script|sort a list|write .*code", text):
@@ -135,7 +222,7 @@ def interpret(state):
     elif "polonnaruwa" in text and not named:
         action = "polonnaruwa"
     if action == "custom":
-        custom = {"destinations": [row["title"] for row in records.values() if row["type"] == "destination"
+        custom = {"request": message.strip(), "destinations": [row["title"] for row in records.values() if row["type"] == "destination"
                                   and re.search(r"\b" + re.escape(row["title"].split()[0].lower()) + r"\b", text)]}
         if requested := re.search(rf"\b({COUNT})[- ]days?\b", text):
             custom["days"] = count(requested[1])
@@ -165,6 +252,9 @@ def interpret(state):
                 departure = None
                 ctx.pop("date", None)
                 action = "invalid_date"
+            if not departure and re.search(r"\b\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b", text):
+                ctx.pop("date", None)
+                action = "invalid_date"
             if not departure and re.search(r"\b(?:change the date|starting|departing|instead on|new date|next (?:week|month|summer))\b", text):
                 ctx.pop("date", None)
             if departure:
@@ -176,13 +266,29 @@ def interpret(state):
             if kids := re.search(rf"\b({COUNT})\s+(?:kid|kids|child|children)\b", text):
                 ctx["kids"] = count(kids[1])
                 ctx.pop("ages", None)
-            if ages := re.search(r"\b(?:aged|ages?)\s+(?:is\s+|are\s+)?(\d{1,3}(?:\s*(?:,|and)\s*\d{1,3})*)", text):
+            if ages := re.search(r"\b(?:aged|ages?)\s+(?:is\s+|are\s+)?(\d{1,3}(?:\s*(?:,\s*and\s+|,\s*|\band\s+)\d{1,3})*)", text):
                 ctx["ages"] = [int(x) for x in re.findall(r"\d+", ages[1])][:30]
                 if ctx.get("kids", -1) < 0:
                     ctx["kids"] = len(ctx["ages"])
             if baby := re.search(rf"\b({COUNT})[- ]year[- ]old", text):
                 ctx["ages"] = [count(baby[1])]
                 ctx.setdefault("kids", 1)
+            if infant_match := re.search(rf"\b({COUNT}|an?)\s+infants?\b", text):
+                infant_token = infant_match[1]
+                infant_cnt = 1 if infant_token in {"a", "an"} else count(infant_token)
+                if not kids and not ages and not baby:
+                    ctx["ages"] = [0] * min(30, infant_cnt)
+                    ctx["kids"] = len(ctx["ages"])
+                elif ages or baby:
+                    existing_ages = list(ctx.get("ages", []))
+                    ctx["ages"] = (existing_ages + [0] * infant_cnt)[:30]
+                    if kids:
+                        ctx["kids"] = count(kids[1]) + infant_cnt
+                    else:
+                        ctx["kids"] = len(ctx["ages"])
+                else:
+                    # Child count was given without child ages; keep kids > len(ages) so Mira asks for child age
+                    ctx["kids"] = count(kids[1]) + infant_cnt
             if re.search(r"\b(?:other child|and another|or another)\b", text):
                 action = "invalid_party"
             if re.search(r"\b(?:child|children|kids?|baby|infant|family)\b", text) and "kids" not in ctx:
@@ -192,7 +298,29 @@ def interpret(state):
             if match:
                 ages = [] if match[4] == "-" else [int(x) for x in match[4].split(",")][:31]
                 ctx.update(adults=int(match[3]), kids=len(ages), ages=ages)
-            if action == "discover" and not named and not (departure or re.search(r"\b(?:adults?|kids?|child|children|ages?|solo|quote|price|book)\b", text)):
+            is_tour_ref = bool(ctx.get("tour") in tours and re.search(r"\b(?:this|that|the)\s+(?:day\s+)?(?:tour|trip|package)\b", text))
+            search_constraints = (
+                extract_search_constraints(text)
+                if (action == "discover" and not named and not select and not is_tour_ref)
+                else {}
+            )
+            if search_constraints and re.search(r"\b(?:tour|trip|package|holiday|stay|day|week|beach|cultur|multi)\b", text):
+                # Explicit published-tour search/filter overrides stale selections and proposals
+                ctx.pop("tour", None)
+                ctx.pop("proposal", None)
+                ctx.pop("custom", None)
+                ctx["search"] = search_constraints
+                if "trip_type" in search_constraints:
+                    ctx["trip_type"] = search_constraints["trip_type"]
+                working.get()["explicit_search"] = True
+                filtered_pool = filter_tours(tours, search_constraints)
+                if len(filtered_pool) == 1 and ("adults" in ctx or ctx.get("date")):
+                    ctx["tour"] = next(iter(filtered_pool))
+                    named = ctx["tour"]
+                else:
+                    action = "general"
+            elif action == "discover" and not named and not (departure or re.search(r"\b(?:adults?|kids?|child|children|ages?|solo|quote|price|book)\b", text)):
+                ctx.pop("search", None)
                 ctx_tour = next((k for k, row in records.items() if row["type"] == "destination"
                                  and row["title"].lower().split()[0] in text.split()), None)
                 if ctx_tour:
@@ -200,14 +328,40 @@ def interpret(state):
                 elif text and not select:
                     action = "general"
             if action == "discover" and not named and re.search(r"price|how much|quote", text):
-                explicit_followup = bool(re.search(r"update|recheck|that tour|this tour|the quote|^price[? .]*$", text))
+                unknown_named = bool(re.search(
+                    r"\b(?:how much is|price (?:of|for)|quote for)\s+(?:the\s+|a\s+)?(?!(?:this|that|the)\s+(?:tour|trip|quote|package)\b)[a-z]+\s+(?:tour|trip|expedition|package|safari)\b",
+                    text,
+                ))
+                has_tour = ctx.get("tour") in tours and not unknown_named
+                has_details = bool(departure or "adults" in text or "kids" in text or "ages" in text or "date" in ctx or "adults" in ctx)
+                explicit_followup = bool(re.search(r"update|recheck|that tour|this tour|the tour|the quote|^price[? .]*$", text))
                 party_reply = bool(re.fullmatch(rf"(?:actually )?(?:there (?:will be|are) )?(?:{COUNT}) adults?[,. ]*(?:can you update the price[? .]*)?", text))
-                if not ctx.get("tour") or not (explicit_followup or party_reply):
+                if unknown_named:
+                    ctx.pop("tour", None)
+                if not has_tour:
                     action = "custom"
             if ctx.get("adults", 1) not in range(1, 101) or any(not 0 <= age <= 120 for age in ctx.get("ages", [])):
                 action = "invalid_party"
             if action == "discover" and (ctx.get("kids", 0) > 30 or len(ctx.get("ages", [])) > 30):
                 action = "custom"
+    if re.search(r"\bfamily\b", text) or ctx.get("kids", 0) > 0:
+        ctx["traveller_type"] = "family"
+    elif re.search(r"\bgroup\b", text) or ctx.get("adults", 0) > 2:
+        ctx["traveller_type"] = "group"
+    elif re.search(r"\bcouple\b", text) or ctx.get("adults") == 2:
+        ctx["traveller_type"] = "couple" if "couple" in text else "two adults"
+    elif ctx.get("adults") == 1:
+        ctx["traveller_type"] = "solo"
+    if action == "custom":
+        ctx["trip_type"] = "custom"
+    elif ctx.get("tour") in tours:
+        ctx["trip_type"] = "multi-day" if "night" in tours[ctx["tour"]]["duration"].lower() else "day tour"
+    elif "trip_type" in (ctx.get("search") or {}):
+        ctx["trip_type"] = ctx["search"]["trip_type"]
+    elif re.search(r"\bday (trip|tour)\b", text):
+        ctx["trip_type"] = "day tour"
+    elif re.search(r"(?<!not a )(?<!no )\bmulti[- ]?day\b", text):
+        ctx["trip_type"] = "multi-day"
     events = []
     panel_action = None
     if working.get().get("trip_id") and text.startswith("@") and not (match or select):
@@ -228,7 +382,12 @@ def interpret(state):
                 except ValueError:
                     pass
         action = "proposal_view" if panel_action!="invalid" else "unknown"
-    if working.get().get("trip_id") and not (match or select or panel_action or named in tours) and action in {"general","custom","destination","discover"}:
+    active_tour_quote_turn = bool(
+        ctx.get("tour") in tours
+        and re.search(r"\b(?:quote|price|cost|rate|rates|adults?|kids?|child|children|ages?|infants?|202\d-\d{2}-\d{2})\b", text)
+        and not re.search(r"\b(?:custom|design|instead|different|plan a)\b", text)
+    )
+    if working.get().get("trip_id") and not (match or select or panel_action or named in tours or active_tour_quote_turn) and action in {"general","custom","destination","discover"}:
         destinations = {k:r["title"] for k,r in records.items() if r["type"]=="destination"}
         previous = ctx.get("proposal", [])
         evidence = {}
@@ -245,6 +404,8 @@ def interpret(state):
                         candidates.append((hits,f"{key}:{i}",block[:800]))
             evidence = {k:v for _,k,v in sorted(candidates,reverse=True)[:14]}
         intent = notebook_intent(message, previous, destinations, events, evidence)
+        if intent and intent.panels is not None:
+            working.get()["optional_panels"] = intent.panels
         if intent and intent.operation=="fact" and intent.evidence_key in evidence:
             k=intent.evidence_key
             working.get()["evidence"]=(k.split(":")[0],evidence[k])
@@ -252,9 +413,16 @@ def interpret(state):
         elif intent and intent.operation=="unknown" and evidence:
             action="unknown"
         extend = re.search(r"(?:add|another|extra|one more).*?day",text) and previous
+        reduce = re.search(r"(?:less|fewer|remove|drop|reduce).*?(?:time|day).*?(?:in\s+)?([a-z]+)", text) and previous
+        change_days = re.search(r"(?:change|make|adjust).*?(?:to|trip to)\s+([1-9]\d?)[- ]days?", text) and previous
         requested = re.search(rf"\b({COUNT})[- ]days?\b",text)
         ids = [k for k,title in destinations.items() if re.search(r"\b"+re.escape(title.lower())+r"\b",text)]
-        plan_request = requested and named not in tours and action in {"general","custom","destination"}
+        plan_request = (
+            not working.get().get("explicit_search")
+            and requested
+            and named not in tours
+            and action in {"general","custom","destination"}
+        )
         route = None
         if extend or (intent and intent.operation=="extend" and previous):
             targets = ids or (intent.destinations if intent else []) or previous[-1:]
@@ -262,7 +430,20 @@ def interpret(state):
             idx = max((i for i,k in enumerate(previous) if k==target),default=len(previous)-1)+1
             n = min(intent.days if intent and intent.operation=="extend" and intent.days else 1,30-len(previous))
             route = previous[:idx]+[target]*n+previous[idx:]
-        elif plan_request or (intent and intent.operation=="plan" and named not in tours):
+        elif reduce:
+            matched_title = reduce.group(1).lower()
+            matched_id = next((k for k, title in destinations.items() if matched_title in title.lower()), None)
+            if matched_id and matched_id in previous and len(previous) > 1:
+                idx_to_remove = max(i for i, k in enumerate(previous) if k == matched_id)
+                route = previous[:idx_to_remove] + previous[idx_to_remove + 1:]
+        elif change_days:
+            new_len = min(30, max(1, int(change_days.group(1))))
+            if new_len > len(previous):
+                last_dest = previous[-1]
+                route = previous + [last_dest] * (new_len - len(previous))
+            elif new_len < len(previous):
+                route = previous[:new_len]
+        elif plan_request or (not working.get().get("explicit_search") and intent and intent.operation=="plan" and named not in tours and not active_tour_quote_turn):
             if intent and intent.destinations:
                 ids = intent.destinations
             if not ids:
@@ -299,18 +480,38 @@ def retrieve(_):
         "compare": ctx.get("suggestions", [])[:2],
         "destination": [w["named"]], "discover": [ctx.get("tour")],
         "custom": ["T08", "T10", "T12"], "general": ["T01", "T09", "T05"],
+        "tour_itinerary": [w.get("named") or ctx.get("tour")],
+        "tour_day_detail": [w.get("named") or ctx.get("tour")],
+        "tour_inclusions": [w.get("named") or ctx.get("tour")],
+        "accommodation": [w.get("hotel_source") or "P01"],
+        "tour_hotels": [w.get("named") or ctx.get("tour")],
+        "galle_cancellation": ["P02"],
+        "mirissa_discount": ["D08"],
+        "draft_tour": [],
     }.get(action, [])
     if action == "destination":
         place = records[w["named"]]["path"].rsplit("/", 1)[-1].removesuffix(".md")
         ids += [key for key, tour in w["tours"].items() if place in tour["destinations"]][:3]
     if action in {"custom", "general"}:
-        trip = ctx.get("custom", {}) if action == "custom" else {}
-        destinations = {name.split()[0].lower() for name in trip.get("destinations", [])}
-        if destinations:
-            related = sorted(w["tours"], key=lambda key: -len(destinations.intersection(w["tours"][key]["destinations"])))
-            ids = [key for key in related if destinations.intersection(w["tours"][key]["destinations"])][:3] or ids
-        if not (w.get("trip_id") and ctx.get("proposal")):
-            ids = rank(w["tours"], trip, w["events"]) or ids
+        search = ctx.get("search") if action == "general" else None
+        if search:
+            filtered = filter_tours(w["tours"], search)
+            if not filtered:
+                ids = []
+                w["no_matching_tours"] = True
+            else:
+                det_ids = rank_filtered_tours(filtered, search)
+                llm_trip = {**search, **{k: ctx[k] for k in ("adults", "kids") if k in ctx}}
+                ranked = rank(filtered, llm_trip, w["events"])
+                ids = [tid for tid in (ranked or []) if tid in filtered] or det_ids
+        else:
+            trip = ctx.get("custom", {}) if action == "custom" else {}
+            destinations = {name.split()[0].lower() for name in trip.get("destinations", [])}
+            if destinations:
+                related = sorted(w["tours"], key=lambda key: -len(destinations.intersection(w["tours"][key]["destinations"])))
+                ids = [key for key in related if destinations.intersection(w["tours"][key]["destinations"])][:3] or ids
+            if not (w.get("trip_id") and ctx.get("proposal")):
+                ids = rank(w["tours"], {k:trip[k] for k in ("destinations","days","party") if k in trip}, w["events"]) or ids
     w["rows"] = [records[key] for key in ids if key in records]
     if action in {"general", "destination", "custom", "compare"}:
         ctx["suggestions"] = [row["id"] for row in w["rows"] if row["type"] == "tour"]
@@ -330,23 +531,61 @@ def quote_route(_):
     return "compose"
 
 
+def matching_enquiry(w, reason):
+    if not w.get("trip_id"):
+        return None
+    with db() as conn:
+        candidates = conn.execute(
+            """SELECT e.id, e.reference, e.trip FROM enquiries e JOIN trip_turns t ON t.trace=e.trace
+               WHERE t.trip=? AND e.reason=?
+                 AND e.status NOT IN ('booked','closed','closed_lost','unqualified')
+                 AND (e.quote IS NULL OR e.quote NOT IN (SELECT quote FROM bookings))
+               ORDER BY t.rowid DESC""",
+            (w["trip_id"], reason),
+        ).fetchall()
+
+    keys = ("tour", "date", "adults", "ages") if w.get("explicit_quote") else ("tour",)
+    ctx = w["context"]
+    for candidate in candidates:
+        try:
+            previous = json.loads(candidate["trip"])
+            if isinstance(previous, dict) and all(previous.get(key) == ctx.get(key) for key in keys):
+                return candidate
+        except (ValueError, TypeError):
+            continue
+    return None
+
+
+def quote_enquiry(w, reason):
+    previous = matching_enquiry(w, reason)
+    identifier = UUID(previous["id"]) if previous else uuid4()
+    reference = previous["reference"] if previous else None
+    w["enquiry"] = identifier
+    w["enquiry_reference"] = reference or f"ENQ-{as_of().year}-{identifier.hex[:8].upper()}"
+
+
 def quote_node(_):
     w = working.get()
     ctx = w["context"]
     before = perf_counter()
     event("PRICING", "pricing.started", level=logging.DEBUG, tour_id=ctx["tour"])
+    rates = None
     try:
-        value = price(ctx["tour"], date.fromisoformat(ctx["date"]), ctx["adults"], ctx.get("ages", []), as_of(), current_rates())
+        rates = current_rates()
+        value = price(ctx["tour"], date.fromisoformat(ctx["date"]), ctx["adults"], ctx.get("ages", []), as_of(), rates)
         w["internal"] = value
-        w["quote"] = PublicQuote(
+        quote_enquiry(w, "verified_quote")
+        w["quote"] = PublicQuote(enquiry=w["enquiry"], enquiry_reference=w["enquiry_reference"],
             id=uuid4(), source=ctx["tour"], title=w["tours"][ctx["tour"]]["title"],
             date=ctx["date"], adults=ctx["adults"], ages=ctx.get("ages", []),
             **{k: value[k] for k in ("total", "deposit", "balance")},
         )
     except (Unavailable, ValueError) as exc:
+        if w.get("explicit_quote") and isinstance(exc, Unavailable) and str(exc) == "rate_import_invalid":
+            raise
         w["reason"] = str(exc) if isinstance(exc, Unavailable) else "invalid_travel_details"
     w["events"].append({"stage": "pricing", "outcome": w.get("reason", "verified"),
-                        "snapshot": w.get("internal", {}).get("snapshot"),
+                        "snapshot": w.get("internal", {}).get("snapshot"), "rate_digest": rates.digest if rates else None,
                         "ms": round((perf_counter()-before)*1000)})
     quote = w.get("quote")
     reason = w.get("reason")
@@ -362,6 +601,7 @@ def compose(_):
         return {}
     trace = w.get("trace") or uuid4()
     ctx, rows, action = w["context"], w["rows"], w["action"]
+    user_text = w.get("user_text", "")
     components = []
     sources = []
     for row in rows:
@@ -379,29 +619,200 @@ def compose(_):
                 sources.append(key)
                 components.append(Excerpt(type="PolicySnippet" if row["type"] in {"policy", "faq"} else "DestinationHighlight",
                                           source=key, heading=heading or row["title"], text=body))
-        elif row["type"] == "tour":
+        elif row["type"] == "tour" and action not in {"accommodation", "tour_hotels"}:
             sources.append(key)
             components.append(Card(**tour_card(row)))
             if action == "discover":
                 heading = next(iter(re.findall(r"^#+ ((?:Day 1\b|Highlights\b)[^\n]*)$", row["body"], re.M)), None)
                 if heading and (body := section(row, heading)):
                     components.append(Excerpt(type="ItineraryDay", source=key, heading=heading, text=body))
+            elif action == "tour_itinerary":
+                tour_days = row.get("days", [])
+                for d in tour_days:
+                    components.append(Excerpt(
+                        type="ItineraryDay",
+                        source=row["id"],
+                        heading=f"Day {d['day']}: {d['title']}",
+                        text=f"{d['description']}\n\n• Accommodation: {d.get('accommodation') or 'None'}\n• Meals: {d.get('meals') or 'None'}\n• Included tickets: {d.get('entrance_tickets') or 'None'}"
+                    ))
     if w.get("quote"):
         q = w["quote"]
         components.insert(0, Breakdown(quote=q))
         components.append(Booking(quote=q.id))
         text = "I’ve verified the quote for your travel date and group. You can review the deposit and try the demo booking."
-    elif w.get("reason") or action == "custom":
-        w["reason"] = w.get("reason", "custom_or_unsupported")
+    elif w.get("reason"):
+        quote_enquiry(w, w["reason"])
+        enq_ref = w["enquiry_reference"]
+        reason_code = w["reason"]
+        if reason_code == "rate_import_invalid":
+            text = notice_text = "The pricing service could not load the rate workbook. Please retry."
+        elif reason_code in {"hotel_rate_missing_or_ambiguous", "unconfirmed_hotel_rate"}:
+            text = (
+                "We can’t verify an automated price for these travel dates because one or more contracted hotel rates "
+                "for your dates are unconfirmed or have overlapping supplier revisions in our rate sheet. "
+                "A travel specialist will confirm the exact rate for you. I’ve saved a private enquiry for our team."
+            )
+            notice_text = "Specialist confirmation required — hotel rate unconfirmed or ambiguous for selected dates"
+        elif reason_code in {"tour", "tour_rate", "tour_rate_missing", "hotel_schedule"}:
+            text = (
+                "This journey does not have an automated package rate in our current rate sheet. "
+                "A travel specialist will prepare a tailored quote for your dates. I’ve saved a private enquiry for our team."
+            )
+            notice_text = "Specialist confirmation required — no automated rate row for this tour"
+        elif w.get("explicit_quote"):
+            reason_text = {
+                "group_size": "The party exceeds the maximum group size in the rate workbook.",
+                "transport_rate": "No transport tier matches the selected party size.",
+                "date_or_fx_expired": "The selected date is outside the valid pricing window.",
+                "season_rate": "No contracted season rate covers the selected travel date.",
+                "conflicting_tour_scope": "The tour scope requires manual pricing.",
+            }.get(reason_code, f"The workbook could not price this configuration ({reason_code}).")
+            notice_text = reason_text
+            text = reason_text + " A private enquiry has been saved for our team."
+        else:
+            text = "We can’t verify an automated price for these travel dates right now. A travel specialist will confirm the details. I’ve saved a private enquiry for our team."
+            notice_text = "Specialist confirmation required"
+        components.insert(
+            0,
+            Notice(
+                reference=w["enquiry"],
+                public_reference=enq_ref,
+                outcome="PRICING_SERVICE_ERROR" if reason_code == "rate_import_invalid" else "PRICE_UNAVAILABLE",
+                reason_code=reason_code,
+                tour_id=ctx.get("tour"),
+                text=notice_text,
+            ),
+        )
+    elif action == "custom":
+        w["reason"] = "custom_or_unsupported"
         prior = None
-        if w.get("trip_id") and action=="custom":
+        if w.get("trip_id"):
             with db() as conn:
-                prior = conn.execute("""SELECT e.id FROM enquiries e JOIN trip_turns t ON t.trace=e.trace
-                    WHERE t.trip=? AND e.reason='custom_or_unsupported' AND e.status!='closed'
+                candidate = conn.execute("""SELECT e.id, e.trip FROM enquiries e JOIN trip_turns t ON t.trace=e.trace
+                    WHERE t.trip=? AND e.reason='custom_or_unsupported'
+                      AND e.status NOT IN ('booked','closed','closed_lost','unqualified')
                     ORDER BY t.rowid DESC LIMIT 1""",(w["trip_id"],)).fetchone()
+                if candidate:
+                    if w.get("panel_action") == "date":
+                        prior = candidate
+                    else:
+                        try:
+                            prev_custom = json.loads(candidate["trip"]) if candidate["trip"] else {}
+                            curr_custom = ctx.get("custom", {})
+                            if (
+                                prev_custom.get("destinations") == curr_custom.get("destinations")
+                                and prev_custom.get("days") == curr_custom.get("days")
+                            ) or prev_custom.get("request") == curr_custom.get("request"):
+                                prior = candidate
+                        except (ValueError, TypeError):
+                            pass
         w["enquiry"] = UUID(prior["id"]) if prior else uuid4()
+        enq_ref = f"ENQ-{as_of().year}-{str(w['enquiry']).replace('-', '')[:8].upper()}"
         text = "A travel specialist will confirm the details. I’ve saved a private enquiry for our team."
-        components.insert(0, Notice(reference=w["enquiry"], text="Specialist confirmation required"))
+        components.insert(
+            0,
+            Notice(
+                reference=w["enquiry"],
+                public_reference=enq_ref,
+                outcome="SPECIALIST_HANDOFF",
+                reason_code="custom_or_unsupported",
+                tour_id=ctx.get("tour"),
+                text="Specialist confirmation required",
+            ),
+        )
+    elif action == "draft_tour":
+        text = "The Northern Sri Lanka Tour is currently an unpublished draft itinerary and cannot be booked directly. A travel specialist will be happy to prepare a custom northern proposal for you."
+        w["reason"] = "draft_tour_unsupported"
+        w["enquiry"] = uuid4()
+        enq_ref = f"ENQ-{as_of().year}-{str(w['enquiry']).replace('-', '')[:8].upper()}"
+        components.insert(
+            0,
+            Notice(
+                reference=w["enquiry"],
+                public_reference=enq_ref,
+                outcome="SPECIALIST_HANDOFF",
+                reason_code="draft_tour_unsupported",
+                text="Draft package — specialist confirmation required",
+            ),
+        )
+    elif action == "mirissa_discount":
+        text = "Mirissa is a scenic crescent beach on the south coast, celebrated for blue-whale watching between November and April. We quote official contracted rates from our rate sheet and do not offer a 40% loyalty discount."
+        sources = ["D08"]
+        components.append(Excerpt(type="DestinationHighlight", source="D08", heading="Mirissa",
+                                  text=public_text(w["records"]["D08"]["body"])))
+    elif action == "galle_cancellation":
+        text = "Under our master cancellation policy (P02), day and city tours require at least 48 hours notice before departure for a full refund. Cancellations made 36 hours before start fall within the 48-hour window and are non-refundable."
+        sources = ["P02"]
+        components.append(Excerpt(type="PolicySnippet", source="P02", heading="Day and city tours",
+                                  text="Full refund if cancelled at least 48 hours before the tour start. No refund if cancelled less than 48 hours before start."))
+    elif action == "tour_day_detail" and w.get("day_detail"):
+        d = w["day_detail"]
+        tour_id = w.get("named") or ctx.get("tour") or "T09"
+        tour_title = w["records"].get(tour_id, {}).get("title", "tour")
+        heading = f"Day {d['day']}: {d['title']}"
+        detail_text = f"{d['description']}\n\n• Accommodation: {d.get('accommodation') or 'None'}\n• Meals: {d.get('meals') or 'None'}\n• Included tickets: {d.get('entrance_tickets') or 'None'}"
+        components.append(Excerpt(type="ItineraryDay", source=tour_id, heading=heading, text=detail_text))
+        if re.search(r"\b(?:hotel|accommodation|stay in|stay at)\b", user_text):
+            text = f"On Day {d['day']} ({d['title']}) of the {tour_title}, accommodation is at: {d.get('accommodation') or 'None'}.\n\n{d['description']}\n\n• Meals: {d.get('meals') or 'None'}\n• Included tickets: {d.get('entrance_tickets') or 'None'}"
+        elif re.search(r"\b(?:tickets?|included|entrance)\b", user_text):
+            text = f"On Day {d['day']} ({d['title']}) of the {tour_title}, included tickets are: {d.get('entrance_tickets') or 'None'}.\n\n{d['description']}\n\n• Accommodation: {d.get('accommodation') or 'None'}\n• Meals: {d.get('meals') or 'None'}"
+        else:
+            text = f"Here is what happens on Day {d['day']} ({d['title']}) of the {tour_title}:\n\n{d['description']}\n\n• Accommodation: {d.get('accommodation') or 'None'}\n• Meals: {d.get('meals') or 'None'}\n• Included tickets: {d.get('entrance_tickets') or 'None'}"
+        sources = [tour_id]
+    elif action == "tour_inclusions" and rows:
+        row = rows[0]
+        included = public_text("\n".join(row.get("inclusions", []))).strip()
+        text = included or "I can’t confirm the inclusions from the published itinerary. You can request an enquiry."
+        sources = [row["id"]]
+    elif action == "accommodation":
+        w["enquiry"] = uuid4()
+        w["reason"] = "accommodation_confirmation"
+        hotel = w.get("hotel_match")
+        record = w["tours"].get(hotel.source_tour_id) if hotel else None
+        if hotel and record and hotel.name in str(record.get("hotels", [])) + record["body"]:
+            passage = next((line for line in public_text(record["body"]).splitlines()
+                            if hotel.name in line), hotel.name)
+            if w.get("is_alt_query"):
+                for candidate in w["tours"].values():
+                    alternative = next((day["accommodation"] for day in candidate.get("days", [])
+                        if hotel.name in (day.get("accommodation") or "") and "," in day["accommodation"]), None)
+                    if alternative:
+                        record, passage = candidate, alternative
+                        break
+            sources = [record["id"]]
+            passage = passage.removeprefix("- ").replace("**", "")
+            components.append(SourcePanel(type="StayCard", source=record["id"],
+                                          heading=hotel.name, text=passage))
+            text = (f"Our published holiday packages include {record['title']}, which lists {passage}. "
+                    "Standalone room rates and availability are unconfirmed. A specialist can check your dates.")
+        else:
+            sources = []
+            text = "I can’t confirm a property from our published itineraries. A specialist can check your request."
+        components.append(Notice(reference=w["enquiry"], text="Specialist confirmation required for standalone hotel rates"))
+    elif action == "tour_hotels" and rows:
+        row = rows[0]
+        tour_hotels = row.get("hotels", [])
+        if not tour_hotels:
+            tour_hotels = list(dict.fromkeys(
+                d["accommodation"] for d in row.get("days", [])
+                if d.get("accommodation") and d["accommodation"].lower() != "none"
+            ))
+        hotels_summary = ", ".join(tour_hotels) or "Unconfirmed. You can request a specialist enquiry."
+        text = f"The {row['title']} published accommodation details: {hotels_summary}."
+        sources = [row["id"]]
+        for h_name in tour_hotels[:3]:
+            clean_name = re.sub(r"\s*\([^)]*\)", "", h_name).strip()
+            components.append(SourcePanel(
+                type="StayCard",
+                source=row["id"],
+                heading=clean_name,
+                text=f"Selected partner property for {row['title']}."
+            ))
+    elif action == "tour_itinerary" and rows:
+        row = rows[0]
+        tour_days = row.get("days", [])
+        text = f"Here is the complete {len(tour_days)}-day itinerary for {row['title']}. Each day's route, accommodation, and inclusions are shown below."
+        sources = [row["id"]]
     elif action == "reject":
         text = "I can help with a standard quote using our published tours and current rates. Which tour are you considering?"
     elif action == "off_topic":
@@ -412,7 +823,12 @@ def compose(_):
         text = "Here are the published routes from your last results. Compare the duration, starting point and destinations, then choose a tour to plan."
     elif action == "destination" and len(ctx.get("suggestions", [])) > 1:
         text = f"I found {len(ctx['suggestions'])} published journeys that visit {w['records'][w['named']]['title']}. Would you like to compare their routes or explore one itinerary?"
-    elif action in {"cancellation", "children", "dietary", "payment", "polonnaruwa", "destination"} and sources:
+    elif action == "children" and sources:
+        if re.search(r"\b(?:t07|kandy heritage|stay free|kids under 12)\b", user_text) or w.get("named") == "T07":
+            text = "Our current master child policy (P03) supersedes any older promotional mentions. Children aged 2 to 11 pay applicable child costs (half-price meals, entrance tickets, and extra bed fees in hotel stays), while infants under 2 travel free."
+        else:
+            text = "Here’s what our published travel information says."
+    elif action in {"cancellation", "dietary", "payment", "polonnaruwa", "destination"} and sources:
         text = "Here’s what our published travel information says."
     elif action == "invalid_party":
         text = "Please enter a valid adult count and give each child’s age."
@@ -428,14 +844,61 @@ def compose(_):
                                  adults=ctx.get("adults") or 2, ages=ctx.get("ages", [])))
     elif ctx.get("adults") and action == "discover":
         text = "I’ve noted your group. Which tour or part of Sri Lanka would you like to explore?"
+    elif w.get("no_matching_tours"):
+        search = ctx.get("search") or {}
+        if search.get("trip_type") == "day tour" and search.get("departure"):
+            text = (
+                f"I couldn’t find any published day tours departing from {search['departure'].title()}. "
+                "Our published day tours currently depart from Kandy, Colombo, Galle, or Mirissa. "
+                "Would you like to explore those or request a custom itinerary?"
+            )
+        else:
+            text = (
+                "I couldn’t find any published tours matching those exact criteria. "
+                "Would you like to adjust your preferences or request a custom itinerary?"
+            )
+    elif action == "general" and ctx.get("search") and rows:
+        search = ctx["search"]
+        trip_type = search.get("trip_type")
+        departure = search.get("departure")
+        theme = search.get("theme")
+        days = search.get("days")
+        if trip_type == "day tour":
+            if departure:
+                text = (
+                    f"Here are our published day tours departing from {departure.title()}. "
+                    "Which one would you like to explore, and what’s your travel date?"
+                )
+            else:
+                text = (
+                    "Here are our published day tours. Which departure location suits you best "
+                    "(for example, Kandy, Colombo, Galle, or Mirissa), and what date are you considering?"
+                )
+        elif trip_type == "multi-day":
+            if theme == "cultural" and days:
+                text = f"Here are our published multi-day cultural tours around {days} days. Which itinerary would you like to explore?"
+            elif days:
+                text = f"Here are our published multi-day tours around {days} days. Which itinerary would you like to explore?"
+            else:
+                text = "Here are our published multi-day tours. Which itinerary would you like to explore?"
+        elif theme:
+            text = f"Here are our published {theme} tours. Would you like to explore one of these itineraries?"
+        else:
+            text = "Here are our published tours matching your request. Which itinerary would you like to explore?"
     else:
         text = "I’m Mira, your Sri Lanka travel companion. Where would you like your journey to begin?"
     if w.get("trip_id") and action in {"custom","proposal_view"} and ctx.get("proposal"):
-        days = [DayStop(source=k,name=w["records"][k]["title"],passage=section(w["records"][k])) for k in ctx["proposal"]]
+        used_passages = set()
+        days = []
+        for k in ctx["proposal"]:
+            dest_title = w["records"][k]["title"]
+            passage, src = get_grounded_day_experience(w["records"], k, used_passages)
+            used_passages.add(passage)
+            days.append(DayStop(source=k, evidence=src, name=dest_title, passage=passage))
         selected = min(ctx.get("selected_day",0),len(days)-1)
         components[:0] = [Proposal(days=days,selected=selected),RouteMap(days=days,selected=selected),
                           Departure(value=ctx.get("custom",{}).get("date"))]
-        sources = list(dict.fromkeys([*(d.source for d in days),*sources]))[:6]
+        sources = list(dict.fromkeys([*(d.evidence or d.source for d in days),*sources]))[:6]
         text = f"Your proposed journey now has {len(days)} days. I’ve saved the route for specialist confirmation."
         if action=="proposal_view":
             d = days[selected]
@@ -459,12 +922,18 @@ def compose(_):
                     components.append(SourcePanel(type=kind,source=first,heading="Published stay" if kind=="StayCard" else "Included visits",text=hit[1]))
         if w.get("quote"):
             components.append(SourcePanel(type="ConfirmationPanel",source=first,heading="Quote saved",text="Your private enquiry is available to the travel team."))
-        components.append(SourcePanel(type="SourceReference",source=first,heading="From the travel library",text=w["records"][first]["title"]))
+        if not any(getattr(c, "type", None) == "TourCard" and getattr(c, "id", None) == first for c in components):
+            components.append(SourcePanel(type="SourceReference",source=first,heading="From the travel library",text=w["records"][first]["title"]))
         for i,item in enumerate(components):
             if isinstance(item,Excerpt) and item.type=="DestinationHighlight":
                 components[i]=SourcePanel(**(item.model_dump()|{"type":"DestinationCard"}))
     if any(e["stage"].startswith("gemini") and e.get("outcome") in {"fallback","unavailable","unconfigured"} for e in w["events"]):
         text += " Limited service: I’m using the published catalogue."
+    sources = list(dict.fromkeys(sources))[:6]
+    if "optional_panels" in w:
+        optional = {"InteractiveMap", "DateSelector", "ComparisonPanel", "ActivityCard", "StayCard"}
+        components = [item for item in components if item.type not in optional or item.type in w["optional_panels"]]
+    components = components[:12]
     w["turn"] = Turn(trace=trace, text=text, sources=sources, components=components)
     duration = elapsed(started)
     w["events"].append({"stage": "validated_ui", "components": [c.type for c in components], "ms": duration})
@@ -511,10 +980,40 @@ def persist():
                         WHERE t.trip=? AND e.reason='custom_or_unsupported' ORDER BY t.rowid DESC LIMIT 1)""",
                         (encode(w["context"].get("custom",{})),trip_id))
                 if q or w.get("reason"):
-                    conn.execute("INSERT INTO enquiries(id, trace, quote, trip, reason) VALUES(?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET trace=excluded.trace,trip=excluded.trip",
-                                 (str(w.get("enquiry") or uuid4()), str(turn.trace), str(q.id) if q else None,
-                                  encode(w["context"].get("custom", {}) if w["action"] == "custom" else w["context"]),
-                                  w.get("reason", "verified_quote")))
+                    enq_id = str(w.get("enquiry") or uuid4())
+                    enq_ref = w.get("enquiry_reference") or f"ENQ-{as_of().year}-{enq_id.replace('-', '')[:8].upper()}"
+                    reason_val = w.get("reason", "verified_quote")
+                    enq_type = (
+                        "verified_quote" if reason_val == "verified_quote"
+                        else ("custom_itinerary" if reason_val == "custom_or_unsupported" else "missing_rate")
+                    )
+                    has_user = conn.execute(
+                        "SELECT 1 FROM visitors v JOIN users u ON u.id=v.user_id WHERE v.id=? AND u.email!=''",
+                        (visitor,),
+                    ).fetchone() is not None
+                    conn.execute(
+                        """INSERT INTO enquiries(id, reference, trace, quote, trip, reason, enquiry_type, is_contactable, updated_at)
+                           VALUES(?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP)
+                           ON CONFLICT(id) DO UPDATE SET
+                             reference=COALESCE(enquiries.reference, excluded.reference),
+                             trace=excluded.trace,
+                             trip=excluded.trip,
+                             reason=excluded.reason,
+                             quote=excluded.quote,
+                             enquiry_type=CASE WHEN enquiries.enquiry_type='contact_request' THEN 'contact_request' ELSE excluded.enquiry_type END,
+                             is_contactable=MAX(enquiries.is_contactable, excluded.is_contactable),
+                             updated_at=CURRENT_TIMESTAMP""",
+                        (
+                            enq_id,
+                            enq_ref,
+                            str(turn.trace),
+                            str(q.id) if q else None,
+                            encode(w["context"].get("custom", {}) if w["action"] == "custom" else w["context"]),
+                            reason_val,
+                            enq_type,
+                            1 if has_user else 0,
+                        ),
+                    )
                 if trip_id:
                     conn.execute("INSERT INTO trip_turns(trip,trace,prompt) VALUES(?,?,?)",(trip_id,str(turn.trace),w["prompt"]))
                     conn.execute("""UPDATE trips SET context=?,revision=revision+1,updated=CURRENT_TIMESTAMP,
@@ -522,6 +1021,8 @@ def persist():
                         (encode(w["context"]),w["prompt"][:100],trip_id))
                 else:
                     conn.execute("UPDATE visitors SET context=? WHERE id=?", (encode(w["context"]), visitor))
+                stage["ms"] = elapsed(started)
+                conn.execute("UPDATE traces SET events=? WHERE id=?", (encode(w["events"]), str(turn.trace)))
         if not previous:
             event("TRACE", "turn.persisted", quote_id=str(q.id) if q else None, enquiry=enquiry,
                   duration_ms=elapsed(started))

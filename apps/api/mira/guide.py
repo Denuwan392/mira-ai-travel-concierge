@@ -7,7 +7,7 @@ from .data import public_text, tour_card
 
 def guide(records):
     destinations = {
-        Path(row["path"]).stem: {"id": row["id"], "name": row["title"]}
+        Path(row["path"]).stem: {"id": row["id"], "name": row["title"], "description": tour_card(row)["summary"]}
         for row in records.values() if row["type"] == "destination"
     }
     tours = []
@@ -23,4 +23,10 @@ def guide(records):
                              "body": content.strip().replace("**", "")})
         tours.append({**tour_card(row), "places": [slug for slug in row["destinations"] if slug in destinations],
                       "days": days})
-    return {"places": destinations, "tours": tours}
+    pages = [{"id": row["id"], "title": row["title"], "slug": Path(row["path"]).stem}
+             for row in records.values() if row["type"] in {"policy", "faq", "page"} and row["id"] != "P06"]
+    details = {row["id"]: {
+        "included": public_text("\n".join(row.get("inclusions", []))).splitlines(),
+        "excluded": public_text("\n".join(row.get("exclusions", []))).splitlines(),
+    } for row in records.values() if row["type"] == "tour"}
+    return {"places": destinations, "tours": tours, "pages": pages, "details": details}
