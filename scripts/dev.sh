@@ -2,6 +2,7 @@
 set -eu
 cd "$(dirname "$0")/.."
 
+cli_mira_db=${MIRA_DB-}
 cli_log_level=${LOG_LEVEL-}
 cli_log_format=${LOG_FORMAT-}
 cli_llm_details=${LOG_LLM_DETAILS-}
@@ -9,6 +10,9 @@ if [ -f .env ]; then
   set -a
   . ./.env
   set +a
+fi
+if [ -n "$cli_mira_db" ]; then
+  export MIRA_DB="$cli_mira_db"
 fi
 export LOG_LEVEL="${cli_log_level:-${LOG_LEVEL:-INFO}}"
 export LOG_FORMAT="${cli_log_format:-${LOG_FORMAT:-pretty}}"
@@ -27,4 +31,5 @@ if [ -x .venv/bin/python ]; then
   .venv/bin/python scripts/dev.py --check-ports
 fi
 ./scripts/setup.sh
+npm --prefix apps/ceylon-compass run workspace:build
 exec .venv/bin/python scripts/dev.py

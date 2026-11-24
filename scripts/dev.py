@@ -55,6 +55,14 @@ def relay(pipe, component, port, severity):
                     continue
             if re.search(r"\bready in \d", line, re.I):
                 event(component, "server.ready", port=port)
+            elif match := re.match(r"^(GET|POST|PUT|PATCH|DELETE|HEAD)\s+(\S+)\s+(\d{3})\s+in\s+(\d+)ms\b", line):
+                method, path, status, duration = match.groups()
+                # Quiet noisy static assets and internal proxy calls in dev console
+                is_static = path.startswith(("/_next/static", "/_next/image", "/favicon.ico"))
+                is_proxy = path.startswith("/api/copilotkit/agent")
+                event(component, "frontend.request", method=method, path=path, status=int(status),
+                      duration_ms=int(duration),
+                      level=logging.DEBUG if (is_static or is_proxy) else logging.INFO)
             elif match := re.match(r"^(GET|POST|PUT|PATCH|DELETE|HEAD)\s+\S+\s+(\d{3})\s+in\s+(\d+)ms\b", line):
                 method, status, duration = match.groups()
                 event(component, "frontend.request", method=method, status=int(status), duration_ms=int(duration))

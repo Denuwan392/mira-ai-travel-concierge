@@ -39,3 +39,11 @@ mcp-smoke:
 .PHONY: notebook-browser
 notebook-browser:
 	node apps/ceylon-compass/tests/notebook.cjs
+
+.PHONY: workspace-browser
+workspace-browser:
+	./scripts/test-workspace.sh
+
+.PHONY: demo-db
+demo-db:
+	$(PYTHON) scripts/init_demo_db.py --force

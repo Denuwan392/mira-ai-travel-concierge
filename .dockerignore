@@ -10,3 +10,7 @@
 !apps/api/mira/migrations/env.py
 !apps/api/mira/migrations/versions/
 !apps/api/mira/migrations/versions/*.py
+
+!evals/
+!evals/report/
+!evals/report/report.json

@@ -5,6 +5,9 @@ services:
       dockerfile: apps/api/Dockerfile
     environment:
       AS_OF_DATE: ${AS_OF_DATE:-2026-11-19}
+      MIRA_EVAL_REPORT: /evals/report/report.json
+      MIRA_ADMIN_EMAIL: ${MIRA_ADMIN_EMAIL:-}
+      MIRA_ADMIN_PASSWORD: ${MIRA_ADMIN_PASSWORD:-}
       MIRA_DATA: /sources/ceylon-compass-dataset
       MIRA_DB: /state/mira.sqlite3
       MIRA_ORIGIN: ${MIRA_ORIGIN:-http://127.0.0.1:3000}
