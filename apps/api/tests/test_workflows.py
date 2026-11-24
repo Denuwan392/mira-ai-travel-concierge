@@ -50,7 +50,13 @@ def test_mock_booking_failure_success_retry(app_client):
     assert app_client.post("/api/bookings/mock", json=body).json() == {"status": "declined"}
     first = app_client.post("/api/bookings/mock", json={"quote": str(q.id)}).json()
     assert first["status"] == "success"
-    assert app_client.post("/api/bookings/mock", json=body).json() == first
+    # Repeated successful booking remains idempotent
+    assert app_client.post("/api/bookings/mock", json={"quote": str(q.id), "scenario": "success"}).json() == first
+    # Subsequent explicit failure simulation reports the failure without overwriting the confirmed booking
+    after_decline = app_client.post("/api/bookings/mock", json=body).json()
+    assert after_decline == {"status": "declined", "confirmed_reference": first["reference"]}
+    # Confirm booking remains intact
+    assert app_client.post("/api/bookings/mock", json={"quote": str(q.id)}).json() == first
 
 
 def test_consent_resume_forget(app_client):

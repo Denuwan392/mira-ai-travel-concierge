@@ -14,4 +14,13 @@ describe("App routing", () => {
 
     expect(matches.at(-1)?.routeId).not.toBe(rootRouteId);
   });
+
+  it("matches all authentication and staff routes", () => {
+    const router = createRouter({ routeTree, context: { queryClient: new QueryClient() } });
+
+    for (const path of ["/login", "/register", "/profile", "/quotes", "/staff"]) {
+      const matches = router.matchRoutes(path);
+      expect(matches.at(-1)?.routeId).not.toBe(rootRouteId);
+    }
+  });
 });

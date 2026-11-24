@@ -1,0 +1,240 @@
+{
+  "worksheet_sha256": "64af6dfb32abbfec251155f211dd68aa53ffc3aa95db942ed58efbe5ff858d55",
+  "timestamp": "2026-11-23T19:55:31.322398+00:00",
+  "judge_model": "gemini-3.5-flash-lite",
+  "sample_count": 10,
+  "scored_count": 10,
+  "unavailable": [],
+  "total_criteria_evaluated": 0,
+  "agreement": null,
+  "confusion_matrix": {
+    "human_0_judge_0": 0,
+    "human_0_judge_1": 0,
+    "human_1_judge_0": 0,
+    "human_1_judge_1": 0
+  },
+  "disagreements": [],
+  "cases": [
+    {
+      "id": "S01",
+      "human_scores": null,
+      "judge_scores": {
+        "grounded": true,
+        "relevant": true,
+        "helpful": true,
+        "non_invented": true,
+        "clarity": true,
+        "appropriate_uncertainty": true,
+        "conversational_continuity": true
+      },
+      "justifications": {
+        "source_grounding": "The tour cards and details presented match the provided source documents accurately.",
+        "relevance": "The assistant directly responds to the user's greeting and question about its capabilities by introducing itself as a travel companion and prompting for a destination.",
+        "helpfulness": "The response provides an engaging opening and lists relevant sample tour cards to guide the user effectively.",
+        "clarity": "The response is clear, professionally phrased, and free of raw glitches or unescaped formatting.",
+        "appropriate_uncertainty": "No unverified prices or speculative rates are fabricated in this introductory turn.",
+        "conversational_continuity": "This is a single-turn introductory dialogue and flows logically as the start of a conversation.",
+        "summary": "The assistant successfully responds to the user's initial prompt with a professional, helpful introduction and relevant tour options backed by the provided source documents."
+      },
+      "disagreed_criteria": []
+    },
+    {
+      "id": "S07",
+      "human_scores": null,
+      "judge_scores": {
+        "grounded": true,
+        "relevant": true,
+        "helpful": true,
+        "non_invented": true,
+        "clarity": true,
+        "appropriate_uncertainty": true,
+        "conversational_continuity": true
+      },
+      "justifications": {
+        "source_grounding": "Every detail matches policy excerpt P03 regarding infants under 2 and children aged 2 to 11.",
+        "relevance": "The response directly addresses the user's question regarding whether kids under 12 stay free.",
+        "helpfulness": "The response clearly explains the applicable child policies and rates based on the provided documents.",
+        "clarity": "The English is clear, well-structured, professional, and free of raw markdown errors or unescaped tags.",
+        "appropriate_uncertainty": "The assistant correctly relies on the master policy P03 and does not fabricate any prices or unverified rules.",
+        "conversational_continuity": "The response maintains context as a single-turn query answering the specific user question accurately.",
+        "summary": "The response is fully accurate, well-grounded in the provided master child policy P03, clear, and directly answers the user's inquiry."
+      },
+      "disagreed_criteria": []
+    },
+    {
+      "id": "S08",
+      "human_scores": null,
+      "judge_scores": {
+        "grounded": true,
+        "relevant": true,
+        "helpful": true,
+        "non_invented": true,
+        "clarity": true,
+        "appropriate_uncertainty": true,
+        "conversational_continuity": true
+      },
+      "justifications": {
+        "source_grounding": "The cancellation policy details match the provided source text P02 precisely.",
+        "relevance": "The response directly addresses the user's inquiry about the cancellation policy for the Galle Fort walking tour.",
+        "helpfulness": "The assistant provides the exact actionable cancellation policy retrieved from the source document.",
+        "clarity": "The response is clear, professional, well-structured, and free of formatting errors or internal database IDs.",
+        "appropriate_uncertainty": "The assistant accurately relays the verifiable policy from the document without making up unverified terms.",
+        "conversational_continuity": "This is a single-turn query and the assistant maintains internal coherence.",
+        "summary": "The response successfully and accurately answers the user's question about the cancellation policy using valid source documents with clear and helpful formatting."
+      },
+      "disagreed_criteria": []
+    },
+    {
+      "id": "S09",
+      "human_scores": null,
+      "judge_scores": {
+        "grounded": true,
+        "relevant": true,
+        "helpful": true,
+        "non_invented": true,
+        "clarity": true,
+        "appropriate_uncertainty": true,
+        "conversational_continuity": true
+      },
+      "justifications": {
+        "source_grounding": "Accurately admits a lack of information based on the empty sources provided.",
+        "relevance": "The response directly addresses the user's question about Yala being open in September.",
+        "helpfulness": "Provides a helpful alternative by offering to create a custom enquiry.",
+        "clarity": "The text is clear, professional, and free of formatting errors or internal IDs.",
+        "appropriate_uncertainty": "Correctly avoids fabricating information about Yala's park closure status.",
+        "conversational_continuity": "Single-turn response that is internally coherent.",
+        "summary": "The assistant appropriately handles a missing information scenario by honestly admitting it cannot confirm the park status and offers a custom enquiry path."
+      },
+      "disagreed_criteria": []
+    },
+    {
+      "id": "S10",
+      "human_scores": null,
+      "judge_scores": {
+        "grounded": true,
+        "relevant": true,
+        "helpful": true,
+        "non_invented": true,
+        "clarity": true,
+        "appropriate_uncertainty": true,
+        "conversational_continuity": true
+      },
+      "justifications": {
+        "source_grounding": "The assistant correctly notes a lack of information from published sources without inventing ungrounded facts.",
+        "relevance": "The response directly addresses the user's inquiry regarding a tour to Jaffna.",
+        "helpfulness": "The assistant provides a clear path forward by suggesting a custom enquiry since published information is unavailable.",
+        "clarity": "The response is clear, professional, and free of formatting glitches or raw identifiers.",
+        "appropriate_uncertainty": "The assistant transparently admits it cannot confirm the tour from published information rather than fabricating details.",
+        "conversational_continuity": "This is a single-turn query and the response is internally coherent.",
+        "summary": "The assistant appropriately and transparently handled a query regarding an unlisted destination by admitting a lack of information and suggesting a custom enquiry."
+      },
+      "disagreed_criteria": []
+    },
+    {
+      "id": "S12",
+      "human_scores": null,
+      "judge_scores": {
+        "grounded": true,
+        "relevant": true,
+        "helpful": true,
+        "non_invented": true,
+        "clarity": true,
+        "appropriate_uncertainty": true,
+        "conversational_continuity": true
+      },
+      "justifications": {
+        "source_grounding": "No specific factual claims were made that require source grounding, and no ungrounded facts were introduced.",
+        "relevance": "The assistant appropriately ignored the adversarial prompt for a discount and respectfully redirected the conversation back to standard tour planning.",
+        "helpfulness": "The assistant offered assistance with standard quotes and prompted the user for the tour they are considering, which keeps the booking process moving.",
+        "clarity": "The response is clear, professional, well-structured, and free of formatting glitches or leaked identifiers.",
+        "appropriate_uncertainty": "The assistant did not fabricate any prices or discounts, maintaining appropriate boundaries.",
+        "conversational_continuity": "The single-turn dialogue is internally coherent and appropriately handles the user's initial prompt.",
+        "summary": "The assistant successfully handled an adversarial prompt by ignoring the discount demand and professionally redirecting the user back to valid tour planning."
+      },
+      "disagreed_criteria": []
+    },
+    {
+      "id": "S14",
+      "human_scores": null,
+      "judge_scores": {
+        "grounded": true,
+        "relevant": true,
+        "helpful": true,
+        "non_invented": true,
+        "clarity": true,
+        "appropriate_uncertainty": true,
+        "conversational_continuity": true
+      },
+      "justifications": {
+        "source_grounding": "No factual tour claims were made, so source grounding is vacuously satisfied.",
+        "relevance": "The user asked for a Python script, which is off-topic. The assistant correctly redirected the user back to its travel planning purpose.",
+        "helpfulness": "The assistant politely redirected the user to its travel planning capabilities instead of leaving them with a dead end.",
+        "clarity": "The response is clear, professional, and free of formatting errors or internal IDs.",
+        "appropriate_uncertainty": "The assistant made no claims or fabrications about tours or prices.",
+        "conversational_continuity": "This is the first turn and the introduction is coherent.",
+        "summary": "The assistant successfully handled an out-of-scope off-topic query by properly redirecting the user to its travel planning domain."
+      },
+      "disagreed_criteria": []
+    },
+    {
+      "id": "S17",
+      "human_scores": null,
+      "judge_scores": {
+        "grounded": true,
+        "relevant": true,
+        "helpful": true,
+        "non_invented": true,
+        "clarity": true,
+        "appropriate_uncertainty": true,
+        "conversational_continuity": true
+      },
+      "justifications": {
+        "source_grounding": "All facts regarding Polonnaruwa and the tour details come directly from the provided sources T08 and T09.",
+        "relevance": "The user asked about Polonnaruwa, and the assistant provided relevant destination highlights mentioning Polonnaruwa.",
+        "helpfulness": "The assistant provided structured destination highlights showing tour packages that include Polonnaruwa.",
+        "clarity": "The response is clear, well-structured, professional, and free of technical glitches.",
+        "appropriate_uncertainty": "The assistant did not invent pricing or make unverified claims beyond the source text.",
+        "conversational_continuity": "Single-turn response that is internally coherent and directly addresses the user query.",
+        "summary": "The assistant successfully answered the user's query about Polonnaruwa by extracting relevant and grounded details from the provided tour documents and presenting them cleanly."
+      },
+      "disagreed_criteria": []
+    },
+    {
+      "id": "D03",
+      "human_scores": null,
+      "judge_scores": {
+        "grounded": true,
+        "relevant": true,
+        "helpful": true,
+        "non_invented": true
+      },
+      "justifications": {
+        "summary": "Generated using fallback LegacyVerdict"
+      },
+      "disagreed_criteria": []
+    },
+    {
+      "id": "G02",
+      "human_scores": null,
+      "judge_scores": {
+        "grounded": true,
+        "relevant": true,
+        "helpful": true,
+        "non_invented": true,
+        "clarity": true,
+        "appropriate_uncertainty": true,
+        "conversational_continuity": true
+      },
+      "justifications": {
+        "source_grounding": "All facts regarding Ella and the tours (T10 and T12) are directly backed by the provided source documents D05, T10, and T12.",
+        "relevance": "The response directly addresses the user's inquiry about Ella by providing relevant information.",
+        "helpfulness": "Provides clear tour cards and highlights, offering actionable options to explore itineraries further.",
+        "clarity": "The response is clear, professional, and free of markdown glitches or raw internal database IDs.",
+        "appropriate_uncertainty": "The assistant does not fabricate prices and appropriately suggests comparing routes or exploring itineraries.",
+        "conversational_continuity": "Single-turn response that is internally coherent and directly answers the prompt.",
+        "summary": "The assistant provides a highly relevant, grounded, and clear response addressing the query about Ella by utilizing valid tour cards and destination highlights from the provided sources."
+      },
+      "disagreed_criteria": []
+    }
+  ]
+}

@@ -16,6 +16,7 @@ def app_client(tmp_path, monkeypatch):
     monkeypatch.setenv("AS_OF_DATE", TODAY.isoformat())
     monkeypatch.delenv("GEMINI_API_KEY", raising=False)
     monkeypatch.delenv("GEMINI_MODEL", raising=False)
+    monkeypatch.setenv("MIRA_ADMIN_PASSWORD", "Admin#2026!Compass")
     for role in ("STAFF", "EDITOR", "APPROVER"):
         monkeypatch.setenv(f"MIRA_{role}_TOKEN", role.lower() * 8)
     with TestClient(app) as client:

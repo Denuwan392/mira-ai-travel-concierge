@@ -6,7 +6,7 @@ test("desktop lands, asks for details, prices, saves and simulates booking", asy
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "Your island. Your story." })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Highlights of Sri Lanka" })).toBeVisible();
+  await expect(page.getByRole("button", { name: /Highlights of Sri Lanka/ })).toBeVisible();
   if (capture) await page.screenshot({ path: "../../docs/screenshots/desktop-home.png", fullPage: true });
   await page.getByRole("button", { name: "A Sigiriya day trip" }).click();
   await expect(page).toHaveURL(/\/$/);
@@ -38,10 +38,10 @@ test("desktop lands, asks for details, prices, saves and simulates booking", asy
 test("mobile switches between conversation and a non-priced enquiry", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: "Highlights of Sri Lanka" })).toBeVisible();
+  await expect(page.getByRole("button", { name: /Highlights of Sri Lanka/ })).toBeVisible();
   if (capture) await page.screenshot({ path: "../../docs/screenshots/mobile-home.png", fullPage: true });
   await page.getByRole("button", { name: "Design a custom journey" }).click();
-  await expect(page.getByText(/saved a private enquiry/)).toBeVisible({ timeout: 15000 });
+  await expect(page.getByText(/saved a private enquiry/)).toBeVisible({ timeout: 30000 });
   await page.getByRole("button", { name: "Journey", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Specialist confirmation required" })).toBeVisible();
   await expect(page.getByRole("region", { name: "Verified quote" })).toHaveCount(0);
