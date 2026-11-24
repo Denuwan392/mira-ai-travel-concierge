@@ -2,6 +2,7 @@ import hashlib
 import os
 import re
 from pathlib import Path
+from xml.etree.ElementTree import ParseError
 from zipfile import BadZipFile
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
@@ -11,6 +12,8 @@ from functools import lru_cache
 import yaml
 from openpyxl import load_workbook
 from openpyxl.utils.datetime import from_excel
+
+from .itinerary_parser import parse_tour_markdown, TourItinerary
 
 ROOT = Path(__file__).resolve().parent.parent.parent.parent
 DATA = Path(os.getenv("MIRA_DATA", ROOT / "GenAI-Intern-Take-Home-Assignment/ceylon-compass-dataset"))
@@ -24,6 +27,9 @@ def clean(value: str) -> str:
 
 def public_text(value: str) -> str:
     value = re.sub(r"<!--.*?(?:-->|$)", "", value, flags=re.S)
+    value = value.replace(" (where blue whales can be seen all year round)", "")
+    value = value.replace("Free cancellation up to 24 hours before the tour.", "See the current cancellation policy for refund terms.")
+    value = value.replace("**Family offer: kids under 12 stay free!**", "See the current children and infants policy for child rates.")
     return "\n".join(clean(line) for line in value.splitlines()
                      if not re.search(r"[$€£]|\b(?:USD|LKR|GP|margin|discount)\b|https?://", line, re.I))
 
@@ -39,13 +45,21 @@ def content():
             key = meta["id"]
             if key in records:
                 duplicates.add(key)
-            records[key] = {
+            rec = {
                 **{k: meta[k] for k in ("id", "type", "title", "status")},
                 "last_updated": str(meta.get("last_updated","")),
                 "category": meta.get("category", ""), "duration": meta.get("duration", ""),
                 "start": meta.get("start", ""), "destinations": meta.get("destinations", []),
+                "hotels": meta.get("hotels", []) or [],
                 "body": body.strip(), "path": str(path.relative_to(DATA)),
             }
+            if meta.get("type") == "tour":
+                parsed_itinerary = parse_tour_markdown(meta, body)
+                rec["itinerary"] = parsed_itinerary
+                rec["days"] = [d.model_dump() for d in parsed_itinerary.days]
+                rec["inclusions"] = parsed_itinerary.inclusions
+                rec["exclusions"] = parsed_itinerary.exclusions
+            records[key] = rec
         except (ValueError, KeyError, TypeError, yaml.YAMLError):
             continue
     return {key: row for key, row in records.items() if key not in duplicates}
@@ -149,22 +163,23 @@ def price(tour, start, adults, ages, today, rates=None):
         return calculate(tour, start, adults, ages, today, rates or load_rates())
     except Unavailable:
         raise
-    except (OSError, BadZipFile, TypeError, KeyError, IndexError, ValueError, ArithmeticError) as exc:
+    except (OSError, BadZipFile, ParseError, AttributeError, TypeError, KeyError, IndexError, ValueError, ArithmeticError) as exc:
         raise Unavailable("rate_import_invalid") from exc
 
 
 def calculate(tour, start, adults, ages, today, rates):
     if tour not in published() or published()[tour]["type"] != "tour":
         raise Unavailable("not_published")
-    if adults < 1 or any(type(age) is not int or not 0 <= age <= 120 for age in ages):
+    if type(adults) is not int or adults < 1 or any(type(age) is not int or not 0 <= age <= 120 for age in ages):
         raise Unavailable("unsupported_party")
+    travellers = adults + len(ages)
     adults += sum(age >= 12 for age in ages)
     children = sum(2 <= age <= 11 for age in ages)
     size = adults + children
     settings = {row[0]: row[1] for _, row in rates.settings}
     if len(settings) != len(rates.settings):
         raise Unavailable("ambiguous_settings")
-    if size > number(settings["Max group size"]):
+    if travellers > number(settings["Max group size"]):
         raise Unavailable("group_size")
     if start < today or start > rates.fx_end or today > rates.fx_end:
         raise Unavailable("date_or_fx_expired")

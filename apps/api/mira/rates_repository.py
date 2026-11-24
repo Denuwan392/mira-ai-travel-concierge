@@ -1,5 +1,6 @@
 """Read validated source snapshots through SQLite before requesting a price."""
 from hashlib import sha256
+from xml.etree.ElementTree import ParseError
 from zipfile import BadZipFile
 
 from . import data
@@ -21,5 +22,5 @@ def current_rates():
         return rates
     except Unavailable:
         raise
-    except (OSError, BadZipFile, TypeError, ValueError, KeyError, IndexError) as exc:
+    except (OSError, BadZipFile, ParseError, AttributeError, TypeError, ValueError, KeyError, IndexError) as exc:
         raise Unavailable("rate_import_invalid") from exc
