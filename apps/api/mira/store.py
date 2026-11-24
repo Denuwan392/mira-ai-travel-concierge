@@ -5,10 +5,17 @@ from contextlib import contextmanager
 from pathlib import Path
 
 DB = Path(os.getenv("MIRA_DB", ".mira/mira.sqlite3"))
+_DEV_DB = Path(".mira/mira.sqlite3").resolve()
+
+
+def _guard_dev_db():
+    if os.getenv("PYTEST_CURRENT_TEST") and DB.resolve() == _DEV_DB:
+        raise RuntimeError("Tests must use an isolated temporary database, not .mira/mira.sqlite3")
 
 
 @contextmanager
 def db():
+    _guard_dev_db()
     DB.parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(DB, timeout=10)
     conn.row_factory = sqlite3.Row
@@ -21,6 +28,7 @@ def db():
 
 
 def init():
+    _guard_dev_db()
     from alembic import command
     from alembic.config import Config
     from sqlalchemy import URL, create_engine
