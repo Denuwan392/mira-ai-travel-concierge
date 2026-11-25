@@ -59,13 +59,13 @@ def init_demo_database(db_path: Path, force: bool = False) -> dict[str, str]:
     store.DB = db_path
     os.environ["MIRA_DB"] = str(db_path)
 
-    # Use env overrides or generate safe synthetic demo passwords
+    # Use env overrides or standard predictable demo credentials
     admin_email = os.environ.get("MIRA_ADMIN_EMAIL", "admin.demo@ceyloncompass.example").strip().lower()
-    admin_password = os.environ.get("MIRA_ADMIN_PASSWORD") or f"AdminDemo#{secrets.token_hex(4)}"
-    approver_password = os.environ.get("MIRA_DEMO_APPROVER_PASSWORD") or f"ApproverDemo#{secrets.token_hex(4)}"
-    editor_password = os.environ.get("MIRA_DEMO_EDITOR_PASSWORD") or f"EditorDemo#{secrets.token_hex(4)}"
-    staff_password = os.environ.get("MIRA_DEMO_STAFF_PASSWORD") or f"StaffDemo#{secrets.token_hex(4)}"
-    traveller_password = os.environ.get("MIRA_DEMO_TRAVELLER_PASSWORD") or f"TravellerDemo#{secrets.token_hex(4)}"
+    admin_password = os.environ.get("MIRA_ADMIN_PASSWORD") or "Admin#2026!Compass"
+    approver_password = os.environ.get("MIRA_DEMO_APPROVER_PASSWORD") or "Approver#2026!Demo"
+    editor_password = os.environ.get("MIRA_DEMO_EDITOR_PASSWORD") or "Editor#2026!Demo"
+    staff_password = os.environ.get("MIRA_DEMO_STAFF_PASSWORD") or "Staff#2026!Demo"
+    traveller_password = os.environ.get("MIRA_DEMO_TRAVELLER_PASSWORD") or "Traveller#2026!Demo"
 
     os.environ["MIRA_ADMIN_EMAIL"] = admin_email
     os.environ["MIRA_ADMIN_PASSWORD"] = admin_password
@@ -74,6 +74,7 @@ def init_demo_database(db_path: Path, force: bool = False) -> dict[str, str]:
 
     with store.db() as conn:
         _create_or_update_user(conn, admin_email, admin_password, "Demo Administrator", "admin")
+        _create_or_update_user(conn, "admin@ceyloncompass.com", admin_password, "System Administrator", "admin")
         _create_or_update_user(
             conn,
             "approver.demo@ceyloncompass.example",
