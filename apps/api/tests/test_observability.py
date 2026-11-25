@@ -436,13 +436,23 @@ def test_langfuse_mock_export_structure_and_sanitization(app_client, monkeypatch
     spans = []
 
     class MockObservation:
-        def __init__(self, name, metadata=None, trace_context=None):
+        def __init__(self, name, metadata=None, trace_context=None, as_type="span", input=None, output=None, **kwargs):
             self.name = name
             self.metadata = metadata
             self.trace_context = trace_context
+            self.as_type = as_type
+            self.input = input
+            self.output = output
 
         def __enter__(self):
-            spans.append({"name": self.name, "metadata": self.metadata, "trace_context": self.trace_context})
+            spans.append({
+                "name": self.name,
+                "as_type": self.as_type,
+                "input": self.input,
+                "output": self.output,
+                "metadata": self.metadata,
+                "trace_context": self.trace_context,
+            })
             return self
 
         def __exit__(self, *args):
@@ -452,8 +462,8 @@ def test_langfuse_mock_export_structure_and_sanitization(app_client, monkeypatch
         def __init__(self):
             self.flushed = False
 
-        def start_as_current_observation(self, name, metadata=None, trace_context=None):
-            return MockObservation(name, metadata=metadata, trace_context=trace_context)
+        def start_as_current_observation(self, name, metadata=None, trace_context=None, **kwargs):
+            return MockObservation(name, metadata=metadata, trace_context=trace_context, **kwargs)
 
         def flush(self):
             self.flushed = True
@@ -468,13 +478,16 @@ def test_langfuse_mock_export_structure_and_sanitization(app_client, monkeypatch
     root_spans = [s for s in spans if s["name"] == "mira.turn"]
     assert len(root_spans) == 1
     assert root_spans[0]["trace_context"]["trace_id"] == res.trace.hex
+    assert root_spans[0]["as_type"] == "agent"
+    assert root_spans[0]["input"] == {"message": "Sigiriya day trip for two adults on 10 January 2027"}
+    assert root_spans[0]["output"]["outcome"] == "completed"
 
-    # Child stages
-    child_names = [s["name"] for s in spans if s["name"] != "mira.turn"]
-    assert "interpret" in child_names
-    assert "retrieval" in child_names
-    assert "pricing" in child_names
-    assert "persistence" in child_names
+    # Child stages and typed observations
+    child_types = {s["name"]: s["as_type"] for s in spans if s["name"] != "mira.turn"}
+    assert child_types["interpret"] == "chain"
+    assert child_types["retrieval"] == "retriever"
+    assert child_types["pricing"] == "tool"
+    assert "persistence" in child_types
 
     # Privacy check: No sensitive substrings in span metadata
     for span in spans:

@@ -134,3 +134,39 @@ def test_historical_incomplete_record_safe_rendering(app_client):
     assert enriched["tour_id"] is None
     assert enriched["human_reason"] == "Custom itinerary requires specialist confirmation"
     assert enriched["traveller_name"] == "Guest traveller"
+
+
+def test_direct_nl_quotation_saves_single_enquiry_and_attaches_contact(app_client):
+    """Natural-language quote requests route directly to pricing in one turn without duplicate enquiries."""
+    for prompt in (
+        "Quote Sigiriya for 2 adults on January 10, 2027",
+        "Sigiriya, January 10, 2027, 2 adults",
+    ):
+        trip = app_client.post("/api/trips").json()["id"]
+        turn = _send_turn(app_client, trip, prompt)
+        breakdowns = [c for c in turn["components"] if c["type"] == "PriceBreakdown"]
+        assert len(breakdowns) == 1, f"Expected direct PriceBreakdown for {prompt!r}, got {turn['components']}"
+        q = breakdowns[0]["quote"]
+        assert q["source"] == "T01"
+        assert q["total"] == 315
+        assert q["deposit"] == 315
+        assert q["enquiry_reference"].startswith("ENQ-")
+
+        # Attaching contact details updates the existing enquiry rather than creating a duplicate
+        contact_res = app_client.post(
+            "/api/enquiries/contact",
+            json={
+                "enquiry_id": q["enquiry"],
+                "trip_id": trip,
+                "name": "Kasun Perera",
+                "email": "kasun@example.com",
+            },
+        )
+        assert contact_res.status_code == 200
+        assert contact_res.json()["reference"] == q["enquiry_reference"]
+        staff_enqs = [
+            e for e in app_client.get("/api/staff/enquiries", headers=headers("staff")).json()
+            if e["reference"] == q["enquiry_reference"]
+        ]
+        assert len(staff_enqs) == 1
+        assert staff_enqs[0]["contact_name"] == "Kasun Perera"

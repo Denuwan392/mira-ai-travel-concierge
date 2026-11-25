@@ -8,10 +8,11 @@
  * - Content Review draft creation + Approver-only publish controls
  * - MarkdownContent safe rendering of ItineraryDay / PolicySnippet markdown
  */
-import { render, screen, waitFor, fireEvent, within } from "@testing-library/react";
+import { render, screen, waitFor, fireEvent, within, act } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { StaffConsole } from "@/components/staff/StaffConsole";
 import { MarkdownContent } from "@/components/plan/MarkdownContent";
+import { DestinationShowcase } from "@/components/home/DestinationShowcase";
 // @ts-expect-error JSX workspace module without .d.ts
 import { UIComponentRenderer, HomePage, EnquiryPage, AuthProvider } from "../../workspace/Workspace.jsx";
 
@@ -398,5 +399,221 @@ describe("StaffConsole Read-Only Rate Preview", () => {
       expect(screen.getAllByText("USD 315").length).toBeGreaterThanOrEqual(1);
       expect(screen.getByText("PRICE_VERIFIED")).toBeInTheDocument();
     });
+  });
+
+  it("UIComponentRenderer renders ConfirmationPanel with heading and real enquiry reference instead of Confirmed", () => {
+    render(
+      <UIComponentRenderer
+        component={{
+          type: "ConfirmationPanel",
+          heading: "Quote saved",
+          text: "Your private enquiry is available to the travel team.",
+        }}
+        enquiryReference="ENQ-2026-1234ABCD"
+        navigate={vi.fn()}
+        tours={[]}
+        setActiveTour={vi.fn()}
+        setWorkspacePanel={vi.fn()}
+      />
+    );
+    expect(screen.getByText("Quote saved")).toBeInTheDocument();
+    expect(screen.getByText("Enquiry ref: ENQ-2026-1234ABCD")).toBeInTheDocument();
+    expect(screen.queryByText("Confirmed")).not.toBeInTheDocument();
+  });
+
+  it("UIComponentRenderer renders JourneyPlan day names and grounded passages instead of empty Day lines", () => {
+    render(
+      <UIComponentRenderer
+        component={{
+          type: "JourneyPlan",
+          days: [
+            { name: "Ella", passage: "Walk the Nine Arch Bridge and tea trails." },
+            { name: "Mirissa", passage: "Morning whale watching and calm beach time." },
+          ],
+        }}
+        navigate={vi.fn()}
+        tours={[]}
+        setActiveTour={vi.fn()}
+        setWorkspacePanel={vi.fn()}
+      />
+    );
+    expect(screen.getByText("Day 1 — Ella:")).toBeInTheDocument();
+    expect(screen.getByText(/Walk the Nine Arch Bridge/)).toBeInTheDocument();
+    expect(screen.getByText("Day 2 — Mirissa:")).toBeInTheDocument();
+    expect(screen.getByText(/Morning whale watching/)).toBeInTheDocument();
+  });
+});
+
+describe("Conversation-First Homepage & DestinationShowcase", () => {
+  it("DestinationShowcase rotates destinations with matching captions, pagination, and Explore CTA", () => {
+    const onExplore = vi.fn();
+    render(<DestinationShowcase onExplore={onExplore} />);
+
+    expect(screen.getByText("DISCOVER THE ISLAND")).toBeInTheDocument();
+    expect(screen.getByText("One island. Endless journeys.")).toBeInTheDocument();
+    expect(screen.getByText("Sigiriya")).toBeInTheDocument();
+    expect(screen.getByText("1 / 5")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Next destination" }));
+    expect(screen.getByText("Ella")).toBeInTheDocument();
+    expect(screen.getByText("Journey through the highlands")).toBeInTheDocument();
+    expect(screen.getByText("2 / 5")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Show Mirissa" }));
+    expect(screen.getByText("Mirissa")).toBeInTheDocument();
+    expect(screen.getByText("5 / 5")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Previous destination" }));
+    expect(screen.getByText("Yala")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /Explore journeys/i }));
+    expect(onExplore).toHaveBeenCalledTimes(1);
+  });
+
+  it("HomePage preserves Mira intro, suggestion chips, and forwards chip clicks to /mira", () => {
+    mockFetch.mockImplementation(() => jsonResponse({}, 401));
+    sessionStorage.removeItem("mira-pending-prompt");
+    const navigate = vi.fn();
+    render(
+      <AuthProvider>
+        <HomePage navigate={navigate} />
+      </AuthProvider>
+    );
+    expect(screen.getByText("Where will Sri Lanka take you?")).toBeInTheDocument();
+    expect(screen.getByText("Your journey begins with a conversation.")).toBeInTheDocument();
+    expect(screen.getByLabelText("Where would you like to go?")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Explore Sigiriya" }));
+    expect(sessionStorage.getItem("mira-pending-prompt")).toBe("Explore Sigiriya");
+    expect(navigate).toHaveBeenCalledWith("/mira");
+  });
+
+  it("DestinationShowcase auto-rotates every 5s, loops, pauses on hover/discreet control, and updates fallback caption on error", () => {
+    vi.useFakeTimers();
+    try {
+      render(<DestinationShowcase onExplore={vi.fn()} />);
+      expect(screen.getByText("Sigiriya")).toBeInTheDocument();
+      expect(screen.getByText("1 / 5")).toBeInTheDocument();
+
+      // Advance 5s -> Ella
+      act(() => { vi.advanceTimersByTime(5000); });
+      expect(screen.getByText("Ella")).toBeInTheDocument();
+      expect(screen.getByText("2 / 5")).toBeInTheDocument();
+
+      // Advance 4 more intervals -> loops back to Sigiriya (1 / 5)
+      act(() => { vi.advanceTimersByTime(20000); });
+      expect(screen.getByText("Sigiriya")).toBeInTheDocument();
+      expect(screen.getByText("1 / 5")).toBeInTheDocument();
+
+      // Discreet keyboard-accessible pause stops auto-rotation
+      fireEvent.click(screen.getByRole("button", { name: "Pause destination rotation" }));
+      act(() => { vi.advanceTimersByTime(10000); });
+      expect(screen.getByText("Sigiriya")).toBeInTheDocument();
+
+      // Resume -> advances to Ella
+      fireEvent.click(screen.getByRole("button", { name: "Resume destination rotation" }));
+      act(() => { vi.advanceTimersByTime(5000); });
+      expect(screen.getByText("Ella")).toBeInTheDocument();
+
+      // Hover pauses rotation
+      const img = screen.getByRole("img");
+      fireEvent.mouseEnter(img.closest("section > div")!);
+      act(() => { vi.advanceTimersByTime(5000); });
+      expect(screen.getByText("Ella")).toBeInTheDocument();
+
+      // Image error swaps to neutral fallback caption instead of misleading destination name
+      fireEvent.error(img);
+      expect(screen.getByText("Sri Lanka")).toBeInTheDocument();
+      expect(screen.getByText("Island landscapes")).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});
+
+describe("Conversation-First Homepage & DestinationShowcase", () => {
+  it("DestinationShowcase rotates destinations with matching captions, pagination, and Explore CTA", () => {
+    const onExplore = vi.fn();
+    render(<DestinationShowcase onExplore={onExplore} />);
+
+    expect(screen.getByText("DISCOVER THE ISLAND")).toBeInTheDocument();
+    expect(screen.getByText("One island. Endless journeys.")).toBeInTheDocument();
+    expect(screen.getByText("Sigiriya")).toBeInTheDocument();
+    expect(screen.getByText("1 / 5")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Next destination" }));
+    expect(screen.getByText("Ella")).toBeInTheDocument();
+    expect(screen.getByText("Journey through the highlands")).toBeInTheDocument();
+    expect(screen.getByText("2 / 5")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Show Mirissa" }));
+    expect(screen.getByText("Mirissa")).toBeInTheDocument();
+    expect(screen.getByText("5 / 5")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Previous destination" }));
+    expect(screen.getByText("Yala")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /Explore journeys/i }));
+    expect(onExplore).toHaveBeenCalledTimes(1);
+  });
+
+  it("HomePage preserves Mira intro, suggestion chips, and forwards chip clicks to /mira", () => {
+    mockFetch.mockImplementation(() => jsonResponse({}, 401));
+    sessionStorage.removeItem("mira-pending-prompt");
+    const navigate = vi.fn();
+    render(
+      <AuthProvider>
+        <HomePage navigate={navigate} />
+      </AuthProvider>
+    );
+    expect(screen.getByText("Where will Sri Lanka take you?")).toBeInTheDocument();
+    expect(screen.getByText("Your journey begins with a conversation.")).toBeInTheDocument();
+    expect(screen.getByLabelText("Where would you like to go?")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Explore Sigiriya" }));
+    expect(sessionStorage.getItem("mira-pending-prompt")).toBe("Explore Sigiriya");
+    expect(navigate).toHaveBeenCalledWith("/mira");
+  });
+
+  it("DestinationShowcase auto-rotates every 5s, loops, pauses on hover/discreet control, and updates fallback caption on error", () => {
+    vi.useFakeTimers();
+    try {
+      render(<DestinationShowcase onExplore={vi.fn()} />);
+      expect(screen.getByText("Sigiriya")).toBeInTheDocument();
+      expect(screen.getByText("1 / 5")).toBeInTheDocument();
+
+      // Advance 5s -> Ella
+      act(() => { vi.advanceTimersByTime(5000); });
+      expect(screen.getByText("Ella")).toBeInTheDocument();
+      expect(screen.getByText("2 / 5")).toBeInTheDocument();
+
+      // Advance 4 more intervals -> loops back to Sigiriya (1 / 5)
+      act(() => { vi.advanceTimersByTime(20000); });
+      expect(screen.getByText("Sigiriya")).toBeInTheDocument();
+      expect(screen.getByText("1 / 5")).toBeInTheDocument();
+
+      // Discreet keyboard-accessible pause stops auto-rotation
+      fireEvent.click(screen.getByRole("button", { name: "Pause destination rotation" }));
+      act(() => { vi.advanceTimersByTime(10000); });
+      expect(screen.getByText("Sigiriya")).toBeInTheDocument();
+
+      // Resume -> advances to Ella
+      fireEvent.click(screen.getByRole("button", { name: "Resume destination rotation" }));
+      act(() => { vi.advanceTimersByTime(5000); });
+      expect(screen.getByText("Ella")).toBeInTheDocument();
+
+      // Hover pauses rotation
+      const img = screen.getByRole("img");
+      fireEvent.mouseEnter(img.closest("section > div")!);
+      act(() => { vi.advanceTimersByTime(5000); });
+      expect(screen.getByText("Ella")).toBeInTheDocument();
+
+      // Image error swaps to neutral fallback caption instead of misleading destination name
+      fireEvent.error(img);
+      expect(screen.getByText("Sri Lanka")).toBeInTheDocument();
+      expect(screen.getByText("Island landscapes")).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

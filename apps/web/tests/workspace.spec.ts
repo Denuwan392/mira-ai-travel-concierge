@@ -18,7 +18,7 @@ test("published guide, verified quote, booking and private staff trace", async (
   await expect(page.getByRole("status")).toContainText("declined");
   await page.getByRole("combobox").selectOption("success");
   await page.getByRole("button", { name: "Try mock booking" }).click();
-  await expect(page.getByRole("status")).toContainText("confirmed");
+  await expect(page.getByRole("status")).toContainText(/confirmed/i);
   await page.reload();
   await expect(quote).toContainText("USD 315");
   expect((await request.get("/api/staff/enquiries")).status()).toBe(401);
@@ -191,4 +191,63 @@ test("Test D: Internal command leakage prevention in traveller chat", async ({ p
   const bodyText = await page.locator("main").innerText();
   expect(bodyText).not.toMatch(/@trip\s+T\d+/);
   expect(bodyText).not.toMatch(/@tour\s+T\d+/);
+});
+
+test("Test E: Traveller enquiry navigation, Back to quote, refresh, Back/Forward, and Demo booking label", async ({ page }) => {
+  await page.goto(workspace + "#/mira");
+  const chat = page.getByPlaceholder("Tell Mira what you're looking for...");
+  await chat.fill("Quote Sigiriya for 2 adults on January 10, 2027");
+  await page.getByRole("button", { name: "Send message" }).click();
+
+  const quoteRegion = page.getByRole("region", { name: "Verified quote" });
+  await expect(quoteRegion).toBeVisible();
+  await expect(quoteRegion).toContainText("Verified tour price");
+  await expect(quoteRegion).toContainText("USD 315");
+  await expect(quoteRegion.getByRole("button", { name: "Add contact details" })).toBeVisible();
+  await expect(quoteRegion.getByRole("button", { name: "Send enquiry" })).toHaveCount(0);
+
+  // Trigger simulated checkout and verify Demo booking: Confirmed label
+  await page.getByRole("button", { name: "Try mock booking" }).click();
+  await expect(quoteRegion).toContainText("Demo booking: Confirmed");
+
+  // Navigate to View enquiry -> verify Verified Quotation + Saved Enquiry + context actions
+  await quoteRegion.getByRole("button", { name: "View enquiry", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Enquiry received" })).toBeVisible();
+  await expect(page.locator("main")).toContainText("Verified Quotation");
+  await expect(page.locator("main")).toContainText("USD 315");
+  await expect(page.locator("main")).toContainText("Demo booking: Confirmed");
+  await expect(page.getByRole("button", { name: "Back to quote" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "My journeys" })).toBeVisible();
+
+  // Reload directly on enquiry URL -> preserves saved enquiry
+  await page.reload();
+  await expect(page.getByRole("heading", { name: "Enquiry received" })).toBeVisible();
+
+  // Click Back to quote -> restores original quote in /mira
+  await page.getByRole("button", { name: "Back to quote" }).click();
+  await expect(page.getByRole("region", { name: "Verified quote" })).toContainText("USD 315");
+
+  // Browser Back -> returns to enquiry page; Forward -> returns to quote
+  await page.goBack();
+  await expect(page.getByRole("heading", { name: "Enquiry received" })).toBeVisible();
+  await page.goForward();
+  await expect(page.getByRole("region", { name: "Verified quote" })).toContainText("USD 315");
+});
+
+test("Test F: Family holiday planning clarifies first, then builds grounded non-empty JourneyPlan", async ({ page }) => {
+  await page.goto(workspace + "#/mira");
+  const chat = page.getByPlaceholder("Tell Mira what you're looking for...");
+
+  // 1. Broad request triggers clarification without 2-day default or premature enquiry
+  await chat.fill("Plan a family holiday");
+  await page.getByRole("button", { name: "Send message" }).click();
+  await expect(page.locator("main")).toContainText("How many days");
+  await expect(page.locator("main")).not.toContainText("Your proposed journey now has 2 days");
+
+  // 2. Complete family request builds grounded 6-day itinerary with non-empty chat & workspace days
+  await chat.fill("We have 6 days for nature, scenic trains and beaches for 2 adults and a 7-year-old");
+  await page.getByRole("button", { name: "Send message" }).click();
+  await expect(page.getByRole("heading", { name: "Custom Journey Itinerary" })).toBeVisible();
+  await expect(page.locator("[data-component-type='JourneyPlan']")).toContainText("Day 1 —");
+  await expect(page.locator("[data-component-type='JourneyPlan']")).toContainText("Day 6 —");
 });
