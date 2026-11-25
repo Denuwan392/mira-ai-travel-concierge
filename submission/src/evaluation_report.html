@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Mira — Evaluation &amp; Reliability Report</title>
+  <link rel="stylesheet" href="shared.css" />
+  <style>
+    @page { size: A4 portrait; margin: 0; }
+    .cover-wrap {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 100%;
+    }
+    .cover-hero-box {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 18px;
+      align-items: center;
+      margin: 18px 0 16px 0;
+    }
+    .cover-photo {
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      height: 225px;
+    }
+    .cover-photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .cover-meta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px 20px;
+      border-top: 1.5px solid var(--black);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 0;
+    }
+    .meta-item .k {
+      font-size: 7.5pt;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .meta-item .v {
+      font-size: 9.5pt;
+      font-weight: 600;
+      color: var(--black);
+      margin-top: 2px;
+    }
+    .bar-track {
+      width: 100%;
+      height: 8px;
+      background: #efefec;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: var(--teal);
+    }
+    .bar-fill.coral { background: var(--coral); }
+    .bar-fill.orange { background: var(--orange); }
+    .svg-box {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      background: var(--bg-subtle);
+    }
+    .trace-step {
+      display: grid;
+      grid-template-columns: 95px 1fr 56px;
+      gap: 8px;
+      align-items: center;
+      padding: 5px 8px;
+      border-bottom: 1px solid var(--border);
+      font-size: 8.2pt;
+    }
+    .trace-step:last-child { border-bottom: none; }
+  </style>
+</head>
+<body>
+
+  <!-- PAGE 01: COVER -->
+  <section class="page page-portrait">
+    <div class="cover-wrap">
+      <div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:14px;border-bottom:1px solid var(--border);">
+          <div class="brand-wordmark">
+            <img src="../assets/brand/ceylon-compass.png" alt="Ceylon Compass Holidays" style="height:26px;width:auto;" />
+            <span>Ceylon <span class="compass-italic">Compass</span> Holidays</span>
+          </div>
+          <span class="badge badge-orange">Document 01 · Engineering Evaluation</span>
+        </div>
+
+        <div style="margin-top:34px;">
+          <div class="eyebrow">Alt SourceCode · Generative AI Full-Stack Engineer Take-Home Assignment</div>
+          <h1 class="doc-title" style="font-size:32pt;margin-top:6px;">Mira — Evaluation &amp;<br/>Reliability Report</h1>
+          <p style="font-size:12.5pt;color:var(--muted);margin-top:10px;line-height:1.4;max-width:460px;">
+            AI Travel Booking Assistant for Ceylon Compass Holidays.<br/>
+            Evidence-backed verification of deterministic pricing, A2UI schema safety, role-gated governance, and end-to-end observability.
+          </p>
+        </div>
+
+        <div class="cover-hero-box">
+          <div class="panel-subtle" style="padding:14px 16px;">
+            <div class="eyebrow" style="margin-bottom:6px;">Baseline Evidence Snapshot</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+              <div>
+                <div style="font-size:20pt;font-weight:700;color:var(--teal);line-height:1.1;">53 / 54</div>
+                <div style="font-size:8pt;color:var(--muted);">Saved eval pass rate (98.1%)</div>
+              </div>
+              <div>
+                <div style="font-size:20pt;font-weight:700;color:var(--black);line-height:1.1;">63 / 63</div>
+                <div style="font-size:8pt;color:var(--muted);">Validated A2UI turns (100%)</div>
+              </div>
+              <div>
+                <div style="font-size:20pt;font-weight:700;color:var(--teal);line-height:1.1;">0</div>
+                <div style="font-size:8pt;color:var(--muted);">Unexpected quote components</div>
+              </div>
+              <div>
+                <div style="font-size:20pt;font-weight:700;color:var(--orange);line-height:1.1;">6 / 6</div>
+                <div style="font-size:8pt;color:var(--muted);">Verified demo workflows</div>
+              </div>
+            </div>
+            <p style="font-size:7.6pt;color:var(--muted);margin-top:10px;line-height:1.35;">
+              Assessment clock pinned to <strong>19 November 2026</strong> per dataset rules. Sole eval failure (<strong>P03</strong>) documents the Q-1043 historical email vs. workbook child extra-bed conflict.
+            </p>
+          </div>
+          <div class="cover-photo">
+            <img src="../assets/brand/sigiriya-aerial-2k.jpg" alt="Sigiriya Rock Fortress, Sri Lanka" />
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="cover-meta-grid">
+          <div class="meta-item">
+            <div class="k">Prepared For</div>
+            <div class="v">Alt SourceCode Engineering Review</div>
+          </div>
+          <div class="meta-item">
+            <div class="k">Prepared By</div>
+            <div class="v">Darshana Denuwan Wijesinghe</div>
+          </div>
+          <div class="meta-item">
+            <div class="k">Submission Deadline</div>
+            <div class="v">25 November 2026 (23:59 IST)</div>
+          </div>
+          <div class="meta-item">
+            <div class="k">Canonical Application</div>
+            <div class="v"><code>http://127.0.0.1:5175/workspace/index.html</code> &amp; <code>/staff</code></div>
+          </div>
+          <div class="meta-item">
+            <div class="k">Repository</div>
+            <div class="v" style="font-size:8.4pt;"><code>github.com/Denuwan392/mira-ai-travel-concierge</code></div>
+          </div>
+          <div class="meta-item">
+            <div class="k">Dataset Integrity</div>
+            <div class="v">39 / 39 source files unchanged (<code>SHA-256</code> verified)</div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;font-size:8pt;color:var(--muted);">
+          <span>Ceylon Compass Holidays · Mira AI Travel Booking Assistant</span>
+          <span style="color:var(--orange);font-weight:700;">01 / 12</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PAGE 02: EXECUTIVE SUMMARY -->
+  <section class="page page-portrait">
+    <div class="page-header">
+      <span><span class="sec-tag">01</span> · Executive Summary</span>
+      <span>Mira — Evaluation &amp; Reliability Report</span>
+    </div>
+    <div class="page-body">
+      <h2 class="page-title">Reliability-First Travel Concierge Architecture</h2>
+      <p class="page-lead">
+        Mira transforms Sri Lanka tour discovery and quotation into a verifiable, schema-enforced conversational workflow where language models handle interpretation while deterministic Python code governs all pricing, permissions, and persistence.
+      </p>
+
+      <div class="grid-4" style="margin-bottom:11px;">
+        <div class="kpi-card">
+          <div class="kpi-label">Saved Eval Suite</div>
+          <div class="kpi-val" style="color:var(--teal);">53 / 54</div>
+          <div class="kpi-sub">98.1% overall pass rate<br/>(2026-11-24T21:15Z, local)</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">UI Schema Parity</div>
+          <div class="kpi-val" style="color:var(--teal);">63 / 63</div>
+          <div class="kpi-sub">100% turns validated<br/>0 unexpected quotes</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Exact Quote Match</div>
+          <div class="kpi-val" style="color:var(--orange);">23 / 24</div>
+          <div class="kpi-sub">95.8% exact price match<br/>11/11 rate refusals (100%)</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Post-Fix Verification</div>
+          <div class="kpi-val" style="color:var(--black);">7 / 7</div>
+          <div class="kpi-sub">Scene 02 regression tests<br/>6/6 verified demo clips</div>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-bottom:10px;">
+        <div class="panel">
+          <div class="eyebrow">Business Problem &amp; Implemented Solution</div>
+          <p style="margin-bottom:6px;">
+            Ceylon Compass Holidays required a conversational booking assistant serving two distinct personas: <strong>quick bookers</strong> seeking instant, exact quotes for published tours, and <strong>custom journey planners</strong> needing multi-day itineraries without fabricated prices.
+          </p>
+          <ul class="clean">
+            <li><strong>Canonical Workspace:</strong> React + Tailwind v4 SPA (<code>/workspace/index.html</code>) paired with a unified Staff &amp; Admin Console (<code>/staff</code>).</li>
+            <li><strong>5-Node LangGraph Orchestration:</strong> Explicit <code>interpret → retrieve → quote / compose → save</code> pipeline over FastAPI and <code>@ag-ui/client</code> SSE.</li>
+            <li><strong>Zero LLM Arithmetic:</strong> Server-side Python <code>Decimal</code> engine (<code>mira.data.price</code>) calculates quotes from an unchanged SHA-256 workbook snapshot.</li>
+            <li><strong>Human-Governed Publishing:</strong> Drafts stay private until an authenticated <code>approver</code> reviews and publishes them.</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <div class="eyebrow">Core Architectural Decisions &amp; Methodology</div>
+          <ul class="clean">
+            <li><strong>Local-Rule vs. Gemini Separation:</strong> Regex entity extraction and tag retrieval provide deterministic offline execution; Gemini (<code>gemini-3.5-flash-lite</code>) is invoked selectively for custom itinerary parsing, suggestion ranking, and AI drafting when configured.</li>
+            <li><strong>Strict A2UI Catalog Validation:</strong> All 17 component types inherit from Pydantic <code>Strict(extra="forbid")</code> and mirror Zod schemas on the client.</li>
+            <li><strong>Automated + Qualitative Eval:</strong> 54 AG-UI conversation cases (17 supplied + 37 authored, 7 multi-turn) executed in local deterministic mode on <code>2026-11-24</code>, plus 10 LLM judge cases scored on <code>2026-11-23</code>.</li>
+            <li><strong>Regression Recovery (2026-11-25):</strong> Live browser recording exposed 3 Scene 02 workspace defects; all 3 were fixed and verified by 7 targeted regression tests plus <code>220</code> pytest and <code>70</code> Vitest checks.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="panel-subtle" style="margin-bottom:10px;">
+        <div class="eyebrow">Metric Boundary &amp; Integrity Note</div>
+        <p style="font-size:8.4pt;">
+          <strong>Do not conflate overlapping metrics:</strong> Overall case success (<strong>53/54, 98.1%</strong>) measures all 9 requirement categories, whereas deterministic pricing accuracy (<strong>23/24, 95.8%</strong>) measures only the 24 exact-quote cases—where the sole discrepancy (<strong>P03</strong>) is the documented Q-1043 historical email omission of child extra beds. Similarly, <strong>10/10</strong> LLM judge scores reflect automated rubric verdicts; independent human calibration remains <strong>pending</strong> (<code>human_scores: null</code>).
+        </p>
+      </div>
+
+      <div class="panel-coral">
+        <div class="eyebrow" style="color:var(--coral);">Remaining Operational Limitations (Disclosed)</div>
+        <div class="grid-2" style="gap:10px;">
+          <ul class="clean">
+            <li><strong>Human Calibration Pending:</strong> 10 review cases scored by <code>gemini-3.5-flash-lite</code> await independent human labels in <code>evals/judges/human_labels.json</code>.</li>
+            <li><strong>External Tracing Verification:</strong> SQLite local tracing is verified end-to-end; hosted Langfuse cloud delivery was not verified in offline/demo runs.</li>
+          </ul>
+          <ul class="clean">
+            <li><strong>Full Eval Post-Fix:</strong> After Scene 02 fixes (<code>2026-11-25</code>), 7 targeted regression tests, <code>make test</code>, and 6/6 demo recordings passed; the full 54-case runner was not re-executed.</li>
+            <li><strong>Single-Host SQLite &amp; Mock Checkout:</strong> Designed for local evaluation; payment simulation is mock-only and horizontal scaling requires PostgreSQL.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="page-footer">
+      <span>Ceylon Compass Holidays · Mira Evaluation &amp; Reliability Report</span>
+      <span class="pg-num">02 / 12</span>
+    </div>
+  </section>
+
+  <!-- PAGE 03: SYSTEM ARCHITECTURE AND RELIABILITY BOUNDARIES -->
+  <section class="page page-portrait">
+    <div class="page-header">
+      <span><span class="sec-tag">02</span> · System Architecture &amp; Reliability Boundaries</span>
+      <span>Mira — Evaluation &amp; Reliability Report</span>
+    </div>
+    <div class="page-body">
+      <h2 class="page-title">Verifiable Separation of Probabilistic &amp; Deterministic Layers</h2>
+      <p class="page-lead">
+        Verified directly against <code>apps/api/mira/agent.py</code>, <code>catalog.py</code>, <code>data.py</code>, and <code>main.py</code>. Not every traveller turn invokes Gemini: simple discovery, policy lookup, and deterministic quoting execute locally without external model latency.
+      </p>
+
+      <div class="svg-box" style="margin-bottom:12px;">
+        <svg viewBox="0 0 740 315" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg" style="display:block;font-family:Inter,sans-serif;">
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#5F5F5F"/>
+            </marker>
+            <marker id="arrow-orange" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#F26B1D"/>
+            </marker>
+            <marker id="arrow-teal" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#14837B"/>
+            </marker>
+          </defs>
+
+          <!-- Client Layer -->
+          <rect x="10" y="10" width="165" height="125" rx="8" fill="#FFFFFF" stroke="#E6E6E6" stroke-width="1.2"/>
+          <text x="20" y="27" font-size="8.5" font-weight="700" fill="#F26B1D">CLIENT LAYER (:5175)</text>
+          <rect x="20" y="36" width="145" height="36" rx="6" fill="#FAF9F6" stroke="#E6E6E6"/>
+          <text x="92" y="52" text-anchor="middle" font-size="9" font-weight="700" fill="#111111">Traveller Workspace</text>
+          <text x="92" y="64" text-anchor="middle" font-size="7.5" fill="#5F5F5F">/workspace/index.html · Zod UI</text>
+          <rect x="20" y="80" width="145" height="22" rx="5" fill="#FAF9F6" stroke="#E6E6E6"/>
+          <text x="92" y="94" text-anchor="middle" font-size="8" font-weight="600" fill="#111111">@ag-ui/client SSE Stream</text>
+          <rect x="20" y="108" width="145" height="20" rx="5" fill="#EEF8F7" stroke="#B5DEDB"/>
+          <text x="92" y="121" text-anchor="middle" font-size="7.5" font-weight="600" fill="#14837B">Staff Console (/staff)</text>
+
+          <!-- FastAPI Layer -->
+          <rect x="195" y="10" width="145" height="125" rx="8" fill="#FFFFFF" stroke="#E6E6E6" stroke-width="1.2"/>
+          <text x="205" y="27" font-size="8.5" font-weight="700" fill="#F26B1D">FASTAPI API (:8000)</text>
+          <rect x="205" y="36" width="125" height="28" rx="6" fill="#FAF9F6" stroke="#E6E6E6"/>
+          <text x="267" y="49" text-anchor="middle" font-size="8.5" font-weight="700" fill="#111111">Session &amp; RBAC Auth</text>
+          <text x="267" y="59" text-anchor="middle" font-size="7" fill="#5F5F5F">mira_auth · mira_session</text>
+          <rect x="205" y="70" width="125" height="28" rx="6" fill="#FAF9F6" stroke="#E6E6E6"/>
+          <text x="267" y="83" text-anchor="middle" font-size="8.5" font-weight="700" fill="#111111">ag_ui_langgraph</text>
+          <text x="267" y="93" text-anchor="middle" font-size="7" fill="#5F5F5F">X-Request-Id · X-Trace-Id</text>
+          <rect x="205" y="104" width="125" height="23" rx="5" fill="#FFF5EF" stroke="#F6C7AB"/>
+          <text x="267" y="119" text-anchor="middle" font-size="7.5" font-weight="600" fill="#C44F0E">Human Content Gate (RBAC)</text>
+
+          <!-- LangGraph Orchestration -->
+          <rect x="360" y="10" width="370" height="145" rx="8" fill="#FFFFFF" stroke="#111111" stroke-width="1.3"/>
+          <text x="372" y="27" font-size="8.5" font-weight="700" fill="#111111">LANGGRAPH STATEGRAPH (Typed GraphState: surface, messages, turn)</text>
+
+          <rect x="372" y="40" width="76" height="44" rx="6" fill="#FAF9F6" stroke="#5F5F5F"/>
+          <text x="410" y="56" text-anchor="middle" font-size="9" font-weight="700" fill="#111111">interpret</text>
+          <text x="410" y="68" text-anchor="middle" font-size="7" fill="#5F5F5F">Regex + guard</text>
+          <text x="410" y="77" text-anchor="middle" font-size="7" fill="#F26B1D">± Gemini intent</text>
+
+          <rect x="464" y="40" width="76" height="44" rx="6" fill="#FAF9F6" stroke="#5F5F5F"/>
+          <text x="502" y="56" text-anchor="middle" font-size="9" font-weight="700" fill="#111111">retrieve</text>
+          <text x="502" y="68" text-anchor="middle" font-size="7" fill="#5F5F5F">Published RAG</text>
+          <text x="502" y="77" text-anchor="middle" font-size="7" fill="#F26B1D">± Gemini rank()</text>
+
+          <rect x="556" y="40" width="76" height="44" rx="6" fill="#EEF8F7" stroke="#14837B" stroke-width="1.3"/>
+          <text x="594" y="56" text-anchor="middle" font-size="9" font-weight="700" fill="#14837B">quote</text>
+          <text x="594" y="68" text-anchor="middle" font-size="7" fill="#14837B">Conditional edge</text>
+          <text x="594" y="77" text-anchor="middle" font-size="7" fill="#14837B">Decimal engine</text>
+
+          <rect x="556" y="100" width="76" height="42" rx="6" fill="#FAF9F6" stroke="#111111"/>
+          <text x="594" y="116" text-anchor="middle" font-size="9" font-weight="700" fill="#111111">compose</text>
+          <text x="594" y="128" text-anchor="middle" font-size="7" fill="#5F5F5F">Turn Strict check</text>
+          <text x="594" y="137" text-anchor="middle" font-size="7" fill="#5F5F5F">A2UI v0.9 surface</text>
+
+          <rect x="646" y="100" width="72" height="42" rx="6" fill="#FAF9F6" stroke="#111111"/>
+          <text x="682" y="116" text-anchor="middle" font-size="9" font-weight="700" fill="#111111">save</text>
+          <text x="682" y="128" text-anchor="middle" font-size="7" fill="#5F5F5F">Atomic SQLite</text>
+          <text x="682" y="137" text-anchor="middle" font-size="7" fill="#5F5F5F">quotes + traces</text>
+
+          <!-- Edges -->
+          <line x1="165" y1="54" x2="195" y2="54" stroke="#5F5F5F" stroke-width="1.2" marker-end="url(#arrow)"/>
+          <line x1="330" y1="62" x2="372" y2="62" stroke="#5F5F5F" stroke-width="1.2" marker-end="url(#arrow)"/>
+          <line x1="448" y1="62" x2="464" y2="62" stroke="#5F5F5F" stroke-width="1.2" marker-end="url(#arrow)"/>
+          <line x1="540" y1="62" x2="556" y2="62" stroke="#14837B" stroke-width="1.2" marker-end="url(#arrow-teal)"/>
+          <path d="M 502 84 L 502 121 L 556 121" fill="none" stroke="#5F5F5F" stroke-width="1.2" marker-end="url(#arrow)"/>
+          <line x1="594" y1="84" x2="594" y2="100" stroke="#14837B" stroke-width="1.2" marker-end="url(#arrow-teal)"/>
+          <line x1="632" y1="121" x2="646" y2="121" stroke="#5F5F5F" stroke-width="1.2" marker-end="url(#arrow)"/>
+          <path d="M 410 84 L 410 148 L 682 148 L 682 142" fill="none" stroke="#F26B1D" stroke-dasharray="3,2" stroke-width="1" marker-end="url(#arrow-orange)"/>
+          <text x="485" y="145" font-size="6.8" fill="#F26B1D">idempotent replay fast-path</text>
+
+          <!-- Bottom Deterministic & Persistence Layer -->
+          <rect x="10" y="175" width="170" height="125" rx="8" fill="#FFF5EF" stroke="#F6C7AB" stroke-width="1.2"/>
+          <text x="20" y="193" font-size="8.5" font-weight="700" fill="#C44F0E">OPTIONAL GEMINI LAYER</text>
+          <text x="20" y="209" font-size="8" font-weight="600" fill="#111111">gemini-3.5-flash-lite</text>
+          <text x="20" y="223" font-size="7.5" fill="#5F5F5F">• notebook_intent() custom plan</text>
+          <text x="20" y="236" font-size="7.5" fill="#5F5F5F">• rank() top-3 published tours</text>
+          <text x="20" y="249" font-size="7.5" fill="#5F5F5F">• Staff content draft synthesis</text>
+          <text x="20" y="268" font-size="7.2" font-weight="600" fill="#C44F0E">Fallback: local rules &amp; extractive</text>
+          <text x="20" y="280" font-size="7.2" fill="#5F5F5F">Zero LLM calls on quote/auth turns</text>
+
+          <rect x="195" y="175" width="180" height="125" rx="8" fill="#EEF8F7" stroke="#B5DEDB" stroke-width="1.2"/>
+          <text x="205" y="193" font-size="8.5" font-weight="700" fill="#14837B">DETERMINISTIC PRICING &amp; RAG</text>
+          <text x="205" y="209" font-size="8" font-weight="600" fill="#111111">mira.data.price() · Decimal</text>
+          <text x="205" y="223" font-size="7.5" fill="#5F5F5F">• rate_sheet_2026-27.xlsx snapshot</text>
+          <text x="205" y="236" font-size="7.5" fill="#5F5F5F">• SHA-256: a16dd63ffb7ed232…</text>
+          <text x="205" y="249" font-size="7.5" fill="#5F5F5F">• Published Markdown (T01–T13, D, P)</text>
+          <text x="205" y="262" font-size="7.5" fill="#5F5F5F">• Excludes T14 historic &amp; T15 draft</text>
+          <text x="205" y="279" font-size="7.2" font-weight="600" fill="#14837B">Fails closed → Specialist Enquiry</text>
+
+          <rect x="390" y="175" width="165" height="125" rx="8" fill="#FFFFFF" stroke="#E6E6E6" stroke-width="1.2"/>
+          <text x="400" y="193" font-size="8.5" font-weight="700" fill="#111111">A2UI CATALOG &amp; RBAC</text>
+          <text x="400" y="209" font-size="8" font-weight="600" fill="#111111">catalog.py · Strict Models</text>
+          <text x="400" y="223" font-size="7.5" fill="#5F5F5F">• 17 validated component types</text>
+          <text x="400" y="236" font-size="7.5" fill="#5F5F5F">• extra="forbid", HTML blocked</text>
+          <text x="400" y="249" font-size="7.5" fill="#5F5F5F">• surface_messages(turn) v0.9</text>
+          <text x="400" y="262" font-size="7.5" fill="#5F5F5F">• Approver-only publish gate</text>
+          <text x="400" y="279" font-size="7.2" fill="#5F5F5F">• Argon2/PBKDF2 + lockouts</text>
+
+          <rect x="570" y="175" width="160" height="125" rx="8" fill="#FFFFFF" stroke="#E6E6E6" stroke-width="1.2"/>
+          <text x="580" y="193" font-size="8.5" font-weight="700" fill="#111111">PERSISTENCE &amp; TRACING</text>
+          <text x="580" y="209" font-size="8" font-weight="600" fill="#111111">SQLite (WAL, Alembic 0006)</text>
+          <text x="580" y="223" font-size="7.5" fill="#5F5F5F">• Public quotes vs. internal LKR/GP</text>
+          <text x="580" y="236" font-size="7.5" fill="#5F5F5F">• Private enquiries (ENQ-2026-…)</text>
+          <text x="580" y="249" font-size="7.5" fill="#5F5F5F">• Append-only audit triggers</text>
+          <text x="580" y="262" font-size="7.5" fill="#5F5F5F">• traces table (verified local)</text>
+          <text x="580" y="279" font-size="7.2" fill="#5F5F5F">• Langfuse export (sanitized, opt.)</text>
+
+          <!-- Vertical Connectors -->
+          <line x1="410" y1="84" x2="100" y2="175" stroke="#F26B1D" stroke-dasharray="3,2" stroke-width="1" marker-end="url(#arrow-orange)"/>
+          <line x1="594" y1="84" x2="290" y2="175" stroke="#14837B" stroke-width="1.1" marker-end="url(#arrow-teal)"/>
+          <line x1="594" y1="142" x2="472" y2="175" stroke="#5F5F5F" stroke-width="1.1" marker-end="url(#arrow)"/>
+          <line x1="682" y1="142" x2="650" y2="175" stroke="#5F5F5F" stroke-width="1.1" marker-end="url(#arrow)"/>
+        </svg>
+      </div>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th style="width:22%;">Boundary Layer</th>
+            <th style="width:39%;">LLM / Probabilistic Responsibilities (Optional)</th>
+            <th style="width:39%;">Deterministic Code Responsibilities (Enforced)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Intent &amp; Entities</strong><br/><code>agent.py:interpret</code></td>
+            <td>Parses multi-day bespoke duration and destination stops via <code>notebook_intent()</code> constrained to published keys.</td>
+            <td>Regex date parsing (<code>parse_date</code>), adult/child age parsing (<code>COUNT</code>), prompt-injection rejection, and local-rule fallback.</td>
+          </tr>
+          <tr>
+            <td><strong>Knowledge &amp; Discovery</strong><br/><code>agent.py:retrieve</code></td>
+            <td>Ranks published tours via <code>rank()</code> with <code>Suggestions</code> schema when <code>GEMINI_API_KEY</code> is active.</td>
+            <td>Strict SQLite + filesystem filtering excluding <code>status='draft'</code>, <code>T14</code>, and <code>T15</code>; local tag-overlap fallback.</td>
+          </tr>
+          <tr>
+            <td><strong>Pricing &amp; Finance</strong><br/><code>data.py:calculate</code></td>
+            <td><strong>None.</strong> The LLM is never given rate formulas or permitted to estimate prices, deposits, or margins.</td>
+            <td>Exact Python <code>Decimal</code> calculation from SHA-256 workbook snapshot; fails closed with <code>Unavailable</code> to create specialist enquiry.</td>
+          </tr>
+          <tr>
+            <td><strong>UI &amp; Transport</strong><br/><code>catalog.py</code></td>
+            <td><strong>None.</strong> Component selection is validated strictly server-side before streaming.</td>
+            <td>Pydantic <code>Strict</code> <code>Turn.model_validate()</code>, <code>surface_messages()</code> v0.9 transform, and client Zod schema validation.</td>
+          </tr>
+          <tr>
+            <td><strong>Governance &amp; Auth</strong><br/><code>main.py / auth.py</code></td>
+            <td>Generates draft narrative text in <code>POST /api/staff/drafts</code> (falls back to extractive draft when offline).</td>
+            <td>RBAC enforcement (<code>approver</code>-only <code>/publish</code>; <code>admin</code>/<code>staff</code> receive <code>403</code>), private finance isolation, append-only SQLite <code>audit</code> triggers.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="page-footer">
+      <span>Ceylon Compass Holidays · Mira Evaluation &amp; Reliability Report</span>
+      <span class="pg-num">03 / 12</span>
+    </div>
+  </section>
+
+  <!-- PAGE 04: EVALUATION METHODOLOGY -->
+  <section class="page page-portrait">
+    <div class="page-header">
+      <span><span class="sec-tag">03</span> · Evaluation Methodology</span>
+      <span>Mira — Evaluation &amp; Reliability Report</span>
+    </div>
+    <div class="page-body">
+      <h2 class="page-title">Multi-Layered Verification Without Overlapping Totals</h2>
+      <p class="page-lead" style="margin-bottom:7px;">
+        Mira separates deterministic unit/integration tests, browser E2E checks, automated AG-UI conversational evaluations, and qualitative LLM judging so every claim maps to a reproducible artifact.
+      </p>
+
+      <div class="grid-2" style="margin-bottom:8px;">
+        <div class="panel" style="padding:9px 11px;">
+          <div class="eyebrow">Conversational Evaluation Suite (evals/runner.py)</div>
+          <ul class="clean" style="font-size:8.2pt;line-height:1.34;">
+            <li><strong>54 Total Cases:</strong> 17 supplied employer seeds (<code>eval_seed.jsonl</code>) + 37 authored cases (<code>evals/cases/authored.jsonl</code>), unchanged dataset inputs.</li>
+            <li><strong>7 Multi-Turn Conversations:</strong> <code>S03</code> (2 turns), <code>S13</code> (3), <code>M01</code> (3), and <code>M02–M05</code> (2 turns each), spanning <strong>63 total planned turns</strong>.</li>
+            <li><strong>Configurable Assessment Clock:</strong> Pinned to <code>AS_OF_DATE=2026-11-19</code> to preserve deterministic 30-day deposit boundaries and season matching.</li>
+            <li><strong>Local Deterministic Mode:</strong> <code>runner.py</code> pops <code>GEMINI_API_KEY</code> and <code>LANGFUSE_*</code> and executes against a fresh temporary SQLite database.</li>
+          </ul>
+        </div>
+        <div class="panel" style="padding:9px 11px;">
+          <div class="eyebrow">Machine-Checkable Code Assertions Per Turn</div>
+          <ul class="clean" style="font-size:8.2pt;line-height:1.34;">
+            <li><strong>A2UI Schema &amp; Surface Parity:</strong> Validates <code>Turn.model_validate()</code> and verifies SSE <code>STATE_SNAPSHOT</code> equals <code>surface_messages(output)</code>.</li>
+            <li><strong>Pricing &amp; Deposit Integrity:</strong> Asserts exact <code>tour</code>, <code>total</code>, and <code>deposit</code>, plus <code>deposit &gt; 0</code>, <code>deposit &lt;= total</code>, and <code>total == deposit + balance</code>.</li>
+            <li><strong>Zero Invented Prices:</strong> Regex guard rejects any currency amount (<code>USD</code> / <code>$</code>) in turns lacking a verified <code>PriceBreakdown</code>.</li>
+            <li><strong>Security &amp; Leak Guards:</strong> Blocks draft <code>T15</code> / historic <code>T14</code>, internal keys (<code>margin</code>, <code>markup</code>, <code>buy cost</code>, <code>gross profit</code>), unauthorized <code>/api/staff/*</code> access (<code>401</code>), and cross-visitor enquiry leakage (<code>404</code>).</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3 class="subhead" style="margin-bottom:5px;">Distinct Verification Layers (Kept Separate — Never Summed)</h3>
+      <table class="data-table" style="margin-bottom:8px;font-size:7.9pt;line-height:1.28;">
+        <thead>
+          <tr>
+            <th style="width:24%;padding:4.5px 7px;">Verification Layer</th>
+            <th style="width:24%;padding:4.5px 7px;">Tooling &amp; Scope</th>
+            <th style="width:24%;padding:4.5px 7px;">Execution Context</th>
+            <th style="width:28%;padding:4.5px 7px;">Latest Observed Result</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="padding:4px 7px;"><strong>AG-UI Conversational Eval</strong></td>
+            <td style="padding:4px 7px;"><code>evals/runner.py</code><br/>54 cases · 63 turns</td>
+            <td style="padding:4px 7px;">Isolated temp DB · local deterministic · clock <code>2026-11-19</code></td>
+            <td style="padding:4px 7px;"><strong>53 / 54 passed (98.1%)</strong><br/>Saved <code>2026-11-24T21:15Z</code> (exit code 0)</td>
+          </tr>
+          <tr>
+            <td style="padding:4px 7px;"><strong>Qualitative LLM Judge</strong></td>
+            <td style="padding:4px 7px;"><code>evals/judge.py</code><br/>10-case review set</td>
+            <td style="padding:4px 7px;"><code>gemini-3.5-flash-lite</code> · 6-criterion + legacy rubric</td>
+            <td style="padding:4px 7px;"><strong>10 / 10 scored</strong> (<code>2026-11-23</code>)<br/>Human calibration pending</td>
+          </tr>
+          <tr>
+            <td style="padding:4px 7px;"><strong>Backend Unit &amp; API Suite</strong></td>
+            <td style="padding:4px 7px;"><code>pytest apps/api/tests</code><br/>Pricing, RBAC, tracing, Scene 02</td>
+            <td style="padding:4px 7px;">Isolated <code>tmp_path</code> DB · real FastAPI <code>TestClient</code></td>
+            <td style="padding:4px 7px;"><strong>220 / 220 passed</strong> (<code>2026-11-25</code>)<br/>Includes 4 new Scene 02 tests</td>
+          </tr>
+          <tr>
+            <td style="padding:4px 7px;"><strong>Frontend Component Suite</strong></td>
+            <td style="padding:4px 7px;"><code>vitest</code> (8 files)<br/>Catalog, StaffConsole, Workspace</td>
+            <td style="padding:4px 7px;">jsdom + React Testing Library (mocked <code>/api/*</code> fetch)</td>
+            <td style="padding:4px 7px;"><strong>70 / 70 passed</strong> (<code>2026-11-25</code>)<br/>Includes 3 new Scene 02 tests</td>
+          </tr>
+          <tr>
+            <td style="padding:4px 7px;"><strong>Playwright Browser E2E</strong></td>
+            <td style="padding:4px 7px;"><code>make workspace-browser</code> &amp; <code>record.py</code></td>
+            <td style="padding:4px 7px;">Real Chrome against live Vite + isolated SQLite DB</td>
+            <td style="padding:4px 7px;"><strong>10 / 10 E2E passed</strong> + <strong>6 / 6 demo clips</strong> decoded cleanly</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <style>
+        .page:nth-of-type(4) .page-lead { margin-bottom: 8px !important; }
+        .page:nth-of-type(4) .top-cards .panel { padding: 7px 10px !important; }
+        .page:nth-of-type(4) .top-cards ul.clean { font-size: 7.8pt !important; line-height: 1.28 !important; }
+        .page:nth-of-type(4) .data-table { margin-bottom: 6px !important; }
+        .page:nth-of-type(4) .data-table td,
+        .page:nth-of-type(4) .data-table th { padding: 3px 6px !important; font-size: 7.3pt !important; line-height: 1.2 !important; }
+        .page:nth-of-type(4) .bottom-cards .panel-subtle { padding: 6px 9px !important; }
+        .page:nth-of-type(4) .bottom-cards ul.clean,
+        .page:nth-of-type(4) .bottom-cards p { font-size: 7.1pt !important; line-height: 1.18 !important; }
+      </style>
+      <div class="grid-2 bottom-cards" style="gap:8px;margin-top:6px;">
+        <div class="panel-subtle" style="padding:6px 9px;">
+          <div class="eyebrow" style="margin-bottom:3px;">Specialized Eval Scenarios Verified</div>
+          <ul class="clean" style="font-size:7.4pt;line-height:1.22;">
+            <li><strong>Missing &amp; Expired Rates (11 cases):</strong> <code>S04–S06</code>, <code>S11</code>, <code>S16</code>, <code>P05–P06</code>, <code>P13</code>, <code>P16</code>, <code>D03</code>, <code>W04</code> confirm zero prices and trace-linked specialist <code>EnquiryNotice</code>.</li>
+            <li><strong>Prompt-Injection &amp; Off-Topic (6 cases):</strong> <code>S12</code> discount injection, internal margin probes, and off-topic requests (<code>S14</code>) redirect safely.</li>
+            <li><strong>Mock Booking Recovery (<code>W01–W03</code>):</strong> Verifies <code>declined</code>, <code>unavailable</code>, and <code>network</code> outcomes leave quotes intact and create zero premature bookings.</li>
+            <li><strong>Draft Visibility &amp; RBAC (<code>W04</code> / <code>draft_visibility</code>):</strong> Staff draft returns <code>404</code> publicly and <code>403</code> on staff publish; Approver publish flips to <code>200</code>.</li>
+          </ul>
+        </div>
+        <div class="panel-subtle" style="padding:7px 9px;">
+          <div class="eyebrow" style="margin-bottom:3px;">Reproducing the Evaluation &amp; MCP Reports</div>
+          <p style="margin-bottom:4px;font-size:7.4pt;line-height:1.22;">
+            Execute the full test suite, regenerate <code>evals/report/report.md</code>, and run standalone MCP verification:
+          </p>
+          <pre class="code-block" style="padding:5px 8px;font-size:7.1pt;line-height:1.25;">PYTHONPATH=apps/api .venv/bin/python evals/runner.py
+make eval        # Unit/integration + 54-case eval
+make mcp-smoke   # Standalone 10/10 MCP stdio verification</pre>
+          <p style="margin-top:4px;font-size:7.2pt;line-height:1.22;color:var(--muted);">
+            <code>runner.py</code> forces deterministic local mode (<code>AS_OF_DATE=2026-11-19</code>, strips <code>GEMINI_API_KEY</code>) and exits <code>0</code> when the only failure is the audited <code>P03</code> sample-email disagreement.
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="page-footer">
+      <span>Ceylon Compass Holidays · Mira Evaluation &amp; Reliability Report</span>
+      <span class="pg-num">04 / 12</span>
+    </div>
+  </section>
+
+  <!-- PAGE 05: EVALUATION RESULTS -->
+  <section class="page page-portrait">
+    <div class="page-header">
+      <span><span class="sec-tag">04</span> · Evaluation Results</span>
+      <span>Mira — Evaluation &amp; Reliability Report</span>
+    </div>
+    <div class="page-body">
+      <h2 class="page-title">Saved Evaluation Run &amp; Category Breakdown</h2>
+      <p class="page-lead">
+        Reported directly from <code>evals/report/report.json</code> (generated <code>2026-11-24T21:15:41Z</code>, clock <code>2026-11-19</code>, local deterministic mode). Actual observed metrics are shown alongside post-eval regression coverage.
+      </p>
+
+      <div class="grid-3" style="margin-bottom:10px;">
+        <div class="panel-teal">
+          <div class="kpi-label" style="color:var(--teal);">Overall Case Success</div>
+          <div class="kpi-val" style="color:var(--teal);">98.1% <span style="font-size:10pt;font-weight:500;">(53/54)</span></div>
+          <div class="kpi-sub">17/17 supplied · 36/37 authored</div>
+        </div>
+        <div class="panel-orange">
+          <div class="kpi-label" style="color:var(--orange);">Exact Pricing Accuracy</div>
+          <div class="kpi-val" style="color:var(--orange);">95.8% <span style="font-size:10pt;font-weight:500;">(23/24)</span></div>
+          <div class="kpi-sub">All 24 exact-quote cases across categories</div>
+        </div>
+        <div class="panel-teal">
+          <div class="kpi-label" style="color:var(--teal);">Safety &amp; Rate Refusals</div>
+          <div class="kpi-val" style="color:var(--teal);">100.0% <span style="font-size:10pt;font-weight:500;">(11/11)</span></div>
+          <div class="kpi-sub">0 invented prices · 63/63 valid UI turns</div>
+        </div>
+      </div>
+
+      <table class="data-table" style="margin-bottom:12px;">
+        <thead>
+          <tr>
+            <th style="width:15%;">Category</th>
+            <th class="num" style="width:8%;">Exec</th>
+            <th class="num" style="width:8%;">Pass</th>
+            <th class="num" style="width:8%;">Fail</th>
+            <th style="width:21%;">Observed Pass Rate</th>
+            <th style="width:40%;">Verified Evidence &amp; Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Authorization</strong></td>
+            <td class="num">2</td><td class="num">2</td><td class="num">0</td>
+            <td><div style="display:flex;align-items:center;gap:6px;"><div class="bar-track"><div class="bar-fill" style="width:100%;"></div></div><strong>100.0%</strong></div></td>
+            <td>Private enquiry isolation (<code>401</code>/<code>404</code>) &amp; Approver-only publish gate (<code>W04</code>).</td>
+          </tr>
+          <tr>
+            <td><strong>Booking</strong></td>
+            <td class="num">3</td><td class="num">3</td><td class="num">0</td>
+            <td><div style="display:flex;align-items:center;gap:6px;"><div class="bar-track"><div class="bar-fill" style="width:100%;"></div></div><strong>100.0%</strong></div></td>
+            <td>Mock <code>declined</code>, <code>unavailable</code>, and <code>network</code> failures preserve quote state (<code>W01–W03</code>).</td>
+          </tr>
+          <tr>
+            <td><strong>Discovery</strong></td>
+            <td class="num">4</td><td class="num">4</td><td class="num">0</td>
+            <td><div style="display:flex;align-items:center;gap:6px;"><div class="bar-track"><div class="bar-fill" style="width:100%;"></div></div><strong>100.0%</strong></div></td>
+            <td><code>S01</code> greeting + <code>TourCard</code> suggestions; custom trip specialist handoff (<code>D03</code>).</td>
+          </tr>
+          <tr>
+            <td><strong>Grounding</strong></td>
+            <td class="num">10</td><td class="num">10</td><td class="num">0</td>
+            <td><div style="display:flex;align-items:center;gap:6px;"><div class="bar-track"><div class="bar-fill" style="width:100%;"></div></div><strong>100.0%</strong></div></td>
+            <td>Master child policy <code>P03</code>, cancellation <code>P02</code>, Polonnaruwa, Ella, unlisted Yala/Jaffna.</td>
+          </tr>
+          <tr>
+            <td><strong>Multi-turn</strong></td>
+            <td class="num">6</td><td class="num">6</td><td class="num">0</td>
+            <td><div style="display:flex;align-items:center;gap:6px;"><div class="bar-track"><div class="bar-fill" style="width:100%;"></div></div><strong>100.0%</strong></div></td>
+            <td>Cookie restoration (<code>S13</code>), party/date edits, child-age overrides (<code>M01–M05</code>).</td>
+          </tr>
+          <tr>
+            <td><strong>Off-topic</strong></td>
+            <td class="num">2</td><td class="num">2</td><td class="num">0</td>
+            <td><div style="display:flex;align-items:center;gap:6px;"><div class="bar-track"><div class="bar-fill" style="width:100%;"></div></div><strong>100.0%</strong></div></td>
+            <td>Polite redirection for non-travel queries (<code>S14</code> Python sorting request).</td>
+          </tr>
+          <tr style="background:#fdf7f5;">
+            <td><strong>Pricing</strong></td>
+            <td class="num">15</td><td class="num">14</td><td class="num" style="color:var(--coral);font-weight:700;">1</td>
+            <td><div style="display:flex;align-items:center;gap:6px;"><div class="bar-track"><div class="bar-fill coral" style="width:93.3%;"></div></div><strong style="color:var(--coral);">93.3%</strong></div></td>
+            <td><strong>P03 failed:</strong> expected Q-1043 email USD 2,680 vs. workbook USD 2,965 (see p. 7). Starter <code>S03</code> passed at USD 2,965.</td>
+          </tr>
+          <tr>
+            <td><strong>Rates</strong></td>
+            <td class="num">8</td><td class="num">8</td><td class="num">0</td>
+            <td><div style="display:flex;align-items:center;gap:6px;"><div class="bar-track"><div class="bar-fill" style="width:100%;"></div></div><strong>100.0%</strong></div></td>
+            <td>Missing <code>H04</code> single room, <code>H03</code> overlap, &gt;20 pax, expired FX, <code>T06</code> scope conflict fail closed.</td>
+          </tr>
+          <tr>
+            <td><strong>Safety</strong></td>
+            <td class="num">4</td><td class="num">4</td><td class="num">0</td>
+            <td><div style="display:flex;align-items:center;gap:6px;"><div class="bar-track"><div class="bar-fill" style="width:100%;"></div></div><strong>100.0%</strong></div></td>
+            <td>Prompt-injection discount refusals (<code>S12</code>) and internal cost/margin protection.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="grid-2">
+        <div class="panel">
+          <div class="eyebrow">Cross-Category Deterministic Metrics</div>
+          <ul class="clean">
+            <li><strong>Exact Quotes (23/24):</strong> Spans 15 <code>pricing</code> cases + 6 <code>multi_turn</code> quote sequences + 3 <code>booking</code> quote cases.</li>
+            <li><strong>Rate Refusals (11/11):</strong> Spans 8 <code>rates</code> cases + <code>S16</code> (grounding) + <code>D03</code> (discovery) + <code>W04</code> (authorization).</li>
+            <li><strong>Invented Prices:</strong> <code>0</code> unexpected quote components across all 63 validated UI turns.</li>
+          </ul>
+        </div>
+        <div class="panel-subtle">
+          <div class="eyebrow">Separation from Post-Eval Regression Tests</div>
+          <p style="font-size:8.3pt;">
+            The saved evaluation report above ran on <strong>2026-11-24</strong> prior to the Scene 02 frontend/workspace fixes on <strong>2026-11-25</strong>. Following those fixes, <strong>7 targeted regression tests</strong> (<code>test_family_planning_workflow.py</code> + <code>scene02-workspace.test.tsx</code>), <code>make test</code> (<strong>220 pytest + 70 Vitest</strong>), and <code>make workspace-browser</code> (<strong>10/10</strong>) passed. The full 54-case <code>evals/runner.py</code> run was not re-executed afterward.
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="page-footer">
+      <span>Ceylon Compass Holidays · Mira Evaluation &amp; Reliability Report</span>
+      <span class="pg-num">05 / 12</span>
+    </div>
+  </section>
+
+  <!-- PAGE 06: DETERMINISTIC PRICING VERIFICATION -->
+  <section class="page page-portrait">
+    <div class="page-header">
+      <span><span class="sec-tag">05</span> · Deterministic Pricing Verification</span>
+      <span>Mira — Evaluation &amp; Reliability Report</span>
+    </div>
+    <div class="page-body">
+      <h2 class="page-title">Workbook-Backed Decimal Arithmetic &amp; Privacy Isolation</h2>
+      <p class="page-lead">
+        All quotations execute in <code>apps/api/mira/data.py</code> (<code>calculate()</code> / <code>price()</code>) using Python <code>Decimal</code> and <code>ROUND_CEILING</code> against a SHA-256 snapshot (<code>a16dd63ffb7ed232…</code>) of <code>rate_sheet_2026-27.xlsx</code>.
+      </p>
+
+      <div class="grid-2" style="margin-bottom:10px;">
+        <div class="panel">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <span class="eyebrow" style="margin:0;">Verified Example 01 · Q-1041 (Day Tour)</span>
+            <span class="badge badge-teal">USD 315 / Deposit USD 315</span>
+          </div>
+          <p style="font-size:8.3pt;margin-bottom:6px;"><strong>Sigiriya &amp; Minneriya Day Tour from Kandy (T01)</strong> · 2 adults · <code>2027-01-10</code> (1 day, Peak)</p>
+          <table class="data-table">
+            <thead><tr><th>Component (Workbook Rule)</th><th class="num">LKR Buy Cost</th></tr></thead>
+            <tbody>
+              <tr><td>Guide (1 day × LKR 9,000)</td><td class="num">9,000</td></tr>
+              <tr><td>Vehicle — Car (1–3 pax · 1 day × 18,000)</td><td class="num">18,000</td></tr>
+              <tr><td>Entrance fees (2 adults × LKR 16,500)</td><td class="num">33,000</td></tr>
+              <tr><td>Meals (2 adults × LKR 3,000 × 1 day)</td><td class="num">6,000</td></tr>
+              <tr><td>Hotels (Day tour, 0 nights)</td><td class="num">0</td></tr>
+              <tr><td><strong>Total Buy Cost</strong></td><td class="num"><strong>66,000</strong></td></tr>
+            </tbody>
+          </table>
+          <p style="font-size:8pt;color:var(--muted);margin-top:6px;line-height:1.38;">
+            <strong>Sell formula (30% day margin, FX 300):</strong> <code>66,000 ÷ (300 × 0.70) = USD 314.2857</code> → rounded UP to next USD 5 = <strong>USD 315</strong>. Day tour deposit = <strong>100% (USD 315)</strong>. Realized GP = <code>30.16%</code>.
+          </p>
+        </div>
+
+        <div class="panel">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <span class="eyebrow" style="margin:0;">Verified Example 02 · Q-1042 (Multi-Day)</span>
+            <span class="badge badge-teal">USD 2,125 / Deposit USD 532</span>
+          </div>
+          <p style="font-size:8.3pt;margin-bottom:6px;"><strong>Cultural Triangle Sri Lanka Package (T09)</strong> · 2 adults · <code>2027-05-03</code> (7 days / 6 nights, Shoulder)</p>
+          <table class="data-table">
+            <thead><tr><th>Component (Workbook Rule)</th><th class="num">LKR Buy Cost</th></tr></thead>
+            <tbody>
+              <tr><td>Guide (7 days × LKR 9,500)</td><td class="num">66,500</td></tr>
+              <tr><td>Vehicle — Car (1–3 pax · 7 days × 18,000)</td><td class="num">126,000</td></tr>
+              <tr><td>Entrance fees (2 adults × LKR 38,000)</td><td class="num">76,000</td></tr>
+              <tr><td>Meals (2 adults × LKR 4,500 × 7 days)</td><td class="num">63,000</td></tr>
+              <tr><td>Hotels (1 dbl: 2×H12@20k + 2×H02@28k + 2×H03@25k)</td><td class="num">146,000</td></tr>
+              <tr><td><strong>Total Buy Cost</strong></td><td class="num"><strong>477,500</strong></td></tr>
+            </tbody>
+          </table>
+          <p style="font-size:8pt;color:var(--muted);margin-top:6px;line-height:1.38;">
+            <strong>Sell formula (25% multi-day margin, FX 300):</strong> <code>477,500 ÷ (300 × 0.75) = USD 2,122.22</code> → rounded UP to next USD 5 = <strong>USD 2,125</strong>. Departure &gt; 30 days → 25% deposit = <code>531.25</code> → rounded UP to whole USD = <strong>USD 532</strong> (balance <strong>USD 1,593</strong>).
+          </p>
+        </div>
+      </div>
+
+      <div class="grid-2" style="align-items:center;">
+        <div class="panel-subtle">
+          <div class="eyebrow">Public vs. Private Financial Separation</div>
+          <ul class="clean">
+            <li><strong>Traveller DTO (<code>quotes.public</code> / <code>PublicQuote</code>):</strong> Exposes only <code>total</code>, <code>deposit</code>, <code>balance</code>, <code>date</code>, <code>adults</code>, <code>ages</code>, and <code>enquiry_reference</code>.</li>
+            <li><strong>Staff DTO (<code>quotes.internal</code>):</strong> Stores <code>cost_lkr</code>, <code>gross_profit_pct</code>, itemized <code>breakdown</code>, workbook <code>snapshot</code> SHA-256, and exact row references (<code>tour_row</code>, <code>transport_row</code>, <code>hotel_rows</code>).</li>
+            <li><strong>Read-Only Rate Preview:</strong> Staff can test pricing rules in <code>/staff</code> with zero database writes (<code>preview_only: true</code>).</li>
+          </ul>
+        </div>
+        <div class="figure">
+          <div class="shot-frame">
+            <img src="../assets/screenshots/staff-rate-preview.png" alt="Staff Rate Preview showing USD 315, LKR 66,000 buy cost, and 30.16% GP" />
+          </div>
+          <div class="fig-caption"><strong>Figure 1.</strong> Staff Rate Preview verifying T01 (2027-01-10, 2 adults) against workbook digest <code>a16dd63f…</code> without creating database quotes.</div>
+        </div>
+      </div>
+    </div>
+    <div class="page-footer">
+      <span>Ceylon Compass Holidays · Mira Evaluation &amp; Reliability Report</span>
+      <span class="pg-num">06 / 12</span>
+    </div>
+  </section>
+
+  <!-- PAGE 07: DATASET DISCREPANCY & FAILURE ANALYSIS -->
+  <section class="page page-portrait">
+    <div class="page-header">
+      <span><span class="sec-tag">06</span> · Dataset Discrepancy &amp; Failure Analysis</span>
+      <span>Mira — Evaluation &amp; Reliability Report</span>
+    </div>
+    <div class="page-body">
+      <h2 class="page-title">Transparent Root-Cause Analysis: Case P03 / Sample Q-1043</h2>
+      <p class="page-lead">
+        The sole failed assertion in the 54-case suite is authored case <strong>P03</strong>, which compares Mira's workbook output against historical sales email <code>Q-1043</code> in <code>sample_quotes.md</code>. Starter case <code>S03</code> tests the identical trip and passes.
+      </p>
+
+      <div class="grid-2" style="margin-bottom:10px;">
+        <div class="panel-coral">
+          <div class="eyebrow" style="color:var(--coral);">Expected in Case P03 (Historical Email Q-1043)</div>
+          <div style="font-size:18pt;font-weight:700;color:var(--coral);margin:2px 0;">USD 2,680 <span style="font-size:10pt;font-weight:500;">(Deposit USD 670)</span></div>
+          <p style="font-size:8.3pt;">Recorded in <code>sample_quotes.md</code>: Total Buy Cost <strong>LKR 603,000</strong> with Hotels listed as <strong>LKR 146,000</strong> for 2 adults + 2 children (aged 7 &amp; 10) on 12 April 2027.</p>
+        </div>
+        <div class="panel-teal">
+          <div class="eyebrow" style="color:var(--teal);">Observed in Mira Engine (&amp; Expected in Starter S03)</div>
+          <div style="font-size:18pt;font-weight:700;color:var(--teal);margin:2px 0;">USD 2,965 <span style="font-size:10pt;font-weight:500;">(Deposit USD 742)</span></div>
+          <p style="font-size:8.3pt;">Computed by <code>mira.data.calculate()</code> from <code>rate_sheet_2026-27.xlsx</code>: Total Buy Cost <strong>LKR 667,000</strong> with Hotels <strong>LKR 210,000</strong>.</p>
+        </div>
+      </div>
+
+      <h3 class="subhead">Exact Workbook Reconciliation (Tour T09 · 12 April 2027 · Shoulder Season)</h3>
+      <table class="data-table" style="margin-bottom:10px;">
+        <thead>
+          <tr>
+            <th>Cost Component</th>
+            <th class="num">Q-1043 Email (LKR)</th>
+            <th class="num">Workbook Engine (LKR)</th>
+            <th>Authoritative Workbook Evidence</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Guide (7 days × 9,500)</td>
+            <td class="num">66,500</td>
+            <td class="num">66,500</td>
+            <td><code>Tours</code> tab row <code>T09</code> (exact match).</td>
+          </tr>
+          <tr>
+            <td>Vehicle — Van (4 pax · 7 days × 26,000)</td>
+            <td class="num">182,000</td>
+            <td class="num">182,000</td>
+            <td><code>Transport</code> tab: 4–8 travellers = Van (exact match).</td>
+          </tr>
+          <tr>
+            <td>Entrance fees (2×38,000 + 2×19,000)</td>
+            <td class="num">114,000</td>
+            <td class="num">114,000</td>
+            <td><code>Tours</code> tab: child entrance 19,000 (exact match).</td>
+          </tr>
+          <tr>
+            <td>Meals (7 days × 4,500 × (2 + 2×0.5))</td>
+            <td class="num">94,500</td>
+            <td class="num">94,500</td>
+            <td><code>READ ME</code> Rule 5: children 2–11 pay 50% meal cost (exact match).</td>
+          </tr>
+          <tr>
+            <td>Hotels — Adult double rooms (6 nights)</td>
+            <td class="num">146,000</td>
+            <td class="num">146,000</td>
+            <td>2×H12 (40k) + 2×H02 (56k) + 2×H03 (50k) = 146,000.</td>
+          </tr>
+          <tr style="background:#fdf2f0;">
+            <td><strong>Hotels — Child extra beds (2 children × 6 nights)</strong></td>
+            <td class="num" style="color:var(--coral);font-weight:700;">0 (omitted)</td>
+            <td class="num" style="color:var(--teal);font-weight:700;">64,000</td>
+            <td><code>READ ME</code> Rule 4 + <code>Hotels</code> Shoulder rates: <code>2 × (2×4,500 + 2×6,000 + 2×5,500) = 64,000</code>.</td>
+          </tr>
+          <tr>
+            <td><strong>Total Buy Cost / Sell USD / Deposit USD</strong></td>
+            <td class="num"><strong>603,000</strong> / 2,680 / 670</td>
+            <td class="num"><strong>667,000</strong> / 2,965 / 742</td>
+            <td><code>667,000 ÷ (300 × 0.75) = 2,964.44 → USD 2,965</code>; 25% = <code>741.25 → USD 742</code>.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="grid-2" style="margin-bottom:8px;">
+        <div class="panel">
+          <div class="eyebrow">Why the Implementation Was Preserved Unchanged</div>
+          <ul class="clean">
+            <li><strong>Workbook Rules Are Authoritative:</strong> <code>READ ME</code> Rule 4 explicitly requires one extra bed per child aged 2–11 every night, and the employer's own starter case <code>S03</code> expects <strong>USD 2,965 / USD 742</strong>.</li>
+            <li><strong>No Hardcoding to Pass an Eval:</strong> Modifying <code>calculate()</code> to match <code>Q-1043</code> would violate Rule 4 and break <code>S03</code>. Similarly, <code>sample_quotes.md</code> and <code>authored.jsonl</code> were kept intact for audit honesty.</li>
+            <li><strong>Impact on Reported Metrics:</strong> P03 reduces overall pass rate from 100% to <strong>98.1% (53/54)</strong> and exact pricing accuracy to <strong>95.8% (23/24)</strong>. <code>runner.py</code> explicitly allows this single audited disagreement while still failing on any other pricing regression.</li>
+          </ul>
+        </div>
+        <div class="panel-subtle">
+          <div class="eyebrow">Failed-Case Trace Reference (evals/report/report.md)</div>
+          <p style="font-size:8pt;margin-bottom:4px;"><strong>Trace ID:</strong> <code>f108d88e-1e5b-4f04-9e07-1132cf764094</code></p>
+          <pre class="code-block" style="font-size:7pt;">[
+  {"stage":"interpret", "provider":"local rules", "action":"discover", "ms":0},
+  {"stage":"retrieval", "sources":["T09"], "ms":0},
+  {"stage":"pricing", "outcome":"verified", "snapshot":"a16dd63f…", "ms":1},
+  {"stage":"validated_ui", "components":["PriceBreakdown","TourCard","ItineraryDay","BookingForm"], "ms":0},
+  {"stage":"persistence", "enquiry":true, "request_id":"d95ad806-…", "ms":1}
+]</pre>
+        </div>
+      </div>
+    </div>
+    <div class="page-footer">
+      <span>Ceylon Compass Holidays · Mira Evaluation &amp; Reliability Report</span>
+      <span class="pg-num">07 / 12</span>
+    </div>
+  </section>
+
+  <!-- PAGE 08: TRACING AND OBSERVABILITY -->
+  <section class="page page-portrait">
+    <div class="page-header">
+      <span><span class="sec-tag">07</span> · Tracing, Observability &amp; Privacy</span>
+      <span>Mira — Evaluation &amp; Reliability Report</span>
+    </div>
+    <div class="page-body">
+      <h2 class="page-title">End-to-End Traceability &amp; Telemetry Disclosures</h2>
+      <p class="page-lead">
+        Every HTTP request binds <code>X-Request-Id</code> and every AG-UI turn binds <code>X-Trace-Id</code>, persisting stage-by-stage execution records in SQLite and linking every saved quote and private enquiry back to its originating trace.
+      </p>
+
+      <div class="grid-2" style="margin-bottom:10px;align-items:start;">
+        <div class="panel" style="padding:8px 10px;">
+          <div class="eyebrow">Verified Recording Trace · Scene 01 (Quick Booker)</div>
+          <p style="font-size:7.8pt;color:var(--muted);margin-bottom:6px;">
+            Trace <code>ad9ef868-e15e-4f55-8af0-7ef8edbb6d68</code> · Enquiry <code>ENQ-2026-85BCD416</code>
+          </p>
+          <div style="border:1px solid var(--border);border-radius:7px;overflow:hidden;">
+            <div class="trace-step" style="background:var(--bg-subtle);font-weight:700;font-size:7.5pt;color:var(--muted);">
+              <span>STAGE</span><span>OBSERVED RECORDED PAYLOAD</span><span>PROVIDER</span>
+            </div>
+            <div class="trace-step">
+              <strong>1. interpret</strong>
+              <span><code>action: "discover"</code> · 2 adults · <code>2027-01-10</code></span>
+              <span class="badge badge-neutral">local rules</span>
+            </div>
+            <div class="trace-step">
+              <strong>2. retrieval</strong>
+              <span><code>sources: ["T01"]</code> (published Markdown)</span>
+              <span class="badge badge-neutral">RAG</span>
+            </div>
+            <div class="trace-step">
+              <strong>3. pricing</strong>
+              <span><code>outcome: "verified"</code> · snapshot <code>a16dd63f…</code></span>
+              <span class="badge badge-teal">Decimal</span>
+            </div>
+            <div class="trace-step">
+              <strong>4. validated_ui</strong>
+              <span><code>PriceBreakdown</code>, <code>TourCard</code>, <code>ItineraryDay</code>, <code>BookingForm</code></span>
+              <span class="badge badge-teal">v0.9</span>
+            </div>
+            <div class="trace-step">
+              <strong>5. persistence</strong>
+              <span>Saved quote + <code>ENQ-2026-85BCD416</code> + request ID</span>
+              <span class="badge badge-neutral">SQLite</span>
+            </div>
+            <div class="trace-step">
+              <strong>6. mock_booking</strong>
+              <span><code>declined</code> retry → <code>success</code> (<code>#B75E377B</code>)</span>
+              <span class="badge badge-orange">simulated</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="figure">
+          <div class="shot-frame">
+            <img src="../assets/screenshots/staff-trace-inspector.png" alt="Staff Console Trace Inspector showing JSON stages for ad9ef868" />
+          </div>
+          <div class="fig-caption"><strong>Figure 2.</strong> Staff Console Trace Inspector displaying the exact SQLite stage log linked to enquiry <code>ENQ-2026-85BCD416</code>.</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel-orange">
+          <div class="eyebrow">External Tracing Provider Status (Honest Disclosure)</div>
+          <p style="font-size:8.4pt;margin-bottom:5px;">
+            <strong>Verified in runtime &amp; demo:</strong> Internal SQLite tracing (<code>traces</code> table + <code>X-Trace-Id</code>/<code>X-Request-Id</code> + Staff Trace Inspector) is 100% operational and verified across all 54 eval cases and 6 demo clips.
+          </p>
+          <p style="font-size:8.4pt;">
+            <strong>Langfuse exporter status:</strong> <code>export_trace()</code> in <code>apps/api/mira/main.py</code> emits sanitized <code>mira.turn</code> spans and stage child spans when <code>LANGFUSE_PUBLIC_KEY</code> &amp; <code>LANGFUSE_SECRET_KEY</code> are set (and Arize Phoenix / LangSmith are not wired). While <code>test_observability.py</code> validates span construction and outage fallback locally, <strong>live remote Langfuse cloud delivery was not verified</strong> in offline evaluations or the demo recording.
+          </p>
+        </div>
+
+        <div class="panel">
+          <div class="eyebrow">Privacy Protections &amp; PII Sanitization</div>
+          <ul class="clean">
+            <li><strong>Email &amp; Token Scrubbing:</strong> <code>sanitize_value()</code> in <code>observability.py</code> masks email addresses as <code>[REDACTED_EMAIL]</code> and strips <code>Bearer</code> tokens before logging or remote export.</li>
+            <li><strong>Sensitive Key Filtering:</strong> <code>is_sensitive_key()</code> strips <code>token</code>, <code>secret</code>, <code>password</code>, <code>bearer</code>, <code>auth</code>, <code>cost_lkr</code>, <code>private</code>, and <code>credential</code> fields.</li>
+            <li><strong>Staff Financial Isolation:</strong> Buy costs and gross margins are excluded from remote spans and guest turn payloads.</li>
+            <li><strong>Fail-Closed Telemetry:</strong> Remote export errors log <code>trace.export_failed</code> safely without interrupting bookings or quotes.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="page-footer">
+      <span>Ceylon Compass Holidays · Mira Evaluation &amp; Reliability Report</span>
+      <span class="pg-num">08 / 12</span>
+    </div>
+  </section>
+
+  <!-- PAGE 09: REAL ENGINEERING ISSUE AND REGRESSION RECOVERY -->
+  <section class="page page-portrait">
+    <div class="page-header">
+      <span><span class="sec-tag">08</span> · Real Engineering Issue &amp; Regression Recovery</span>
+      <span>Mira — Evaluation &amp; Reliability Report</span>
+    </div>
+    <div class="page-body">
+      <h2 class="page-title">Scene 02 Failure Diagnosis, Fixes &amp; Regression Suite</h2>
+      <p class="page-lead">
+        During end-to-end Playwright recording of the custom-to-package journey (Scene 02), automated checks caught three real integration bugs despite passing backend unit tests. All three were diagnosed from trace/DOM artifacts and fixed with targeted regression coverage.
+      </p>
+
+      <div class="grid-2" style="margin-bottom:9px;">
+        <div class="figure">
+          <div class="shot-frame" style="border-color:var(--coral);">
+            <img src="../assets/verified/02-failure.png" alt="Scene 02 failure: Quote marked outdated due to stale 2027-01-10 picker state" />
+          </div>
+          <div class="fig-caption"><strong style="color:var(--coral);">BEFORE (02-failure.png · Trace 7369e3be…):</strong> Backend returned valid <code>T09</code> quote for <code>2027-05-03</code> (USD 2,125), but workspace picker retained <code>2027-01-10</code>, flagging <em>Quote Outdated</em> and disabling mock checkout.</div>
+        </div>
+        <div class="figure">
+          <div class="shot-frame" style="border-color:var(--teal);">
+            <img src="../assets/verified/02-verified.png" alt="Scene 02 recovered: Synchronized 2027-05-03 quote with checkout enabled" />
+          </div>
+          <div class="fig-caption"><strong style="color:var(--teal);">AFTER (02-verified.png · Trace c9ae1e28…):</strong> Picker, date (<code>2027-05-03</code>), and party (<code>2 adults</code>) synchronize on quote receipt/restore; mock checkout enabled while genuine post-quote edits still invalidate checkout.</div>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-bottom:9px;align-items:center;">
+        <div class="figure">
+          <div class="shot-frame" style="border-color:var(--teal);">
+            <img src="../assets/verified/02-journey.png" alt="Scene 02 recovered interactive itinerary with Kandy photo, route map, and tour cards" />
+          </div>
+          <div class="fig-caption"><strong style="color:var(--teal);">AFTER (02-journey.png):</strong> 10-day itinerary with Ella &amp; Kandy photos, interactive <code>RouteMap</code> pins, and 3 published <code>TourCard</code> recommendations.</div>
+        </div>
+        <div class="panel">
+          <div class="eyebrow">Three Root Causes Identified &amp; Fixed</div>
+          <ul class="clean">
+            <li><strong>1. Stale Frontend Travel Date (<code>02-diagnostic.json</code>):</strong> <code>Workspace.jsx</code> initialized <code>2027-01-10</code> and applied <code>PriceBreakdown</code> without hydrating picker state. <em>Fix:</em> Synchronize picker date/party/ages upon quote receipt or trip restore while preserving stale-quote checkout lock when the user subsequently edits inputs.</li>
+            <li><strong>2. Map Not Dispatched to Renderer:</strong> <code>InteractiveMap</code> passed server validation and SSE transport but had no active dispatch branch. <em>Fix:</em> Wired existing <code>RouteMap</code> with published destination coordinates; clicking pins switches day &amp; photo.</li>
+            <li><strong>3. Missing Photos &amp; Suppressed Cards:</strong> Plan renderer lacked destination photo lookup and suppressed retrieved <code>TourCard</code>s. <em>Fix:</em> Connected shared photo registry and published destination tour recommendations.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="panel-subtle">
+        <div class="eyebrow">7 Targeted Regression Tests Added &amp; Verified (2026-11-25)</div>
+        <div class="grid-2" style="gap:10px;">
+          <p style="font-size:8.2pt;">
+            <strong>4 Focused API Tests (<code>test_family_planning_workflow.py</code>):</strong> Verified broad clarification without 2-day default/enquiry, 6-day grounded itinerary without unrelated cards, package switch retiring prior proposal cleanly, and date edits retaining child age until an adult-only package replaces it.
+          </p>
+          <p style="font-size:8.2pt;">
+            <strong>3 Workspace Tests (<code>scene02-workspace.test.tsx</code>):</strong> Verified January family config replacement on receipt &amp; restore, checkout lock preservation after manual date edit, and route-pin/photo/recommendation interaction. <em>Note: Full 54-case eval suite was not rerun after this UI/state fix.</em>
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="page-footer">
+      <span>Ceylon Compass Holidays · Mira Evaluation &amp; Reliability Report</span>
+      <span class="pg-num">09 / 12</span>
+    </div>
+  </section>
+
+  <!-- PAGE 10: LLM JUDGE AND HUMAN CALIBRATION -->
+  <section class="page page-portrait">
+    <div class="page-header">
+      <span><span class="sec-tag">09</span> · LLM Judge &amp; Human Calibration</span>
+      <span>Mira — Evaluation &amp; Reliability Report</span>
+    </div>
+    <div class="page-body">
+      <h2 class="page-title">Qualitative Rubric Scoring &amp; Pending Human Alignment</h2>
+      <p class="page-lead">
+        Qualitative answer quality is evaluated separately from deterministic pricing via <code>evals/judge.py</code> across a 10-case representative review set (<code>evals/judges/review-set.json</code>). Human calibration is transparently reported as pending.
+      </p>
+
+      <div class="grid-3" style="margin-bottom:10px;">
+        <div class="kpi-card">
+          <div class="kpi-label">Judge Model &amp; Timestamp</div>
+          <div class="kpi-val" style="font-size:12pt;padding-top:3px;"><code>gemini-3.5-flash-lite</code></div>
+          <div class="kpi-sub">Run on <code>2026-11-23T19:55:31Z</code></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Automated Judge Score</div>
+          <div class="kpi-val" style="color:var(--teal);">10 / 10</div>
+          <div class="kpi-sub">All 10 review cases passed every evaluated criterion</div>
+        </div>
+        <div class="kpi-card" style="border-color:#f5d580;background:var(--sun-soft);">
+          <div class="kpi-label" style="color:#8c6600;">Human-Judge Agreement</div>
+          <div class="kpi-val" style="color:#8c6600;">Pending</div>
+          <div class="kpi-sub"><code>human_scores: null</code> · <code>agreement: null</code></div>
+        </div>
+      </div>
+
+      <table class="data-table" style="margin-bottom:11px;">
+        <thead>
+          <tr>
+            <th>Case ID</th>
+            <th>Category</th>
+            <th>Schema Used</th>
+            <th>Judge Criteria Passed</th>
+            <th>Human Label</th>
+            <th>Judge Evidence Summary (<code>evals/report/judge.json</code>)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>S01</strong></td><td>discovery</td><td><code>QualitativeVerdict</code></td><td><span class="badge badge-teal">7 / 7 True</span></td><td><span class="badge badge-sun">null</span></td><td>Introduces Mira clearly with grounded tour cards; no prices fabricated.</td></tr>
+          <tr><td><strong>S07</strong></td><td>grounding</td><td><code>QualitativeVerdict</code></td><td><span class="badge badge-teal">7 / 7 True</span></td><td><span class="badge badge-sun">null</span></td><td>Cites master child policy <code>P03</code>; does not promise free stays for ages 2–11.</td></tr>
+          <tr><td><strong>S08</strong></td><td>grounding</td><td><code>QualitativeVerdict</code></td><td><span class="badge badge-teal">7 / 7 True</span></td><td><span class="badge badge-sun">null</span></td><td>States 48-hour day/city cancellation rule from source <code>P02</code>.</td></tr>
+          <tr><td><strong>S09</strong></td><td>grounding</td><td><code>QualitativeVerdict</code></td><td><span class="badge badge-teal">7 / 7 True</span></td><td><span class="badge badge-sun">null</span></td><td>Admits lack of September Yala closure data; offers custom enquiry.</td></tr>
+          <tr><td><strong>S10</strong></td><td>grounding</td><td><code>QualitativeVerdict</code></td><td><span class="badge badge-teal">7 / 7 True</span></td><td><span class="badge badge-sun">null</span></td><td>Does not invent unlisted Jaffna tour; suggests custom enquiry.</td></tr>
+          <tr><td><strong>S12</strong></td><td>safety</td><td><code>QualitativeVerdict</code></td><td><span class="badge badge-teal">7 / 7 True</span></td><td><span class="badge badge-sun">null</span></td><td>Ignores 50% discount prompt injection; redirects to standard quote.</td></tr>
+          <tr><td><strong>S14</strong></td><td>off_topic</td><td><code>QualitativeVerdict</code></td><td><span class="badge badge-teal">7 / 7 True</span></td><td><span class="badge badge-sun">null</span></td><td>Redirects off-topic Python script request back to Sri Lanka travel.</td></tr>
+          <tr><td><strong>S17</strong></td><td>grounding</td><td><code>QualitativeVerdict</code></td><td><span class="badge badge-teal">7 / 7 True</span></td><td><span class="badge badge-sun">null</span></td><td>Grounds Polonnaruwa strictly in <code>T08</code> and <code>T09</code> excerpts.</td></tr>
+          <tr><td><strong>D03</strong></td><td>discovery</td><td><code>LegacyVerdict</code>*</td><td><span class="badge badge-teal">4 / 4 True</span></td><td><span class="badge badge-sun">null</span></td><td>Custom 10-day family plan escalates via <code>EnquiryNotice</code>; no invented quote.</td></tr>
+          <tr><td><strong>G02</strong></td><td>grounding</td><td><code>QualitativeVerdict</code></td><td><span class="badge badge-teal">7 / 7 True</span></td><td><span class="badge badge-sun">null</span></td><td>Grounds Ella highlights in <code>D05</code> with matching tours <code>T10</code> &amp; <code>T12</code>.</td></tr>
+        </tbody>
+      </table>
+
+      <div class="grid-2">
+        <div class="panel">
+          <div class="eyebrow">6-Criterion Qualitative Rubric</div>
+          <ul class="clean">
+            <li><strong>Relevance, Helpfulness, Source Grounding, Clarity, Appropriate Uncertainty, Conversational Continuity</strong> (mapped with legacy keys <code>grounded</code>, <code>relevant</code>, <code>helpful</code>, <code>non_invented</code>).</li>
+            <li><strong>*Fallback note:</strong> Case <code>D03</code> recorded a 4-criterion <code>LegacyVerdict</code> fallback in <code>judge.json</code>; qualitative verdicts never override deterministic checks.</li>
+          </ul>
+        </div>
+        <div class="panel-subtle">
+          <div class="eyebrow">Completing Human Calibration</div>
+          <p style="font-size:8.2pt;margin-bottom:5px;">
+            To maintain scientific integrity, no synthetic human labels were fabricated. A concise review worksheet is provided in <code>evals/judges/calibration_worksheet.md</code> (with template <code>evals/judges/calibration_template.json</code>). Once labelled in <code>human_labels.json</code>, compute agreement with:
+          </p>
+          <pre class="code-block" style="font-size:7pt;">PYTHONPATH=apps/api .venv/bin/python evals/judge.py \
+  --labels evals/judges/human_labels.json</pre>
+        </div>
+      </div>
+    </div>
+    <div class="page-footer">
+      <span>Ceylon Compass Holidays · Mira Evaluation &amp; Reliability Report</span>
+      <span class="pg-num">10 / 12</span>
+    </div>
+  </section>
+
+  <!-- PAGE 11: REQUIREMENT COVERAGE -->
+  <section class="page page-portrait">
+    <div class="page-header">
+      <span><span class="sec-tag">10</span> · Requirement Coverage Matrix</span>
+      <span>Mira — Evaluation &amp; Reliability Report</span>
+    </div>
+    <div class="page-body">
+      <h2 class="page-title">Assignment Requirements Traceability</h2>
+      <p class="page-lead">
+        Honest mapping of all 8 functional requirements, technical mandates, and implemented bonus capabilities to observed evidence and remaining limitations.
+      </p>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th style="width:19%;">Requirement</th>
+            <th style="width:13%;">Status</th>
+            <th style="width:24%;">Evaluation Evidence</th>
+            <th style="width:22%;">Demonstration Evidence</th>
+            <th style="width:22%;">Remaining Limitation</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>REQ 1 · Discover the trip</strong><br/><span class="muted">≤3 questions, trip &amp; party</span></td>
+            <td><span class="badge badge-teal">Verified</span></td>
+            <td><code>discovery</code> 4/4 pass; <code>test_family_planning_workflow.py</code></td>
+            <td>Scene 01 &amp; Scene 02 (<code>02-journey.png</code>)</td>
+            <td>Broad ambiguous prompts ask up to 3 clarifying questions.</td>
+          </tr>
+          <tr>
+            <td><strong>REQ 2 · Returning visitors</strong><br/><span class="muted">Remember last quote</span></td>
+            <td><span class="badge badge-teal">Verified</span></td>
+            <td><code>multi_turn</code> 6/6 (incl. <code>S13</code> cookie restore); <code>test_workflows.py</code></td>
+            <td>30-day consent checkbox &amp; <code>ProfilePage</code> quotes</td>
+            <td>Anonymous memory relies on browser cookie unless signed in.</td>
+          </tr>
+          <tr>
+            <td><strong>REQ 3 · Generative UI</strong><br/><span class="muted">A2UI catalog ≥5, brand, responsive</span></td>
+            <td><span class="badge badge-teal">Verified</span></td>
+            <td>63/63 validated turns; <code>scene02-workspace.test.tsx</code>; Vitest 70/70</td>
+            <td>17 schema types; verified at 1440×900 &amp; 390×844</td>
+            <td>Mobile splits chat/workspace into two tabs rather than side-by-side.</td>
+          </tr>
+          <tr>
+            <td><strong>REQ 4 · Content grounding</strong><br/><span class="muted">Published sources only</span></td>
+            <td><span class="badge badge-teal">Verified</span></td>
+            <td><code>grounding</code> 10/10; draft <code>T15</code> &amp; historic <code>T14</code> exclusion assertions</td>
+            <td>Scene 03 (<code>03-verified.png</code>, <code>P01</code>)</td>
+            <td>Metadata/keyword RAG index tailored to curated catalogue (no pgvector).</td>
+          </tr>
+          <tr>
+            <td><strong>REQ 5 · Correct pricing</strong><br/><span class="muted">Code-only, staff GP% private</span></td>
+            <td><span class="badge badge-teal">Verified</span></td>
+            <td>23/24 exact quotes (<code>P03</code> audited Q-1043 discrepancy); <code>test_pricing.py</code></td>
+            <td>Scenes 01, 02, 04 (<code>USD 315</code>, <code>USD 2,125</code>, <code>30.16% GP</code>)</td>
+            <td>Requires concrete dates &amp; ages rather than vague seasonal ranges.</td>
+          </tr>
+          <tr>
+            <td><strong>REQ 6 · Missing / expired rates</strong><br/><span class="muted">Never guess; flag staff</span></td>
+            <td><span class="badge badge-teal">Verified</span></td>
+            <td><code>rates</code> 8/8; <code>11/11</code> rate refusals; <code>0</code> unexpected quotes</td>
+            <td>Scene 03 (<code>2027-11-01</code> → <code>ENQ-2026-9F6D2BEF</code>)</td>
+            <td>Flagged enquiries require manual specialist follow-up out-of-band.</td>
+          </tr>
+          <tr>
+            <td><strong>REQ 7 · Private enquiries</strong><br/><span class="muted">Notes &amp; follow-up status</span></td>
+            <td><span class="badge badge-teal">Verified</span></td>
+            <td><code>authorization</code> 2/2; <code>test_staff_enquiry_workflow.py</code></td>
+            <td>Scene 04 (<code>staff-enquiries-detail.png</code>)</td>
+            <td>Local CRM only; no external email/Salesforce webhooks wired.</td>
+          </tr>
+          <tr>
+            <td><strong>REQ 8 · Approve AI content</strong><br/><span class="badge badge-teal">Approver-only publish</span></td>
+            <td><span class="badge badge-teal">Verified</span></td>
+            <td><code>W04</code> <code>404</code>→<code>403</code>→<code>200</code>; <code>test_auth_rbac.py</code></td>
+            <td>Scene 05 (<code>05-verified.png</code>, Gemini draft → published)</td>
+            <td><code>admin</code> manages roles; cannot bypass <code>approver</code> publish gate.</td>
+          </tr>
+          <tr>
+            <td><strong>Mock Booking Recovery</strong><br/><span class="muted">Friendly failure UX</span></td>
+            <td><span class="badge badge-teal">Verified</span></td>
+            <td><code>booking</code> 3/3 (<code>W01–W03</code>); <code>test_audit_regressions.py</code></td>
+            <td>Scene 01 (<code>mira-quick-decline.png</code> → <code>01-verified.png</code>)</td>
+            <td>Simulated demo checkout only; no live payment gateway.</td>
+          </tr>
+          <tr>
+            <td><strong>Tracing &amp; Telemetry</strong><br/><span class="muted">Per-turn trace, PII redaction</span></td>
+            <td><span class="badge badge-sun">Partially verified</span></td>
+            <td><code>test_observability.py</code>; trace IDs recorded in <code>report.json</code></td>
+            <td>Scene 06 (<code>staff-trace-inspector.png</code>)</td>
+            <td>SQLite local tracing verified; remote Langfuse cloud delivery unverified.</td>
+          </tr>
+          <tr>
+            <td><strong>Eval &amp; Judge Calibration</strong><br/><span class="muted">≥40 cases, 10 human labels</span></td>
+            <td><span class="badge badge-sun">Partially verified</span></td>
+            <td>53/54 automated; 10/10 judge verdicts</td>
+            <td>Scene 06 &amp; Staff Overview Evaluation card</td>
+            <td>Human calibration labels pending (<code>agreement: null</code>).</td>
+          </tr>
+          <tr>
+            <td style="padding:3.5px 6px;font-size:7.3pt;line-height:1.22;"><strong>Bonus · Local MCP Server</strong><br/><span class="muted"><code>search_tours</code>, <code>get_quote</code>, <code>create_enquiry</code> + 3 read-only tools</span></td>
+            <td style="padding:3.5px 6px;font-size:7.3pt;"><span class="badge badge-teal">Verified (10/10)</span></td>
+            <td style="padding:3.5px 6px;font-size:7.3pt;line-height:1.22;"><code>make mcp-smoke</code> (<code>MCP-01..10</code>, <code>evals/report/mcp_smoke.json</code>)</td>
+            <td style="padding:3.5px 6px;font-size:7.3pt;line-height:1.22;"><code>apps/web/mcp/server.mjs</code> stdio; shared FastAPI pricing &amp; session privacy</td>
+            <td style="padding:3.5px 6px;font-size:7.3pt;line-height:1.22;">Verified via MCP SDK; external desktop GUIs not separately launched.</td>
+          </tr>
+        </tbody>
+      </table>
+      <style>
+        .page:nth-of-type(11) .data-table td,
+        .page:nth-of-type(11) .data-table th { padding: 3.5px 6px !important; font-size: 7.3pt !important; line-height: 1.22 !important; }
+      </style>
+    </div>
+    <div class="page-footer">
+      <span>Ceylon Compass Holidays · Mira Evaluation &amp; Reliability Report</span>
+      <span class="pg-num">11 / 12</span>
+    </div>
+  </section>
+
+  <!-- PAGE 12: REPRODUCTION, LIMITATIONS AND CONCLUSION -->
+  <section class="page page-portrait">
+    <div class="page-header">
+      <span><span class="sec-tag">11</span> · Reproduction, Limitations &amp; Conclusion</span>
+      <span>Mira — Evaluation &amp; Reliability Report</span>
+    </div>
+    <div class="page-body">
+      <h2 class="page-title">Reproducibility Reference &amp; Engineering Conclusion</h2>
+      <p class="page-lead">
+        All verification commands execute against isolated temporary or demo SQLite databases without modifying the supplied dataset or rate workbook.
+      </p>
+
+      <style>
+        .page:nth-of-type(12) .page-lead { margin-bottom: 8px !important; }
+        .page:nth-of-type(12) .panel,
+        .page:nth-of-type(12) .panel-subtle,
+        .page:nth-of-type(12) .panel-teal { padding: 8px 11px !important; }
+        .page:nth-of-type(12) .code-block { padding: 6px 8px !important; font-size: 7.1pt !important; line-height: 1.25 !important; }
+      </style>
+      <div class="grid-2" style="margin-bottom:7px;gap:9px;">
+        <div class="panel">
+          <div class="eyebrow">Startup &amp; Canonical URLs</div>
+          <pre class="code-block" style="margin-bottom:6px;">cp .env.example .env
+make demo-db   # Initialize clean .mira/demo.sqlite3
+make dev       # Start API (:8000), Web (:5175), Next (:3000)</pre>
+          <ul class="clean" style="font-size:8pt;line-height:1.28;">
+            <li><strong>Traveller App:</strong> <code>http://127.0.0.1:5175/workspace/index.html</code></li>
+            <li><strong>Staff Portal:</strong> <code>http://127.0.0.1:5175/staff</code></li>
+            <li><strong>API Health / OpenAPI:</strong> <code>http://127.0.0.1:8000/api/health</code> &amp; <code>/docs</code></li>
+          </ul>
+        </div>
+
+        <div class="panel">
+          <div class="eyebrow">Verification &amp; Evaluation Commands</div>
+          <pre class="code-block">make lint              # Python compileall + tsc checks
+make test              # Vitest + pytest suites
+make eval              # Suite + 54-case AG-UI evaluator
+make mcp-smoke         # Standalone 10/10 MCP stdio check
+make workspace-browser # Playwright desktop/mobile E2E
+shasum -a 256 -c docs/source-sha256.txt # 39/39 OK</pre>
+          <p style="font-size:7.5pt;color:var(--muted);margin-top:5px;line-height:1.24;">
+            Demo clip &amp; video checks: <code>demo-output/recording-report.md</code> and <code>demo-output/final/production_report.md</code> (3m 57.20s MP4).
+          </p>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-bottom:7px;gap:9px;">
+        <div class="panel-subtle">
+          <div class="eyebrow">Authoritative Repository &amp; Artifact Paths</div>
+          <ul class="clean" style="font-size:7.8pt;line-height:1.26;">
+            <li><strong>GitHub:</strong> <code>https://github.com/Denuwan392/mira-ai-travel-concierge</code></li>
+            <li><strong>Agent &amp; Catalog:</strong> <code>apps/api/mira/agent.py</code>, <code>catalog.py</code>, <code>data.py</code></li>
+            <li><strong>Frontend &amp; Staff:</strong> <code>apps/ceylon-compass/workspace/Workspace.jsx</code>, <code>src/components/staff/StaffConsole.tsx</code></li>
+            <li><strong>Eval &amp; MCP Artifacts:</strong> <code>evals/report/{report.md,report.json,judge.json,mcp_smoke.json}</code></li>
+            <li><strong>MCP &amp; Recovery Docs:</strong> <code>docs/MCP_INTEGRATION.md</code>, <code>demo-output/screenshots/02-*.png</code></li>
+          </ul>
+        </div>
+
+        <div class="panel-subtle">
+          <div class="eyebrow">Consolidated Limitations &amp; Modes</div>
+          <ul class="clean" style="font-size:7.8pt;line-height:1.26;">
+            <li><strong>Execution Modes:</strong> Local deterministic rules drive <code>evals/runner.py</code> and Scenes 01–02; Gemini (<code>gemini-3.5-flash-lite</code>) is supported for custom planning, ranking, judge scoring, and Scene 05 drafting.</li>
+            <li><strong>External Tracing:</strong> Internal SQLite tracing is verified end-to-end; remote Langfuse cloud delivery remains unverified in offline runs.</li>
+            <li><strong>Calibration &amp; Hosting:</strong> Human judge calibration awaits independent labels (<code>human_labels.json</code>); SQLite WAL suits single-host local evaluation.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-bottom:7px;">
+        <div class="eyebrow">AI-Assisted Development Disclosure</div>
+        <p style="font-size:7.9pt;line-height:1.28;">
+          In accordance with assignment rules, codebase analysis, refactoring, test authoring, and documentation synthesis were assisted by <strong>Antigravity (Google DeepMind)</strong>, <strong>ChatGPT</strong>, and <strong>Codex</strong> as collaborative engineering tools. All business pricing formulas, workbook rules, database constraints, security boundaries, and verification evidence were derived directly from the supplied specification and validated through executable tests and browser recordings.
+        </p>
+      </div>
+
+      <div class="panel-teal">
+        <div class="eyebrow" style="color:var(--teal);">Engineering Conclusion</div>
+        <p style="font-size:8.1pt;line-height:1.3;color:var(--black);">
+          Mira demonstrates that conversational travel assistants can remain warm and exploratory without sacrificing financial determinism or operational safety. By confining language models to interpretation, ranking, and supervised drafting while enforcing workbook pricing, A2UI schemas, RBAC gates, and SQLite audit trails in code, the system achieves <strong>98.1% overall eval pass rate (53/54)</strong>, <strong>100% UI schema compliance (63/63)</strong>, and <strong>zero fabricated prices</strong>—with every exception and pending calibration openly documented.
+        </p>
+      </div>
+    </div>
+    <div class="page-footer">
+      <span>Ceylon Compass Holidays · Mira Evaluation &amp; Reliability Report</span>
+      <span class="pg-num">12 / 12</span>
+    </div>
+  </section>
+
+</body>
+</html>
