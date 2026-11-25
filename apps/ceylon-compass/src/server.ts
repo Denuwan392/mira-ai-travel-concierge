@@ -48,6 +48,25 @@ function isH3SwallowedErrorBody(body: string): boolean {
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     const incoming = new URL(request.url);
+    const canonicalRedirects = new Set([
+      "/",
+      "/dump.html",
+      "/workspace",
+      "/workspace/",
+      "/workspace/index.htm",
+      "/plan",
+      "/destinations",
+      "/experiences",
+      "/journeys",
+      "/explore",
+      "/about",
+      "/trips",
+    ]);
+    if (canonicalRedirects.has(incoming.pathname)) {
+      const target = new URL("/workspace/index.html", incoming);
+      target.search = incoming.search;
+      return Response.redirect(target, 302);
+    }
     const proxy = incoming.pathname.startsWith("/api/");
     try {
       if (proxy) {

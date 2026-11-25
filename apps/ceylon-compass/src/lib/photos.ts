@@ -50,3 +50,14 @@ export const photos = {
 } satisfies Record<string, Photo>;
 
 export type PhotoKey = keyof typeof photos;
+
+export const destinationPhotos: Record<string, PhotoKey> = {
+  D01: "sigiriya",
+  D02: "elephants",
+  D03: "kandy",
+  D04: "tea",
+  D05: "ella",
+  D07: "galle",
+  D08: "mirissa",
+  D06: "yala",
+};

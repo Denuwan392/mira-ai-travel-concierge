@@ -14,11 +14,11 @@ const centres: Record<string, [number, number]> = {
 };
 export function RouteMap({
   value,
-  send,
+  onSelectDay,
   busy,
 }: {
   value: Extract<Component, { days: unknown }>;
-  send: (text: string) => void;
+  onSelectDay: (index: number) => void;
   busy: boolean;
 }) {
   const pins = value.days.flatMap((day, index) => {
@@ -35,8 +35,9 @@ export function RouteMap({
           <button
             key={p.source}
             disabled={busy}
+            aria-pressed={value.days[value.selected]?.source === p.source}
             className="pill"
-            onClick={() => send("@day " + (p.index + 1))}
+            onClick={() => onSelectDay(p.index)}
           >
             {p.name}
           </button>

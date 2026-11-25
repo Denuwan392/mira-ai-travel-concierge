@@ -84,6 +84,24 @@ export function useConversation(seed, autoSubmitSeed = false) {
     }
   }, [ready, autoSubmitSeed, seed]);
 
+  async function newTrip() {
+    if (!ready || active.current || busy) return;
+    setReady(false);
+    try {
+      const { id } = await api("/trips", { method: "POST" });
+      sessionStorage.setItem("mira-workspace-trip", id);
+      trip.current = id;
+      pending.current = null;
+      setItems([]);
+      setInput("");
+      setError("");
+    } catch {
+      setError("Mira couldn’t start a new trip. Your current journey is still open.");
+    } finally {
+      setReady(true);
+    }
+  }
+
   async function consent(enabled) {
     setPrivacyBusy(true);
     try {
@@ -108,6 +126,7 @@ export function useConversation(seed, autoSubmitSeed = false) {
     send,
     remember,
     consent,
+    newTrip,
     privacyBusy,
     retry: () => (ready ? send() : setAttempt((n) => n + 1)),
   };

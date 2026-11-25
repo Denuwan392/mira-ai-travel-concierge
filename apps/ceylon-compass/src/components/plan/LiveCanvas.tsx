@@ -3,19 +3,8 @@ import { ResultSurface } from "./AgentSurface";
 import { api, type Entry } from "@/lib/live/service";
 import type { Component } from "@/lib/live/catalog";
 import { RouteMap } from "./RouteMap";
-import { photos, type PhotoKey } from "@/lib/photos";
+import { destinationPhotos, photos, type PhotoKey } from "@/lib/photos";
 import { SourceDisclosure } from "./SourceDisclosure";
-
-const destinationPhotos: Record<string, PhotoKey> = {
-  D01: "sigiriya",
-  D02: "elephants",
-  D03: "kandy",
-  D04: "tea",
-  D05: "ella",
-  D07: "galle",
-  D08: "mirissa",
-  D06: "yala",
-};
 
 // Representative destination images for published tours with a matching local asset.
 const tourPhotos: Partial<Record<string, PhotoKey>> = {
@@ -168,7 +157,7 @@ export function LiveCanvas({
           </label>
         );
       case "InteractiveMap":
-        return <RouteMap value={c} send={send} busy={busy} />;
+        return <RouteMap value={c} onSelectDay={(index) => send("@day " + (index + 1))} busy={busy} />;
       case "TourCard": {
         const photo = tourPhotos[c.id];
         return (

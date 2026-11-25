@@ -2,9 +2,11 @@ import React, { useState, useEffect, useLayoutEffect, useRef, useCallback, creat
 import { createRoot } from "react-dom/client";
 import { useConversation } from "./useConversation";
 import { api, session } from "@/lib/live/service";
-import { photos } from "@/lib/photos";
+import { RouteMap } from "@/components/plan/RouteMap";
+import { destinationPhotos, photos } from "@/lib/photos";
 import { StaffConsole } from "@/components/staff/StaffConsole";
 import { MarkdownContent } from "@/components/plan/MarkdownContent";
+import { DestinationShowcase } from "@/components/home/DestinationShowcase";
 import "./style.css";
 import {
   MapPin, Calendar, Users, Clock, ChevronRight, ChevronDown, ChevronLeft,
@@ -903,6 +905,10 @@ const AppContext = createContext({
 });
 
 // ============ ROUTER ============
+function isSafeInternalRoute(path) {
+  return typeof path === 'string' && /^\/(mira|plan|profile|tours\/[a-z0-9-]+)$/.test(path);
+}
+
 function useRouter() {
   const [route, setRoute] = useState(window.location.hash.slice(1) || '/');
   
@@ -913,6 +919,10 @@ function useRouter() {
   }, []);
 
   const navigate = useCallback((path) => {
+    const current = (window.location.hash.slice(1) || '/').split('?')[0];
+    if (typeof path === 'string' && path.startsWith('/enquiry/') && isSafeInternalRoute(current)) {
+      sessionStorage.setItem('mira-enquiry-origin', current);
+    }
     window.location.hash = path;
     window.scrollTo(0, 0);
   }, []);
@@ -1304,41 +1314,19 @@ function HomePage({ navigate }) {
   };
 
   return (
-    <div>
-      <section className="hero-gradient">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <span className="text-xs font-semibold text-brand-teal uppercase tracking-wider mb-4 block">Your Sri Lankan journey begins here</span>
-              <h1 className="text-display lg:text-6xl font-bold text-brand-black leading-tight mb-6">
-                Discover Sri Lanka,<br/>your way.
-              </h1>
-              <p className="text-lg text-text-muted leading-relaxed mb-8 max-w-lg">
-                Explore cultural treasures, scenic landscapes, wildlife and coastal escapes. Mira helps you discover tours and plan a trip around your interests.
-              </p>
-              <div className="flex flex-wrap gap-3 mb-8">
-                <Button variant="primary" size="lg" onClick={() => navigate('/mira')}>
-                  <Sparkles className="w-5 h-5 mr-2" />
-                  Start planning with Mira
-                </Button>
-                <Button variant="secondary" size="lg" onClick={() => navigate('/tours')}>
-                  Explore tours
-                </Button>
-              </div>
-              <div className="flex flex-wrap gap-4 text-sm text-text-muted">
-                <span className="flex items-center gap-1.5"><Clock className="w-4 h-4" /> Day trips</span>
-                <span className="flex items-center gap-1.5"><Calendar className="w-4 h-4" /> Multi-day journeys</span>
-                <span className="flex items-center gap-1.5"><MapPin className="w-4 h-4" /> Custom itineraries</span>
-              </div>
-            </div>
-            <div className="hidden lg:block">
-              <div className="hero-visual w-full h-96 rounded-card shadow-lg" />
-            </div>
-          </div>
-        </div>
+    <div className="bg-white">
+      {/* Section B — Conversation-first introduction */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-14 pb-6 text-center">
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-brand-black tracking-tight leading-tight">
+          Where will Sri Lanka take you?
+        </h1>
+        <p className="text-base sm:text-lg text-text-muted mt-3 max-w-xl mx-auto">
+          Your journey begins with a conversation.
+        </p>
       </section>
 
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 relative z-10">
+      {/* Section C — Preserved Mira conversational input */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-6">
         <Card className="p-6 lg:p-8 max-w-3xl mx-auto">
           <label htmlFor="hero-mira-input" className="text-sm text-text-muted mb-3 block">Where would you like to go?</label>
           <div className="flex gap-3 mb-4">
@@ -1362,6 +1350,9 @@ function HomePage({ navigate }) {
           </div>
         </Card>
       </section>
+
+      {/* Section D — Premium destination showcase */}
+      <DestinationShowcase onExplore={() => navigate('/tours')} destinations={destinations} />
 
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
         <div className="text-center mb-12">
@@ -1591,6 +1582,23 @@ function ToursPage({ navigate }) {
 }
 
 // ============ TRIP CONFIGURATION & COMPATIBILITY HELPERS ============
+const initialParty = { adults: 2, children: 0, childAges: [], infants: 0, date: '' };
+
+function partyFromSnapshot(snapshot, previousDate) {
+  const childAges = snapshot.ages.filter(age => age >= 2);
+  const infantAges = snapshot.ages.filter(age => age < 2);
+  return {
+    tourId: snapshot.source || snapshot.tour,
+    adults: snapshot.adults, date: snapshot.date || previousDate,
+    children: childAges.length, childAges, infants: infantAges.length, infantAges,
+  };
+}
+
+function partyAges(config) {
+  const infants = Array.from({length: config.infants}, (_, i) => config.infantAges?.[i] ?? 0);
+  return [...config.childAges, ...infants];
+}
+
 function isQuoteCompatible(quote, tourId, date, adults, children = 0, childAges = []) {
   if (!quote) return false;
   if (quote.source !== tourId) return false;
@@ -2123,7 +2131,7 @@ function TourDetailPage({ navigate, slug }) {
 
                   <div className="border-t border-border pt-3 space-y-2">
                     <div className="flex justify-between items-center">
-                      <span className="font-semibold text-sm">Booking total:</span>
+                      <span className="font-semibold text-sm">Verified tour price:</span>
                       <span className={`text-lg font-bold ${isCompatible ? 'text-brand-black' : 'text-text-muted line-through'}`}>
                         {quoteRecord.currency || 'USD'} {quoteRecord.total?.toLocaleString()}
                       </span>
@@ -2138,9 +2146,30 @@ function TourDetailPage({ navigate, slug }) {
                     </div>
                   </div>
 
+                  {quoteRecord.enquiry && (
+                    <div className="mt-3 p-2.5 rounded-card bg-brand-leaf/10 border border-brand-leaf/25 text-xs space-y-1">
+                      <div className="font-semibold text-brand-leaf">Private enquiry saved</div>
+                      {quoteRecord.enquiry_reference && (
+                        <div className="font-mono text-brand-black">Ref: {quoteRecord.enquiry_reference}</div>
+                      )}
+                      <div className="pt-1 flex gap-2">
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          className="flex-1"
+                          onClick={() => navigate('/enquiry/' + (quoteRecord.enquiry_reference || quoteRecord.enquiry))}
+                        >
+                          View enquiry
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Mock checkout controls */}
-                  <div className="mt-4 pt-3 border-t border-border">
-                    <label htmlFor="mock-checkout-scenario" className="text-xs font-medium block mb-1 text-text-muted">Simulation mode: select checkout outcome</label>
+                  <div className="mt-4 p-3 rounded-card border border-dashed border-border bg-gray-50/70">
+                    <label htmlFor="mock-checkout-scenario" className="text-[11px] font-semibold uppercase tracking-wide block mb-1.5 text-text-muted">
+                      Simulated checkout (demo only — no real payment)
+                    </label>
                     <div className="flex gap-2">
                       <select id="mock-checkout-scenario" aria-label="Mock checkout outcome" className="px-2 py-1.5 border border-border rounded-input text-xs flex-1">
                         <option value="success">success</option>
@@ -2169,13 +2198,13 @@ function TourDetailPage({ navigate, slug }) {
                     )}
                     {confirmedBookingRef && (
                       <div className="mt-2 p-2.5 rounded-input bg-emerald-50 border border-emerald-200 text-xs text-emerald-900">
-                        <strong>Existing booking confirmed:</strong> Ref #{confirmedBookingRef.slice(0, 8).toUpperCase()}
+                        <strong>Demo booking: Confirmed</strong> (Simulation ref #{confirmedBookingRef.slice(0, 8).toUpperCase()})
                       </div>
                     )}
                     {mockBookingStatus && (
                       <div className="mt-2 text-xs font-semibold" role="status">
                         {mockBookingStatus === 'confirmed' ? (
-                          <span className="text-brand-teal">Mock booking confirmed.</span>
+                          <span className="text-brand-teal">Demo booking: Confirmed (simulated)</span>
                         ) : (
                           <span className="text-amber-800">
                             Latest simulated payment attempt <span className="uppercase">{mockBookingStatus}</span>. Your quote and enquiry remain saved — you can retry or contact a specialist.
@@ -2304,6 +2333,7 @@ function MiraWorkspace({ navigate }) {
     setInput,
     ready,
     busy: isTyping,
+    newTrip,
     error,
     send,
     remember,
@@ -2314,7 +2344,7 @@ function MiraWorkspace({ navigate }) {
 
   const [workspacePanel, setWorkspacePanel] = useState('welcome');
   const [activeTour, setActiveTour] = useState(null);
-  const [travellerConfig, setTravellerConfig] = useState({ adults: 2, children: 0, childAges: [], infants: 0, date: '2027-01-10' });
+  const [travellerConfig, setTravellerConfig] = useState(initialParty);
   const [activeQuote, setActiveQuote] = useState(null);
   const [journeyPlan, setJourneyPlan] = useState(null);
   const [itineraryCards, setItineraryCards] = useState([]);
@@ -2324,6 +2354,9 @@ function MiraWorkspace({ navigate }) {
   const [workspaceUpdated, setWorkspaceUpdated] = useState(false);
   const messagesEndRef = useRef(null);
 
+  const appliedTurn = useRef(null);
+  const editedSinceSend = useRef(false);
+
   // Scroll on new message
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -2332,6 +2365,13 @@ function MiraWorkspace({ navigate }) {
   // Sync latest turn with Travel Workspace A2UI components
   useEffect(() => {
     if (items.length === 0) {
+      appliedTurn.current = null;
+      editedSinceSend.current = false;
+      setMockBookingStatus('');
+      setConfirmedBookingRef('');
+      setActiveTour(null);
+      setJourneyPlan(null);
+      setTravellerConfig(initialParty);
       setWorkspacePanel('welcome');
       setActiveQuote(null);
       setItineraryCards([]);
@@ -2339,7 +2379,14 @@ function MiraWorkspace({ navigate }) {
       return;
     }
     const latest = items[items.length - 1];
-    if (!latest?.turn?.components) return;
+    if (!latest?.turn?.components || appliedTurn.current === latest.turn) return;
+    appliedTurn.current = latest.turn;
+    setMockBookingStatus('');
+    setConfirmedBookingRef('');
+    if (!latest.turn.components.some(c => c.type === 'PriceBreakdown')) {
+      setActiveQuote(null);
+      setWorkspacePanel(panel => panel === 'quote' ? 'welcome' : panel);
+    }
 
     const dayExcerpts = latest.turn.components.filter(c => c.type === 'ItineraryDay');
     if (dayExcerpts.length > 0) setItineraryCards(dayExcerpts);
@@ -2349,7 +2396,10 @@ function MiraWorkspace({ navigate }) {
       if (c.type === 'PriceBreakdown' && c.quote) {
         setActiveQuote(c.quote);
         const tourMatch = tours.find(t => t.id === c.quote.source || t.title === c.quote.title);
-        if (tourMatch) setActiveTour(tourMatch);
+        if (!editedSinceSend.current) {
+          setActiveTour(tourMatch || latest.turn.components.find(card => card.type === 'TourCard' && card.id === c.quote.source));
+          setTravellerConfig(partyFromSnapshot(c.quote, c.quote.date));
+        }
         setWorkspacePanel('quote');
         panelChanged = true;
         break;
@@ -2363,17 +2413,7 @@ function MiraWorkspace({ navigate }) {
       if (c.type === 'TravellerPicker') {
         const tourMatch = tours.find(t => t.id === c.tour || t.slug === c.tour);
         if (tourMatch) setActiveTour(tourMatch);
-        const agesArr = Array.isArray(c.ages) ? c.ages : [];
-        const childOnlyAges = agesArr.filter(a => a >= 2);
-        const infantCnt = agesArr.filter(a => a < 2).length;
-        setTravellerConfig(prev => ({
-          ...prev,
-          adults: c.adults || prev.adults,
-          childAges: agesArr.length ? childOnlyAges : prev.childAges,
-          children: agesArr.length ? childOnlyAges.length : prev.children,
-          infants: agesArr.length ? infantCnt : prev.infants,
-          date: c.date ? String(c.date) : prev.date,
-        }));
+        setTravellerConfig(prev => partyFromSnapshot(c, prev.date));
         setWorkspacePanel('traveller-picker');
         panelChanged = true;
         break;
@@ -2408,6 +2448,7 @@ function MiraWorkspace({ navigate }) {
 
   const handleSelectTour = (tour) => {
     if (!tour) return;
+    if (isTyping) editedSinceSend.current = true;
     if (tour.id !== activeTour?.id) {
       setActiveTour(tour);
       setActiveQuote(null);
@@ -2422,19 +2463,20 @@ function MiraWorkspace({ navigate }) {
   const handleSend = (text, displayText) => {
     const message = text || input;
     if (!message || !message.trim()) return;
+    if (isTyping) return;
+    editedSinceSend.current = false;
     send(message, displayText);
     setInput('');
   };
 
   const handleCheckRates = () => {
     const targetTour = activeTour || tours.find(t => t.id === 'T01') || tours[0];
-    const combinedAges = [
-      ...(travellerConfig.childAges || []),
-      ...Array(Math.max(0, Number(travellerConfig.infants || 0))).fill(0),
-    ];
+    if (!targetTour || !travellerConfig.date || isTyping) return;
+    editedSinceSend.current = false;
+    const combinedAges = partyAges(travellerConfig);
     const snapshot = {
       tourId: targetTour.id,
-      date: travellerConfig.date || '2027-01-10',
+      date: travellerConfig.date,
       adults: Number(travellerConfig.adults || 2),
       children: combinedAges.length,
       childAges: combinedAges,
@@ -2542,6 +2584,7 @@ function MiraWorkspace({ navigate }) {
           <div className="ml-auto flex items-center gap-1.5">
             <div className="w-2 h-2 rounded-full bg-brand-leaf animate-pulse" />
             <span className="text-xs text-text-muted">Online</span>
+            {items.length > 0 && <Button variant="ghost" size="sm" onClick={newTrip} disabled={!ready || isTyping}>New Trip</Button>}
           </div>
         </div>
 
@@ -2576,26 +2619,36 @@ function MiraWorkspace({ navigate }) {
                 <div className="max-w-[80%] bg-gray-50 rounded-card rounded-tl-none p-3 space-y-2">
                   <p className="text-sm leading-relaxed">{item.turn.text}</p>
                   {/* Inline UI Components */}
-                  {item.turn.components?.filter((c) => [
-                    'TourCard', 'TravellerPicker', 'PriceBreakdown', 'EnquiryNotice',
-                    'ItineraryDay', 'PolicySnippet', 'DestinationHighlight', 'DestinationCard',
-                    'StayCard', 'ActivityCard', 'ComparisonPanel', 'ConfirmationPanel',
-                    'SourceReference', 'JourneyPlan', 'BookingForm',
-                  ].includes(c.type)).map((c, cIdx) => (
-                    <div key={`${c.type}-${cIdx}`} className="pt-2 border-t border-border/50">
-                      <UIComponentRenderer 
-                        component={c} 
-                        navigate={navigate} 
-                        tours={tours} 
-                        setActiveTour={handleSelectTour} 
-                        setWorkspacePanel={(panel) => {
-                          setWorkspacePanel(panel);
-                          setMobileTab('workspace');
-                          setWorkspaceUpdated(false);
-                        }} 
-                      />
-                    </div>
-                  ))}
+                  {(() => {
+                    const comps = item.turn.components || [];
+                    const quoteComp = comps.find((c) => c.type === 'PriceBreakdown' && c.quote);
+                    const hasQuote = Boolean(quoteComp);
+                    const allowed = [
+                      'TourCard', 'TravellerPicker', 'PriceBreakdown', 'EnquiryNotice',
+                      'ItineraryDay', 'PolicySnippet', 'DestinationHighlight', 'DestinationCard',
+                      'StayCard', 'ActivityCard', 'ComparisonPanel', 'ConfirmationPanel',
+                      'SourceReference', 'JourneyPlan', 'BookingForm',
+                    ];
+                    return comps
+                      .filter((c) => allowed.includes(c.type))
+                      .filter((c) => !hasQuote || !['TourCard', 'ItineraryDay', 'SourceReference', 'BookingForm'].includes(c.type))
+                      .map((c, cIdx) => (
+                        <div key={`${c.type}-${cIdx}`} className="pt-2 border-t border-border/50">
+                          <UIComponentRenderer 
+                            component={c} 
+                            enquiryReference={quoteComp?.quote?.enquiry_reference}
+                            navigate={navigate} 
+                            tours={tours} 
+                            setActiveTour={handleSelectTour} 
+                            setWorkspacePanel={(panel) => {
+                              setWorkspacePanel(panel);
+                              setMobileTab('workspace');
+                              setWorkspaceUpdated(false);
+                            }} 
+                          />
+                        </div>
+                      ));
+                  })()}
                 </div>
               </div>
             </React.Fragment>
@@ -2716,7 +2769,7 @@ function MiraWorkspace({ navigate }) {
           {workspacePanel === 'traveller-picker' && (
             <TravellerPickerPanel 
               config={travellerConfig} 
-              setConfig={setTravellerConfig} 
+              setConfig={next => { editedSinceSend.current = true; setTravellerConfig(next); }} 
               onCheckRates={handleCheckRates}
               tour={activeTour}
               isQuoting={isTyping}
@@ -2769,7 +2822,8 @@ function MiraWorkspace({ navigate }) {
             </div>
           )}
           {workspacePanel === 'custom-enquiry' && <CustomEnquiryPanel navigate={navigate} />}
-          {workspacePanel === 'journey-plan' && journeyPlan && <JourneyPlanPanel plan={journeyPlan} />}
+          {workspacePanel === 'journey-plan' && journeyPlan && <JourneyPlanPanel key={latestTurn.trace} plan={journeyPlan}
+            map={latestTurn.components.find(c => c.type === 'InteractiveMap')} />}
         </div>
       </div>
     </div>
@@ -2968,7 +3022,7 @@ function TravellerPickerPanel({ config, setConfig, onCheckRates, tour, isQuoting
             </p>
           </div>
 
-          <Button type="submit" variant="primary" className="w-full" disabled={isQuoting}>
+          <Button type="submit" variant="primary" className="w-full" disabled={isQuoting || !config.date}>
             {isQuoting ? "Checking rates..." : "Check rates"}
           </Button>
         </form>
@@ -2979,9 +3033,7 @@ function TravellerPickerPanel({ config, setConfig, onCheckRates, tour, isQuoting
 
 function PriceBreakdownPanel({ tour, quote, config, onRecalculate, onSendEnquiry, onMockBooking, mockBookingStatus, confirmedBookingRef, navigate }) {
   if (!quote) return null;
-  const combinedConfigAges = config
-    ? [...(config.childAges || []), ...Array(Math.max(0, Number(config.infants || 0))).fill(0)]
-    : [];
+  const combinedConfigAges = config ? partyAges(config) : [];
   const isCompatible = config ? isQuoteCompatible(quote, tour?.id, config.date, config.adults, combinedConfigAges.length, combinedConfigAges) : true;
   return (
     <div className="fade-in" role="region" aria-label={isCompatible ? "Verified quote" : "Outdated quote"}>
@@ -3039,7 +3091,7 @@ function PriceBreakdownPanel({ tour, quote, config, onRecalculate, onSendEnquiry
 
         <div className="border-t border-border pt-4 space-y-3">
           <div className="flex justify-between items-center">
-            <span className="font-semibold">Booking total</span>
+            <span className="font-semibold">Verified tour price</span>
             <span className={`text-xl font-bold ${isCompatible ? 'text-brand-black' : 'text-text-muted line-through'}`}>
               {quote.currency || 'USD'} {quote.total?.toLocaleString()}
             </span>
@@ -3054,15 +3106,26 @@ function PriceBreakdownPanel({ tour, quote, config, onRecalculate, onSendEnquiry
           </div>
         </div>
 
-        <div className="mt-6 p-3 bg-brand-sun/10 rounded-card">
+        {quote.enquiry && (
+          <div className="mt-4 p-3 rounded-card bg-brand-leaf/10 border border-brand-leaf/25 text-xs space-y-1">
+            <p className="font-semibold text-brand-leaf">Quote &amp; private enquiry saved</p>
+            {quote.enquiry_reference && (
+              <p className="font-mono text-brand-black">Enquiry ref: {quote.enquiry_reference}</p>
+            )}
+          </div>
+        )}
+
+        <div className="mt-4 p-3 bg-brand-sun/10 rounded-card">
           <p className="text-xs text-brand-black">
             <AlertCircle className="w-3.5 h-3.5 inline mr-1" />
             {quote.validity === 'recheck_before_booking' ? 'Rate re-check recommended before final booking.' : 'This quote is valid for 48 hours.'} Deposit is payable on confirmation.
           </p>
         </div>
 
-        <div className="mt-6 border-t border-border pt-4">
-          <label htmlFor="mock-booking-outcome" className="text-xs font-medium block mb-2 text-text-muted">Simulation mode: select checkout outcome</label>
+        <div className="mt-5 p-3.5 rounded-card border border-dashed border-border bg-gray-50/70">
+          <label htmlFor="mock-booking-outcome" className="text-[11px] font-semibold uppercase tracking-wide block mb-2 text-text-muted">
+            Simulated checkout (demo only — no real payment)
+          </label>
           <div className="flex gap-2">
             <select id="mock-booking-outcome" aria-label="Mock booking outcome" className="px-3 py-2 border border-border rounded-input text-xs flex-1">
               <option value="success">success</option>
@@ -3091,13 +3154,13 @@ function PriceBreakdownPanel({ tour, quote, config, onRecalculate, onSendEnquiry
           )}
           {confirmedBookingRef && (
             <div className="mt-2 p-2.5 rounded-input bg-emerald-50 border border-emerald-200 text-xs text-emerald-900">
-              <strong>Existing booking confirmed:</strong> Ref #{confirmedBookingRef.slice(0, 8).toUpperCase()}
+              <strong>Demo booking: Confirmed</strong> (Simulation ref #{confirmedBookingRef.slice(0, 8).toUpperCase()})
             </div>
           )}
           {mockBookingStatus && (
             <div className="mt-2 text-xs font-semibold" role="status">
               {mockBookingStatus === 'confirmed' ? (
-                <span className="text-brand-teal">Booking outcome: CONFIRMED</span>
+                <span className="text-brand-teal">Demo booking: Confirmed (simulated — no real payment)</span>
               ) : (
                 <span className="text-amber-800">
                   Latest simulated payment attempt <span className="uppercase">{mockBookingStatus}</span>. Your quote and enquiry remain saved — you can retry checkout or send an enquiry.
@@ -3108,11 +3171,15 @@ function PriceBreakdownPanel({ tour, quote, config, onRecalculate, onSendEnquiry
         </div>
 
         <div className="mt-4 flex gap-2">
-          <Button variant="primary" className="flex-1" onClick={onSendEnquiry}>Send enquiry</Button>
-          {quote.enquiry && (
-            <Button variant="secondary" className="flex-1" onClick={() => navigate('/enquiry/' + quote.enquiry)}>
-              View enquiry status
-            </Button>
+          {quote.enquiry ? (
+            <>
+              <Button variant="primary" className="flex-1" onClick={onSendEnquiry}>Add contact details</Button>
+              <Button variant="secondary" className="flex-1" onClick={() => navigate('/enquiry/' + (quote.enquiry_reference || quote.enquiry))}>
+                View enquiry
+              </Button>
+            </>
+          ) : (
+            <Button variant="primary" className="flex-1" onClick={onSendEnquiry}>Send enquiry</Button>
           )}
         </div>
       </Card>
@@ -3434,10 +3501,11 @@ function CustomEnquiryPanel({ navigate }) {
   );
 }
 
-function JourneyPlanPanel({ plan }) {
-  const [selectedDay, setSelectedDay] = useState(0);
+function JourneyPlanPanel({ plan, map }) {
+  const [selectedDay, setSelectedDay] = useState(plan.selected || 0);
+  const photo = photos[destinationPhotos[plan.days[selectedDay]?.source]];
   return (
-    <div className="fade-in space-y-4">
+    <div className="fade-in space-y-4" data-component-type="JourneyPlan" aria-label="Journey workspace">
       <div className="flex items-center justify-between">
         <h4 className="font-semibold text-md">Custom Journey Itinerary</h4>
         <span className="text-xs text-brand-orange font-medium">{plan.days.length} Days</span>
@@ -3457,15 +3525,21 @@ function JourneyPlanPanel({ plan }) {
       </div>
       {plan.days[selectedDay] && (
         <Card className="p-5">
-          <h5 className="font-bold text-sm mb-2">{plan.days[selectedDay].name}</h5>
-          <p className="text-xs text-text-muted leading-relaxed">{plan.days[selectedDay].passage}</p>
+          {photo && <img className="w-full h-40 object-cover rounded-card mb-3" src={photo.src} alt={photo.alt} />}
+          <h5 className="font-bold text-sm mb-2">{plan.days[selectedDay].name || plan.days[selectedDay].title || `Day ${selectedDay + 1}`}</h5>
+          <p className="text-xs text-text-muted leading-relaxed">
+            {plan.days[selectedDay].passage || plan.days[selectedDay].experience || plan.days[selectedDay].summary || 'Grounded itinerary details will be confirmed by our travel team.'}
+          </p>
         </Card>
       )}
+      {map && <div data-component-type="InteractiveMap">
+        <RouteMap value={{ ...map, selected: selectedDay }} onSelectDay={setSelectedDay} busy={false} />
+      </div>}
     </div>
   );
 }
 
-function UIComponentRenderer({ component, navigate, tours, setActiveTour, setWorkspacePanel }) {
+function UIComponentRenderer({ component, enquiryReference, navigate, tours, setActiveTour, setWorkspacePanel }) {
   if (!component) return null;
 
   if (component.type === 'TourCard') {
@@ -3657,6 +3731,7 @@ function UIComponentRenderer({ component, navigate, tours, setActiveTour, setWor
   }
 
   if (component.type === 'ConfirmationPanel') {
+    const displayRef = component.reference || enquiryReference;
     return (
       <div
         data-component-type="ConfirmationPanel"
@@ -3664,9 +3739,9 @@ function UIComponentRenderer({ component, navigate, tours, setActiveTour, setWor
       >
         <div className="flex items-center gap-1.5 font-semibold text-brand-leaf">
           <Check className="w-3.5 h-3.5" />
-          <span>{component.title || 'Confirmed'}</span>
+          <span>{component.heading || component.title || 'Quote & enquiry saved'}</span>
         </div>
-        {component.reference && <p className="font-mono text-brand-black">Ref: {component.reference}</p>}
+        {displayRef && <p className="font-mono text-brand-black">Enquiry ref: {displayRef}</p>}
         {component.text && <MarkdownContent content={component.text} />}
       </div>
     );
@@ -3695,11 +3770,16 @@ function UIComponentRenderer({ component, navigate, tours, setActiveTour, setWor
         {component.text && <MarkdownContent content={component.text} />}
         {days.length > 0 && (
           <div className="space-y-1">
-            {days.map((d, idx) => (
-              <div key={idx} className="text-text-muted">
-                <span className="font-medium text-brand-black">Day {d.day ?? idx + 1}:</span> {d.title || d.summary || ''}
-              </div>
-            ))}
+            {days.map((d, idx) => {
+              const dayTitle = d.name || d.title || `Stop ${idx + 1}`;
+              const dayDesc = d.passage || d.experience || d.summary || 'Grounded itinerary details in workspace.';
+              const shortDesc = dayDesc.length > 140 ? `${dayDesc.slice(0, 137)}...` : dayDesc;
+              return (
+                <div key={idx} className="text-text-muted">
+                  <span className="font-medium text-brand-black">Day {d.day ?? idx + 1} — {dayTitle}:</span> {shortDesc}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
@@ -3867,7 +3947,7 @@ function ExplorePage({ navigate }) {
 }
 
 // ============ ENQUIRY PAGE ============
-function EnquiryPage({ navigate, reference }) {
+function EnquiryPage({ navigate, reference, tours = [] }) {
   const [enquiry, setEnquiry] = useState(null);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState('');
@@ -3971,13 +4051,55 @@ function EnquiryPage({ navigate, reference }) {
         )}
         <div>
           <p className="text-xs text-text-muted mb-1">Enquiry Status</p>
-          <span className="inline-block px-2.5 py-1 rounded-pill bg-brand-leaf/10 text-brand-leaf text-xs font-semibold">
+          <span className="inline-block px-2.5 py-1 rounded-pill bg-brand-leaf/10 text-brand-leaf text-xs font-semibold capitalize">
             Status: {enquiry.status}
           </span>
         </div>
+        {enquiry.quoted_total_usd != null && (
+          <div className="pt-2 border-t border-border">
+            <p className="text-xs text-text-muted mb-1">Verified Quotation</p>
+            <p className="text-sm font-bold text-brand-black">
+              USD {Number(enquiry.quoted_total_usd).toLocaleString()}
+              {enquiry.quoted_deposit_usd != null ? ` (Deposit: USD ${Number(enquiry.quoted_deposit_usd).toLocaleString()})` : ''}
+            </p>
+          </div>
+        )}
+        {enquiry.mock_booking_status && (
+          <div>
+            <p className="text-xs text-text-muted mb-1">Simulation Status</p>
+            <span className="inline-block px-2.5 py-1 rounded-pill bg-brand-teal/10 text-brand-teal text-xs font-semibold">
+              Demo booking: {enquiry.mock_booking_status === 'confirmed' ? 'Confirmed' : enquiry.mock_booking_status}
+            </span>
+          </div>
+        )}
       </div>
 
-      <Button variant="primary" onClick={() => navigate('/')}>Back to home</Button>
+      {(() => {
+        const storedOrigin = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('mira-enquiry-origin') : null;
+        const safeOrigin = isSafeInternalRoute(storedOrigin) && storedOrigin !== '/profile' ? storedOrigin : null;
+        const matchedTour = (tours || []).find((t) => t.id === enquiry.tour_id);
+        const returnRoute = safeOrigin || (matchedTour && !enquiry.trip_id ? `/tours/${matchedTour.slug}` : '/mira');
+        const primaryLabel = (enquiry.quoted_total_usd != null || returnRoute.startsWith('/tours/') || safeOrigin === '/mira')
+          ? 'Back to quote'
+          : 'Continue planning';
+        return (
+          <div className="flex flex-wrap justify-center gap-3">
+            <Button
+              variant="primary"
+              onClick={() => {
+                if (enquiry.trip_id && returnRoute === '/mira') {
+                  sessionStorage.setItem('mira-workspace-trip', enquiry.trip_id);
+                  localStorage.setItem('mira-workspace-trip', enquiry.trip_id);
+                }
+                navigate(returnRoute);
+              }}
+            >
+              {primaryLabel}
+            </Button>
+            <Button variant="secondary" onClick={() => navigate('/profile')}>My journeys</Button>
+          </div>
+        );
+      })()}
     </div>
   );
 }
@@ -4780,11 +4902,13 @@ function ProfilePage({ navigate }) {
                   <div key={q.id} className="flex items-center justify-between gap-3 p-3 rounded-card bg-gray-50 border border-border text-xs">
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-mono font-bold text-brand-black">{q.id}</span>
+                        <span className="font-mono font-bold text-brand-black">
+                          {q.enquiry_reference || `Quote #${String(q.id || '').slice(0, 8).toUpperCase()}`}
+                        </span>
                         <span className="font-medium text-text-primary truncate">{q.title}</span>
                         {q.mock_booking_reference && (
                           <span className="px-2 py-0.5 rounded-pill bg-brand-leaf/10 text-brand-leaf font-mono text-[11px]">
-                            Booking: {q.mock_booking_reference}
+                            Demo booking: #{String(q.mock_booking_reference).slice(0, 8).toUpperCase()}
                           </span>
                         )}
                       </div>
@@ -4792,19 +4916,26 @@ function ProfilePage({ navigate }) {
                         {q.date || 'Flexible'} • USD {q.total} • {q.current ? 'Price verified' : 'Recalculation needed'}
                       </p>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        if (q.trip_id) {
-                          sessionStorage.setItem('mira-workspace-trip', q.trip_id);
-                          localStorage.setItem('mira-workspace-trip', q.trip_id);
-                        }
-                        navigate('/mira');
-                      }}
-                    >
-                      Open
-                    </Button>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {q.enquiry_reference && (
+                        <Button variant="ghost" size="sm" onClick={() => navigate('/enquiry/' + q.enquiry_reference)}>
+                          View Enquiry
+                        </Button>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          if (q.trip_id) {
+                            sessionStorage.setItem('mira-workspace-trip', q.trip_id);
+                            localStorage.setItem('mira-workspace-trip', q.trip_id);
+                          }
+                          navigate('/mira');
+                        }}
+                      >
+                        Open
+                      </Button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -4823,8 +4954,8 @@ function ProfilePage({ navigate }) {
                         <span className="font-mono font-bold text-brand-black">{enq.reference || enq.id}</span>
                         {enq.tour_name && <span className="font-semibold text-brand-black">{enq.tour_name}</span>}
                         {enq.mock_booking_status && (
-                          <span className="px-2 py-0.5 rounded-pill bg-brand-teal/10 text-brand-teal font-medium capitalize">
-                            Booking: {enq.mock_booking_status}
+                          <span className="px-2 py-0.5 rounded-pill bg-brand-teal/10 text-brand-teal font-medium">
+                            Demo booking: {enq.mock_booking_status === 'confirmed' ? 'Confirmed' : enq.mock_booking_status}
                           </span>
                         )}
                       </div>
@@ -5061,7 +5192,7 @@ function App() {
     if (route === '/about') return <AboutPage />;
     if (route === '/policies') return <PoliciesPage navigate={navigate} />;
     if (route.startsWith('/policies/')) return <PolicyDetailPage navigate={navigate} slug={route.replace('/policies/', '')} />;
-    if (route.startsWith('/enquiry/')) return <EnquiryPage navigate={navigate} reference={route.replace('/enquiry/', '')} />;
+    if (route.startsWith('/enquiry/')) return <EnquiryPage navigate={navigate} reference={route.replace('/enquiry/', '').split('?')[0]} tours={tours} />;
     if (route === '/login' || route === '/sign-in') return <LoginPage navigate={navigate} />;
     if (route === '/register') return <RegisterPage navigate={navigate} />;
     if (route === '/profile') return <ProfilePage navigate={navigate} />;
@@ -5141,4 +5272,4 @@ if (rootEl) {
   );
 }
 
-export { App, UIComponentRenderer, HomePage, TourDetailPage, EnquiryPage, ProfilePage, AuthProvider };
+export { App, MiraWorkspace, UIComponentRenderer, HomePage, TourDetailPage, EnquiryPage, ProfilePage, AuthProvider };
