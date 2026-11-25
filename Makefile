@@ -34,7 +34,7 @@ browser:
 
 .PHONY: mcp-smoke
 mcp-smoke:
-	node apps/web/mcp/smoke.mjs
+	./scripts/test-mcp.sh
 
 .PHONY: notebook-browser
 notebook-browser:
@@ -47,3 +47,7 @@ workspace-browser:
 .PHONY: demo-db
 demo-db:
 	$(PYTHON) scripts/init_demo_db.py --force
+
+.PHONY: reset-demo
+reset-demo:
+	$(PYTHON) scripts/reset_demo.py

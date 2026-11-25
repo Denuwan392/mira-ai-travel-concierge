@@ -1,0 +1,79 @@
+{
+  "generated_at": "2026-11-25T13:51:29.203Z",
+  "api_url": "http://127.0.0.1:18019",
+  "scenarios": [
+    {
+      "id": "MCP-01",
+      "name": "Tool discovery",
+      "pass": true,
+      "tools": [
+        "create_enquiry",
+        "get_enquiry_status",
+        "get_quote",
+        "get_tour_details",
+        "list_destinations",
+        "search_tours"
+      ]
+    },
+    {
+      "id": "MCP-02",
+      "name": "Published catalogue search",
+      "pass": true,
+      "count": 1
+    },
+    {
+      "id": "MCP-03",
+      "name": "Verified day-tour quote",
+      "pass": true,
+      "total": 315,
+      "deposit": 315,
+      "balance": 0,
+      "public_reference": "ENQ-2026-1D69FC4F"
+    },
+    {
+      "id": "MCP-04",
+      "name": "Verified multi-day quote",
+      "pass": true,
+      "total": 2125,
+      "deposit": 532,
+      "balance": 1593,
+      "public_reference": "ENQ-2026-94A11DDD"
+    },
+    {
+      "id": "MCP-05",
+      "name": "Family pricing reconciliation (T09 / S03)",
+      "pass": true,
+      "total": 2965,
+      "deposit": 742,
+      "balance": 2223
+    },
+    {
+      "id": "MCP-06",
+      "name": "Expired rates fail closed",
+      "pass": true,
+      "reason_code": "date_or_fx_expired",
+      "public_reference": "ENQ-2026-F8A3E3E7"
+    },
+    {
+      "id": "MCP-07",
+      "name": "Custom enquiry persisted & retrievable in own session",
+      "pass": true,
+      "public_reference": "ENQ-2026-B8332E0E"
+    },
+    {
+      "id": "MCP-08",
+      "name": "Financial privacy",
+      "pass": true
+    },
+    {
+      "id": "MCP-09",
+      "name": "Invalid input handling",
+      "pass": true
+    },
+    {
+      "id": "MCP-10",
+      "name": "Session isolation",
+      "pass": true
+    }
+  ]
+}
