@@ -48,11 +48,12 @@ All 16 SQLite tables (Alembic revision `0006_enquiry_contact_fields`):
 1. **Schema Migrations:** Executed automatically by `store.init()` (`apps/api/mira/store.py`) using Alembic (`apps/api/mira/migrations/versions/0001_catalogue.py` through `0006_enquiry_contact_fields.py`) with `PRAGMA journal_mode=WAL`.
 2. **Catalogue & Rate Loading:** `apps/api/mira/data.py` loads all published Markdown content from `MIRA_DATA` (`GenAI-Intern-Take-Home-Assignment/ceylon-compass-dataset`), and `apps/api/mira/rates_repository.py` validates and caches `rate_sheet_2026-27.xlsx` in `rate_snapshots` (`digest: a16dd63ffb7ed2324e9d709f4b35e1bb3f0d5c2123b765903bce039f5fefdfe2`).
 3. **Synthetic Account Seeding (`scripts/init_demo_db.py`):**
-   - `admin.demo@ceyloncompass.example` (`role: admin`)
-   - `approver.demo@ceyloncompass.example` (`role: approver`)
-   - `editor.demo@ceyloncompass.example` (`role: staff`)
-   - `staff.demo@ceyloncompass.example` (`role: staff`)
-   - `traveller.demo@ceyloncompass.example` (`role: traveller`)
+   - `admin@ceyloncompass.com` (`role: admin`, password: `Admin#2026!Compass`)
+   - `admin.demo@ceyloncompass.example` (`role: admin`, password: `Admin#2026!Compass`)
+   - `approver.demo@ceyloncompass.example` (`role: approver`, password: `Approver#2026!Demo`)
+   - `editor.demo@ceyloncompass.example` (`role: staff`, password: `Editor#2026!Demo`)
+   - `staff.demo@ceyloncompass.example` (`role: staff`, password: `Staff#2026!Demo`)
+   - `traveller.demo@ceyloncompass.example` (`role: traveller`, password: `Traveller#2026!Demo`)
 
 ### Commands Used
 
