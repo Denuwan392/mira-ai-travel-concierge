@@ -2,7 +2,10 @@
 
 An AI-assisted Sri Lanka travel booking concierge built with **FastAPI**, **LangGraph**, **A2UI**, **SQLite/Alembic**, **React**, and **Next.js**. Mira turns natural-language conversations into grounded tour discovery, itinerary previews, workbook-verified deterministic quotes, or private specialist enquiries.
 
-![Ceylon Compass homepage](docs/screenshots/notebook-home-1440.jpg)
+- **Final Demo Video:** [Watch on YouTube](https://youtu.be/dlM9A4Ij0zg)
+- **Submission PDFs:** [Evaluation & Reliability Report](submission/Mira_Evaluation_and_Reliability_Report.pdf) · [Product Experience & Workflow Guide](submission/Mira_Product_Experience_and_Workflow_Guide.pdf)
+
+![Ceylon Compass homepage](docs/screenshots/homepage-1440.png)
 
 ---
 
@@ -27,7 +30,7 @@ An AI-assisted Sri Lanka travel booking concierge built with **FastAPI**, **Lang
    make dev
    ```
    Starts and supervises:
-   - **Travel Workspace (React + Tailwind + A2UI):** `http://127.0.0.1:5175/dump.html` (or `http://127.0.0.1:5175/workspace/index.html`)
+   - **Canonical Travel Workspace (React + Tailwind + A2UI):** `http://127.0.0.1:5175/workspace/index.html`
    - **Staff & Admin Console:** `http://127.0.0.1:5175/staff` (and `http://127.0.0.1:3000/staff`)
    - **Sign In / Register / Profile:** `http://127.0.0.1:5175/login`, `/register`, `/profile`
    - **Editorial Notebook (Next.js):** `http://127.0.0.1:3000`
@@ -60,16 +63,18 @@ Automated tests (`pytest`), deterministic evaluations (`evals/runner.py`), and P
 
 ```sh
 make lint               # Python compileall + TypeScript typechecks (apps/web & apps/ceylon-compass)
-make test               # 62 Vitest tests + 217 backend pytest tests
+make test               # Frontend Vitest + backend pytest suites
 make build              # Production builds (Nitro/Vite + Next.js)
-make eval               # Test suite + 54 deterministic evaluation cases
-make workspace-browser  # 8 Playwright E2E desktop & mobile workflows
-shasum -a 256 -c docs/source-sha256.txt  # Verify supplied dataset checksums
+make eval               # Test suite + 54 deterministic evaluation cases (53/54, 63/63 UI turns)
+make mcp-smoke          # Standalone MCP stdio integration verification (10/10 passed)
+make workspace-browser  # Playwright E2E desktop & mobile workflows (9/9 passed)
+shasum -a 256 -c docs/source-sha256.txt  # Verify supplied dataset checksums (39/39 OK)
 ```
 
 Browser checks require Playwright Chromium (`npm --prefix apps/web exec -- playwright install chromium`) or `MIRA_CHROME`.
 
 - **Known Q-1043 Source Disagreement:** Sample email `Q-1043` lists USD 2,680 / deposit USD 670, whereas the authoritative `rate_sheet_2026-27.xlsx` calculation with applicable extra beds produces **USD 2,965** / deposit **USD 742** (`53/54` evals pass; `Q-1043` is intentionally preserved as a documented disagreement).
+- **Known Limitations:** Simulated mock booking/payment state (no real payment gateway), local SQLite WAL persistence suited to single-host demo/evaluation, human judge calibration pending independent labels (`evals/report/judge.json` `agreement: null`), remote Langfuse cloud export unverified offline, and MCP verified via `@modelcontextprotocol/sdk` stdio (external desktop GUIs not separately launched).
 
 ---
 
@@ -102,6 +107,7 @@ LOG_LLM_DETAILS=true LOG_LEVEL=DEBUG make dev
   - [docs/system-audit/CLEAN_DATABASE_RESET.md](docs/system-audit/CLEAN_DATABASE_RESET.md)
   - [docs/system-audit/FINAL_ENVIRONMENT_STABILIZATION.md](docs/system-audit/FINAL_ENVIRONMENT_STABILIZATION.md)
 - **Evaluations & Screenshots:** [evals/report/report.md](evals/report/report.md) · [docs/screenshots/desktop-quote.png](docs/screenshots/desktop-quote.png) · [docs/screenshots/mobile-journey.png](docs/screenshots/mobile-journey.png)
-- **Local MCP Server:** `node apps/web/mcp/server.mjs` exposes `search_tours`, `get_quote`, and `create_enquiry` over stdio (`make mcp-smoke`).
+- **Local MCP Server:** `node apps/web/mcp/server.mjs` exposes `search_tours`, `get_quote`, `create_enquiry`, `list_destinations`, `get_tour_details`, and `get_enquiry_status` over stdio. Run `make mcp-smoke` for the standalone isolated verification (`10/10` scenarios). See [docs/MCP_INTEGRATION.md](docs/MCP_INTEGRATION.md).
+- **AI Assistance Disclosure:** Codebase analysis, implementation, test authoring, and documentation synthesis were assisted by **Antigravity (Google DeepMind)**, **ChatGPT**, and **Codex**, with all business rules, workbook calculations, security boundaries, and verification evidence validated via executable tests.
 
 > Keep `.env`, SQLite databases, and staff tokens out of version control.
