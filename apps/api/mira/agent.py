@@ -5,6 +5,7 @@ import re
 from contextvars import ContextVar
 from datetime import date
 from functools import wraps
+from pathlib import Path
 from time import perf_counter
 from uuid import UUID, uuid4
 from typing import Annotated, TypedDict
@@ -244,6 +245,11 @@ def interpret(state):
         if named in tours and action == "discover":
             if named != ctx.get("tour"):
                 ctx.pop("date", None)
+                # A newly named package with an explicit adult-only party is a new brief.
+                new_adult_party = re.search(rf"\bfor (?:{COUNT}) adults?\b", text)
+                mentions_children = re.search(r"\b(?:family|kids?|child(?:ren)?|infants?|bab(?:y|ies)|ages?|aged|year.old)\b", text)
+                if new_adult_party and not mentions_children:
+                    ctx.update(kids=0, ages=[])
             ctx["tour"] = named
         if action == "discover":
             try:
@@ -299,6 +305,28 @@ def interpret(state):
                 ages = [] if match[4] == "-" else [int(x) for x in match[4].split(",")][:31]
                 ctx.update(adults=int(match[3]), kids=len(ages), ages=ages)
             is_tour_ref = bool(ctx.get("tour") in tours and re.search(r"\b(?:this|that|the)\s+(?:day\s+)?(?:tour|trip|package)\b", text))
+            if action == "discover" and not named and not select and not is_tour_ref and (
+                (departure and "adults" in ctx) or re.search(r"\b(?:quote|price|how much|rate|cost)\b", text)
+            ):
+                quote_sc = extract_search_constraints(text)
+                pool = filter_tours(tours, quote_sc) if quote_sc else {}
+                if len(pool) == 1:
+                    named = next(iter(pool))
+                    ctx["tour"] = named
+                else:
+                    search_pool = pool or tours
+                    title_hits = [
+                        k for k, r in search_pool.items()
+                        if re.search(r"\b" + re.escape(r["title"].lower().split()[0].rstrip("&")) + r"\b", text)
+                    ]
+                    if len(title_hits) == 1:
+                        named = title_hits[0]
+                        ctx["tour"] = named
+                    elif len(title_hits) > 1:
+                        day_hits = [k for k in title_hits if "night" not in tours[k]["duration"].lower()]
+                        if len(day_hits) == 1:
+                            named = day_hits[0]
+                            ctx["tour"] = named
             search_constraints = (
                 extract_search_constraints(text)
                 if (action == "discover" and not named and not select and not is_tour_ref)
@@ -421,10 +449,31 @@ def interpret(state):
             not working.get().get("explicit_search")
             and requested
             and named not in tours
-            and action in {"general","custom","destination"}
+            and action in {"general", "custom", "destination", "discover"}
+        )
+        has_duration_or_date = bool(requested or (intent and intent.days) or departure)
+        has_scope = bool(
+            ids
+            or (intent and intent.destinations)
+            or re.search(r"train|nature|beach|coast|culture|wildlife|safari|tea|hill", text)
+        )
+        broad_plan = bool(
+            not working.get().get("explicit_search")
+            and named not in tours
+            and not active_tour_quote_turn
+            and not previous
+            and (
+                (intent and intent.operation == "plan")
+                or re.search(r"\b(?:plan|design|organize|arrange)\b.*\b(?:holiday|trip|vacation|journey|itinerary)\b", text)
+            )
+            and not (has_duration_or_date and has_scope)
+            and not requested
         )
         route = None
-        if extend or (intent and intent.operation=="extend" and previous):
+        if broad_plan:
+            ctx.pop("proposal", None)
+            action = "clarify_plan"
+        elif extend or (intent and intent.operation=="extend" and previous):
             targets = ids or (intent.destinations if intent else []) or previous[-1:]
             target = targets[0]
             idx = max((i for i,k in enumerate(previous) if k==target),default=len(previous)-1)+1
@@ -448,10 +497,13 @@ def interpret(state):
                 ids = intent.destinations
             if not ids:
                 ids = [key for pattern,key in [("train|nature","D05"),("beach|coast","D08"),("culture","D03")] if re.search(pattern,text) and key in destinations]
-            if not ids:
-                ids = list(destinations)[:2]
-            n = min(30,max(1,count(requested[1]) if requested else (intent.days if intent and intent.days else len(ids))))
-            route = [ids[min(len(ids)-1,i*len(ids)//n)] for i in range(n)]
+            if ids or requested or (intent and intent.days):
+                if not ids:
+                    ids = list(destinations)[:2]
+                n = min(30,max(1,count(requested[1]) if requested else (intent.days if intent and intent.days else len(ids))))
+                route = [ids[min(len(ids)-1,i*len(ids)//n)] for i in range(n)]
+            else:
+                action = "clarify_plan"
         if route:
             ctx["proposal"] = route
             ctx["selected_day"] = min(ctx.get("selected_day",0),len(route)-1)
@@ -460,8 +512,10 @@ def interpret(state):
             if intent and intent.adults:
                 ctx["custom"]["party"] = intent.adults
             action = "custom"
-    if select or match:
-        ctx.pop("proposal",None)
+    if select or match or (action == "discover" and named in tours):
+        # Keep the itinerary in turn history. Future edits target the published trip.
+        for field in ("proposal", "custom", "selected_day"):
+            ctx.pop(field, None)
     working.get().update(context=ctx, basis=basis, records=records, tours=tours, action=action, named=named,
                          select=bool(select), panel_action=panel_action, events=[*events,{"stage": "interpret", "provider": "local rules",
                          "action": action, "ms": round((perf_counter()-started)*1000)}])
@@ -479,7 +533,9 @@ def retrieve(_):
         "polonnaruwa": ["T09", "T08"],
         "compare": ctx.get("suggestions", [])[:2],
         "destination": [w["named"]], "discover": [ctx.get("tour")],
-        "custom": ["T08", "T10", "T12"], "general": ["T01", "T09", "T05"],
+        "custom": [] if ctx.get("proposal") else ["T08", "T10", "T12"],
+        "clarify_plan": ["T01", "T09", "T05"],
+        "general": ["T01", "T09", "T05"],
         "tour_itinerary": [w.get("named") or ctx.get("tour")],
         "tour_day_detail": [w.get("named") or ctx.get("tour")],
         "tour_inclusions": [w.get("named") or ctx.get("tour")],
@@ -507,6 +563,8 @@ def retrieve(_):
         else:
             trip = ctx.get("custom", {}) if action == "custom" else {}
             destinations = {name.split()[0].lower() for name in trip.get("destinations", [])}
+            if ctx.get("proposal") and action == "custom":
+                destinations = {Path(records[key]["path"]).stem for key in ctx["proposal"]}
             if destinations:
                 related = sorted(w["tours"], key=lambda key: -len(destinations.intersection(w["tours"][key]["destinations"])))
                 ids = [key for key in related if destinations.intersection(w["tours"][key]["destinations"])][:3] or ids
@@ -639,7 +697,10 @@ def compose(_):
         q = w["quote"]
         components.insert(0, Breakdown(quote=q))
         components.append(Booking(quote=q.id))
-        text = "I’ve verified the quote for your travel date and group. You can review the deposit and try the demo booking."
+        text = (
+            f"Verified quote: {q.currency} {q.total:,} total (deposit {q.currency} {q.deposit:,}) "
+            f"for {q.title} on {q.date}. Private enquiry {q.enquiry_reference} is saved."
+        )
     elif w.get("reason"):
         quote_enquiry(w, w["reason"])
         enq_ref = w["enquiry_reference"]
@@ -857,6 +918,24 @@ def compose(_):
                 "I couldn’t find any published tours matching those exact criteria. "
                 "Would you like to adjust your preferences or request a custom itinerary?"
             )
+    elif action == "clarify_plan":
+        if ctx.get("traveller_type") == "family":
+            text = (
+                "I’d love to help plan your Sri Lanka family holiday. To tailor the right route, could you share:\n"
+                "1. How many days you’d like to travel (or your preferred dates)?\n"
+                "2. How many adults and the ages of any children?\n"
+                "3. What your family enjoys most (for example, wildlife safaris, beaches, train rides, or cultural sites)?\n\n"
+                "While you decide, these published tours are popular with families: "
+                "Sigiriya & Minneriya (fortress + elephant safari), Mirissa Whale Watching (short morning boat trip), "
+                "and Cultural Triangle (multi-day heritage loop)."
+            )
+        else:
+            text = (
+                "I’d be happy to help plan your Sri Lanka journey. Could you share:\n"
+                "1. How many days you’d like to travel (or your preferred dates)?\n"
+                "2. Who is travelling (adults and any children's ages)?\n"
+                "3. Which destinations or interests appeal most (wildlife, beaches, tea hills, or culture)?"
+            )
     elif action == "general" and ctx.get("search") and rows:
         search = ctx["search"]
         trip_type = search.get("trip_type")
@@ -898,7 +977,7 @@ def compose(_):
         selected = min(ctx.get("selected_day",0),len(days)-1)
         components[:0] = [Proposal(days=days,selected=selected),RouteMap(days=days,selected=selected),
                           Departure(value=ctx.get("custom",{}).get("date"))]
-        sources = list(dict.fromkeys([*(d.evidence or d.source for d in days),*sources]))[:6]
+        sources = list(dict.fromkeys([days[selected].source, *sources, *(d.evidence or d.source for d in days)]))[:6]
         text = f"Your proposed journey now has {len(days)} days. I’ve saved the route for specialist confirmation."
         if action=="proposal_view":
             d = days[selected]

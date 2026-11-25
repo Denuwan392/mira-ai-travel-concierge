@@ -65,6 +65,14 @@ async def lifespan(_):
     except Unavailable:
         log_event("PRICING", "rates.unavailable", level=logging.WARNING)
     yield
+    try:
+        client = remote_tracing()
+        if client and hasattr(client, "shutdown"):
+            client.shutdown()
+        elif client and hasattr(client, "flush"):
+            client.flush()
+    except Exception:
+        pass
 
 
 app = FastAPI(title="Mira Travel Concierge", lifespan=lifespan)
@@ -315,6 +323,15 @@ def remote_tracing():
     return None
 
 
+_STAGE_OBSERVATION_TYPES = {
+    "interpret": "chain",
+    "retrieval": "retriever",
+    "pricing": "tool",
+    "gemini_suggestions": "generation",
+    "gemini_intent": "generation",
+}
+
+
 def export_trace(w, trace):
     if not w.get("events"):
         return None
@@ -322,14 +339,72 @@ def export_trace(w, trace):
         client = remote_tracing()
         if not client:
             return None
+        from contextlib import nullcontext
+        try:
+            from langfuse import propagate_attributes
+        except ImportError:
+            propagate_attributes = None
+
         req_id = request_id.get()
-        meta = {"request_id": req_id} if req_id else {}
-        with client.start_as_current_observation(name="mira.turn",
-                trace_context={"trace_id": trace.hex}, metadata=meta):
-            for item in w["events"]:
-                clean_item = {k: sanitize_value(v) for k, v in item.items() if not is_sensitive_key(k)}
-                with client.start_as_current_observation(name=item.get("stage", "stage"), metadata=clean_item):
-                    pass
+        trip_id = w.get("trip_id")
+        visitor_id = w.get("visitor_id")
+        user_id = w.get("user_id") or (f"visitor:{str(visitor_id)[:12]}" if visitor_id else None)
+        session_id = str(trip_id) if trip_id else (str(visitor_id)[:16] if visitor_id else None)
+        outcome = w.get("outcome", "completed")
+        meta = {k: v for k, v in {
+            "request_id": req_id,
+            "trip_id": trip_id,
+            "outcome": outcome,
+        }.items() if v is not None}
+        raw_prompt = w.get("prompt")
+        trace_input = {"message": sanitize_value(raw_prompt)} if isinstance(raw_prompt, str) and raw_prompt else None
+        trace_output = {
+            "outcome": outcome,
+            "stages": [e.get("stage") for e in w["events"] if e.get("stage")],
+        }
+        tags = ["mira", "concierge"] + (["failed"] if outcome != "completed" else [])
+        prop_ctx = (
+            propagate_attributes(
+                trace_name="mira-concierge-turn",
+                session_id=session_id,
+                user_id=user_id,
+                version=_BUILD_REVISION,
+                environment=os.getenv("MIRA_ENV", "development"),
+                tags=tags,
+            )
+            if propagate_attributes is not None
+            else nullcontext()
+        )
+        with prop_ctx:
+            with client.start_as_current_observation(
+                name="mira.turn",
+                as_type="agent",
+                trace_context={"trace_id": trace.hex},
+                input=trace_input,
+                output=trace_output,
+                metadata=meta,
+            ):
+                for item in w["events"]:
+                    stage_name = item.get("stage", "stage")
+                    obs_type = _STAGE_OBSERVATION_TYPES.get(stage_name, "span")
+                    clean_item = {
+                        k: sanitize_value(v)
+                        for k, v in item.items()
+                        if not is_sensitive_key(k) and k not in ("usage_details", "model")
+                    }
+                    obs_kwargs = {
+                        "name": stage_name,
+                        "as_type": obs_type,
+                        "metadata": clean_item,
+                        "output": {k: v for k, v in clean_item.items() if k != "stage"} or None,
+                    }
+                    if obs_type == "generation":
+                        if item.get("model"):
+                            obs_kwargs["model"] = item["model"]
+                        if item.get("usage_details"):
+                            obs_kwargs["usage_details"] = item["usage_details"]
+                    with client.start_as_current_observation(**obs_kwargs):
+                        pass
         if hasattr(client, "flush"):
             client.flush()
         log_event("TRACE", "trace.queued", destination="langfuse")
@@ -378,7 +453,13 @@ async def agui(payload: RunAgentInput, request: Request, key: str = Depends(visi
         outcome = "interrupted"
         tokens = [(visitor_context, visitor_context.set(key)), (run_context, run_context.set(run)),
                   (trace_id, trace_id.set(str(trace))),
-                  (working, working.set({"trace": trace, "trip_id": str(trip_id) if trip_id else None, "prompt": user.content}))]
+                  (working, working.set({
+                      "trace": trace,
+                      "trip_id": str(trip_id) if trip_id else None,
+                      "visitor_id": key,
+                      "user_id": auth_user.id if auth_user else None,
+                      "prompt": user.content,
+                  }))]
         log_event("AGENT", "workflow.started", notebook=trip_id is not None)
         try:
             async for event in adapter.run(safe):
@@ -874,6 +955,7 @@ def traveller_overview(
             "children": len(pq.ages),
             "current": is_cur,
             "trip_id": trip_map.get(str(pq.id)),
+            "enquiry_reference": pq.enquiry_reference,
             "mock_booking_reference": booking_map.get(str(pq.id)),
             "created": _utc_iso(q_row["created"]),
         }
@@ -1100,6 +1182,9 @@ def visitor_enquiry(
         "human_reason": enriched["human_reason"],
         "quoted_total_usd": enriched["quoted_total_usd"],
         "quoted_deposit_usd": enriched["quoted_deposit_usd"],
+        "mock_booking_status": enriched["mock_booking_status"],
+        "mock_booking_reference": enriched["mock_booking_reference"],
+        "trip_id": enriched["trip_id"],
     }
 
 
