@@ -1,4 +1,8 @@
-"""Compose a v0.9 A2UI surface exclusively from an already validated traveller turn."""
+"""Compose a v0.9 A2UI surface exclusively from an already validated traveller turn.
+
+Translates the backend's ``Turn`` component list into A2UI ``createSurface`` and
+``updateComponents`` protocol messages consumed by the frontend renderer.
+"""
 from .catalog import Turn
 
 CATALOG = "urn:ceylon-compass:mira:1"
@@ -6,6 +10,20 @@ SURFACE = "journey"
 
 
 def surface_messages(turn: Turn) -> list[dict]:
+    """Build A2UI v0.9 surface creation and component tree messages for a turn.
+
+    When a turn contains ``TourCard`` items without detail/transactional widgets
+    (``TravellerPicker``, ``PriceBreakdown``, ``BookingForm``), it is treated as
+    a discovery view and collapses individual cards into a ``JourneyResults``
+    list node.
+
+    Args:
+        turn: Validated ``catalog.Turn`` payload for the current assistant turn.
+
+    Returns:
+        Two-element list containing the ``createSurface`` and
+        ``updateComponents`` A2UI v0.9 protocol dictionaries.
+    """
     nodes = []
     cards = [item for item in turn.components if item.type == "TourCard"]
     # A selection, quote or handoff owns its detail view. Discovery owns its list.

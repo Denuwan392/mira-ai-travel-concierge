@@ -9,10 +9,12 @@ COUNT = r"\d{1,3}|" + "|".join(WORDS[1:])
 
 
 def parse_count(word: str) -> int:
+    """Convert a digit string or English number word (1..20) to an integer."""
     return int(word) if word.isdigit() else WORDS.index(word)
 
 
 def tour_days(tour: dict) -> int:
+    """Infer total tour duration in days from ``duration`` text or parsed ``days``."""
     duration = (tour.get("duration") or "").lower()
     if "half day" in duration:
         return 1
@@ -24,6 +26,7 @@ def tour_days(tour: dict) -> int:
 
 
 def is_day_tour(tour: dict) -> bool:
+    """Return True if the tour is a single-day or half-day excursion."""
     duration = (tour.get("duration") or "").lower()
     category = (tour.get("category") or "").lower()
     if "night" in duration:
@@ -32,6 +35,7 @@ def is_day_tour(tour: dict) -> bool:
 
 
 def is_multi_day_tour(tour: dict) -> bool:
+    """Return True if the tour spans multiple days or overnight stays."""
     duration = (tour.get("duration") or "").lower()
     category = (tour.get("category") or "").lower()
     return "night" in duration or category in {
@@ -99,13 +103,18 @@ def extract_search_constraints(text: str) -> dict:
         constraints["theme"] = "cultural"
     elif re.search(r"\b(?:wildlife|safari|elephant|leopard)\b", text):
         constraints["theme"] = "wildlife"
-    elif re.search(r"\b(?:train|scenic|tea|hill)\b", text):
+    elif re.search(
+        r"\b(?:train|scenic|scener(?:y|ies)|tea|hill(?:s|\s+country)?|mountains?|highlands?|"
+        r"cool(?:\s+weather)?|misty?|peaceful|tranquil|waterfall(?:s)?)\b",
+        text,
+    ):
         constraints["theme"] = "scenic"
 
     return constraints
 
 
 def _matches_theme(tour: dict, theme: str) -> bool:
+    """Check whether a tour's title, category, destinations, or intro match ``theme``."""
     haystack = " ".join(
         [
             tour.get("title", ""),
@@ -133,13 +142,26 @@ def _matches_theme(tour: dict, theme: str) -> bool:
             )
         )
     if theme == "scenic":
+        full_haystack = " ".join(
+            [
+                tour.get("title", ""),
+                tour.get("category", ""),
+                " ".join(tour.get("destinations", [])),
+                tour.get("body", "")[:1800],
+            ]
+        ).lower()
         return bool(
-            re.search(r"\b(?:train|scenic|tea|ella|nuwara[- ]eliya|hill)\b", haystack)
+            re.search(
+                r"\b(?:train|scenic|scener(?:y|ies)|tea|ella|nuwara[- ]eliya|hill(?:s|\s+country)?|"
+                r"mountains?|highlands?|misty?|cool|waterfall(?:s)?|panoram(?:a|ic)|countryside)\b",
+                full_haystack,
+            )
         )
     return True
 
 
 def _matches_departure(tour: dict, departure: str, trip_type: str | None) -> bool:
+    """Match requested departure city against ``tour['start']``, including Colombo/airport aliases."""
     start = (tour.get("start") or "").lower()
     if departure in start:
         return True
@@ -206,5 +228,51 @@ def rank_filtered_tours(pool: dict, constraints: dict) -> list[str]:
         if trip_type == "day tour" and not constraints.get("departure") and not theme:
             return (day_diff, default_order, tour_id)
         return (day_diff, theme_bonus, default_order, tour_id)
+
+    return sorted(pool.keys(), key=score)[:3]
+
+
+_SEMANTIC_SYNONYMS: dict[str, tuple[str, ...]] = {
+    "mountain": ("nuwara-eliya", "ella", "kandy", "hill", "highland", "tea", "mist", "train", "scenic", "view"),
+    "mountains": ("nuwara-eliya", "ella", "kandy", "hill", "highland", "tea", "mist", "train", "scenic", "view"),
+    "scenery": ("scenic", "view", "bridge", "waterfall", "tea", "ella", "nuwara-eliya", "kandy", "train", "lighthouse"),
+    "scenic": ("train", "ella", "nuwara-eliya", "tea", "hill", "bridge", "view"),
+    "cool": ("nuwara-eliya", "ella", "kandy", "tea", "hill", "highland", "mist"),
+    "weather": ("nuwara-eliya", "ella", "hill", "tea", "cool", "mist"),
+    "peaceful": ("ella", "nuwara-eliya", "tea", "quiet", "hill", "beach", "mirissa", "heritage"),
+    "quiet": ("ella", "nuwara-eliya", "mirissa", "anuradhapura", "tea", "beach"),
+    "tea": ("nuwara-eliya", "ella", "kandy", "heritance", "factory", "plantation"),
+    "train": ("kandy", "nuwara-eliya", "ella", "scenic", "bridge"),
+    "beach": ("mirissa", "hikkaduwa", "galle", "coast", "whale", "dolphin"),
+    "wildlife": ("yala", "udawalawe", "minneriya", "safari", "elephant", "leopard", "whale", "dolphin"),
+    "culture": ("anuradhapura", "polonnaruwa", "sigiriya", "kandy", "dambulla", "temple", "heritage"),
+    "cultural": ("anuradhapura", "polonnaruwa", "sigiriya", "kandy", "dambulla", "temple", "heritage"),
+}
+
+
+def rank_tours_by_preferences(pool: dict, query_text: str, constraints: dict | None = None) -> list[str]:
+    """Deterministically rank ``pool`` using token/synonym overlap with descriptions, tags, and constraints."""
+    if not pool:
+        return []
+    tokens = [
+        w for w in re.findall(r"[a-z]{3,}", (query_text or "").lower())
+        if w not in {"want", "with", "and", "the", "for", "somewhere", "something", "holiday", "trip", "tour", "very", "beautiful"}
+    ]
+    if not tokens:
+        return rank_filtered_tours(pool, constraints or {})
+
+    expanded: set[str] = set(tokens)
+    for tok in tokens:
+        expanded.update(_SEMANTIC_SYNONYMS.get(tok, ()))
+
+    base_order = {tid: idx for idx, tid in enumerate(rank_filtered_tours(pool, constraints or {}))}
+
+    def score(tour_id: str) -> tuple:
+        t = pool[tour_id]
+        meta_text = " ".join([t.get("title", ""), t.get("category", ""), " ".join(t.get("destinations", []))]).lower()
+        body_text = t.get("body", "").lower()
+        meta_hits = sum(2 for kw in expanded if kw in meta_text)
+        body_hits = sum(1 for kw in expanded if kw in body_text)
+        return (-(meta_hits + body_hits), base_order.get(tour_id, 99), tour_id)
 
     return sorted(pool.keys(), key=score)[:3]
