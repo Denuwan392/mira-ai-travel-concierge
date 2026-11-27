@@ -1,3 +1,4 @@
+"""Core workflow tests: quote privacy, replay, mock booking, consent, draft approval, and fail-closed guards."""
 import json
 import sqlite3
 from datetime import date
@@ -16,6 +17,7 @@ SIGIRIYA = "Sigiriya day trip for two adults on 10 January 2027"
 
 
 def test_quote_enquiry_privacy_and_idempotency(app_client):
+    """Verify run-ID idempotency, staff enquiry linkage, and strict cross-visitor quote isolation."""
     run = str(uuid4())
     first = turn(app_client, SIGIRIYA, run)
     assert turn(app_client, SIGIRIYA, run) == first
@@ -139,6 +141,7 @@ def test_provider_failure_is_safe(app_client, monkeypatch):
 
 
 def test_missing_workbook_fails_closed(app_client, monkeypatch, tmp_path):
+    """Verify a missing rate workbook produces no quote and logs ``rate_import_invalid``."""
     from mira import data
     monkeypatch.setattr(data, "WORKBOOK", tmp_path / "missing.xlsx")
     output = turn(app_client, SIGIRIYA)

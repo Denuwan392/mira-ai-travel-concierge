@@ -1,3 +1,4 @@
+"""Tests for structured logging, PII redaction, request/trace correlation, pretty workflow grouping, and Langfuse export."""
 import asyncio
 import json
 import logging
@@ -22,11 +23,13 @@ ROOT = Path(__file__).resolve().parents[3]
 
 
 def formatted(records):
+    """Format a list of ``LogRecord`` objects as parsed JSON dicts using Mira's JSON ``Formatter``."""
     formatter = Formatter("json", color=True)
     return [json.loads(formatter.format(record)) for record in records]
 
 
 def test_configuration_and_redaction(monkeypatch, capsys):
+    """Verify ``configure()`` redacts emails, Bearer tokens, and ANSI escapes in JSON debug logs."""
     original = logging.getLogger()
     handlers, level = original.handlers[:], original.level
     prefixes = ("uvicorn", "uvicorn.error", "uvicorn.access", "httpx", "httpx2", "httpcore", "google_genai", "opentelemetry", "langfuse", "alembic")
@@ -195,6 +198,7 @@ raise SystemExit(supervise((("WEB", 0, ".", (sys.executable, "-c", sys.argv[1], 
 
 
 def make_record(component, event_name, fields=None, context=None, level=logging.INFO, exc_info=None):
+    """Construct a synthetic ``LogRecord`` populated with Mira component, fields, and correlation context."""
     record = logging.LogRecord("mira." + component.lower(), level, "test.py", 10, event_name, (), exc_info)
     record.mira_component = component
     record.mira_fields = fields or {}
@@ -496,4 +500,86 @@ def test_langfuse_mock_export_structure_and_sanitization(app_client, monkeypatch
             assert "cost_lkr" not in k
             assert "token" not in k
             assert "Bearer" not in str(v)
+
+
+def test_detailed_execution_trace_stages_and_debug_tree(app_client, caplog):
+    """Verify all 10 execution stages are logged with structured fields and render cleanly in DEBUG tree mode."""
+    with caplog.at_level(logging.DEBUG, logger="mira"):
+        res = turn(app_client, "Sigiriya day trip for two adults on 10 January 2027")
+    assert quotes(res)
+
+    events = formatted(caplog.records)
+    event_names = {e["event"] for e in events}
+    assert {
+        "workflow.started",
+        "intent.classified",
+        "routing.selected",
+        "retrieval.completed",
+        "pricing.completed",
+        "compose.completed",
+        "grounding.completed",
+        "ui.validated",
+        "turn.persisted",
+        "workflow.finished",
+    } <= event_names
+
+    started = next(e for e in events if e["event"] == "workflow.started")
+    assert started["request_type"] == "chat"
+    assert started["user_message"] == "Sigiriya day trip for two adults on 10 January 2027"
+    assert "session_context" in started
+
+    intent = next(e for e in events if e["event"] == "intent.classified")
+    assert intent["intent"] == "discover"
+    assert intent["named_tour"] == "T01"
+    assert intent["matched_rules"]
+    assert intent["previous_context"] == {}
+    assert intent["updated_context"]["tour"] == "T01"
+
+    pricing = next(e for e in events if e["event"] == "pricing.completed")
+    assert pricing["matched_rows"]["tour_row"] is not None
+    assert pricing["validation_outcomes"]["publication"] == "ok"
+    assert "sell_and_deposit_computed" in pricing["calculation_stages"]
+    assert "cost_lkr" not in pricing
+
+    composed = next(e for e in events if e["event"] == "compose.completed")
+    assert composed["branch"] == "verified_quote"
+    assert "PriceBreakdown" in composed["component_types"]
+
+    persisted = next(e for e in events if e["event"] == "turn.persisted")
+    assert persisted["transaction_result"] == "committed"
+    assert "INSERT traces" in persisted["db_operations"]
+
+    finished = next(e for e in events if e["event"] == "workflow.finished")
+    assert finished["execution_path"] == ["interpret", "retrieve", "quote", "compose", "save"]
+    assert isinstance(finished["node_durations"], dict)
+
+    # Verify hierarchical DEBUG tree formatting
+    workflow_records = [r for r in caplog.records if getattr(r, "mira_context", {}).get("trace_id") == str(res.trace)]
+    debug_tree = Formatter("pretty", color=False, debug=True).format_workflow(workflow_records)
+    for stage_tag in ("REQUEST", "INTENT", "ROUTE", "RAG", "PRICE", "COMPOSE", "TRACE", "SUMMARY", "DONE"):
+        assert stage_tag in debug_tree
+    assert "matched_rules:" in debug_tree
+    assert "calculation_stages:" in debug_tree
+
+
+def test_sensitive_key_and_nested_value_redaction():
+    """Verify nested dicts, API keys, emails, and private financial keys are redacted in JSON and DEBUG logs."""
+    payload = {
+        "api_key": "AIzaSyFakeKeyForTesting1234567890123",
+        "cost_lkr": "66000",
+        "gross_profit_pct": "25.0",
+        "nested": {"email": "guest@example.com", "auth_header": "Bearer super-secret-jwt", "safe": "ok"},
+        "notes": "Contact traveller@example.org with sk-1234567890abcdef123456",
+    }
+    rec = make_record("AGENT", "workflow.started", payload, {"trace_id": str(uuid4())})
+    json_out = Formatter("json", color=False, debug=True).format(rec)
+    pretty_out = Formatter("pretty", color=False, debug=True).format_workflow([rec])
+    for output in (json_out, pretty_out):
+        assert "AIzaSyFakeKeyForTesting" not in output
+        assert "66000" not in output
+        assert "25.0" not in output
+        assert "guest@example.com" not in output
+        assert "super-secret-jwt" not in output
+        assert "traveller@example.org" not in output
+        assert "sk-1234567890abcdef123456" not in output
 

@@ -1,3 +1,4 @@
+"""Integration tests for multi-turn agent discovery, grounding, prompt-injection defense, and Gemini fallback."""
 import json
 import os
 from datetime import date

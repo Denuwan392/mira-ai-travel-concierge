@@ -1,9 +1,11 @@
+"""Unit tests for ``mira.itinerary_parser.parse_tour_markdown`` on T07, T08, and T09."""
 import pytest
 from mira.data import DATA, content
 from mira.itinerary_parser import parse_tour_markdown, TourItinerary, DaySchedule
 
 
 def test_t09_cultural_triangle_itinerary_parser():
+    """Verify T09 parses into 7 structured ``DaySchedule`` items with meals, hotels, and tickets."""
     records = content()
     assert "T09" in records
     t09_raw = records["T09"]
@@ -51,6 +53,7 @@ def test_t09_cultural_triangle_itinerary_parser():
 
 
 def test_t08_highlights_itinerary_parser():
+    """Verify T08 parses into 8 days including train and Nuwara Eliya hotel metadata."""
     records = content()
     assert "T08" in records
     t08_raw = records["T08"]
@@ -65,6 +68,7 @@ def test_t08_highlights_itinerary_parser():
 
 
 def test_t07_kandy_stay_itinerary_parser():
+    """Verify T07 parses into 3 days with expected start/end titles."""
     records = content()
     assert "T07" in records
     t07_raw = records["T07"]

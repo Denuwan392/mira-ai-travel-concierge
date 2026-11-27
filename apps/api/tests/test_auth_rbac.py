@@ -1,3 +1,4 @@
+"""Tests for user registration, Argon2id hashing, brute-force lockouts, session isolation, and RBAC."""
 import json
 from uuid import uuid4
 from datetime import datetime, timedelta, timezone

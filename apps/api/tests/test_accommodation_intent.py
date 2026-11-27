@@ -137,6 +137,7 @@ def test_internal_hotel_financial_data_protection(app_client):
 
 
 def test_hotel_enquiry_reference_matches_saved_row(app_client):
+    """Verify the Notice enquiry UUID matches the persisted ``enquiries.trace`` row."""
     from mira.store import db
     output = turn(app_client, "What is the room rate for Mirissa Bay Villas per night?")
     notice = next(c for c in output.components if isinstance(c, Notice))

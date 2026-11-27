@@ -1,3 +1,4 @@
+"""Consistency tests for Colombo City Tour pricing, staff metrics, cross-user privacy, and legacy rows."""
 import json
 from uuid import uuid4
 
@@ -8,6 +9,7 @@ from tests.conftest import headers
 
 
 def _send_agent(client, trip_id: str, content: str):
+    """Post a turn to ``/api/agent`` for ``trip_id`` and return the ``turn`` snapshot dict."""
     run = str(uuid4())
     resp = client.post(
         "/api/agent",
@@ -28,6 +30,7 @@ def _send_agent(client, trip_id: str, content: str):
 
 
 def test_1_2_3_colombo_city_tour_exact_price_and_tour_preservation(app_client):
+    """Verify T03 REQUEST_QUOTE computes exact USD total/deposit for 2 adults + 4 children."""
     trip = app_client.post("/api/trips").json()["id"]
     payload = json.dumps({
         "type": "REQUEST_QUOTE",
@@ -51,6 +54,7 @@ def test_1_2_3_colombo_city_tour_exact_price_and_tour_preservation(app_client):
 
 
 def test_4_5_6_9_staff_metrics_contactability_metadata_and_dedup(app_client):
+    """Verify staff overview counts, contact attachment, pagination headers, and quote history preservation."""
     # Create 2 enquiries: 1 anonymous verified quote (recalculated twice), 1 contactable missing-rate enquiry
     t1 = app_client.post("/api/trips").json()["id"]
     _send_agent(app_client, t1, "@trip T03 2027-01-10 2 7,7,7,7")
@@ -117,6 +121,7 @@ def test_4_5_6_9_staff_metrics_contactability_metadata_and_dedup(app_client):
 
 
 def test_7_10_traveller_dashboard_and_cross_user_privacy(app_client):
+    """Verify traveller overview counts and strict isolation between Traveller A and Traveller B."""
     # Register Traveller A
     r_a = app_client.post("/api/auth/register", json={
         "email": "traveller.a@example.test",
@@ -156,6 +161,7 @@ def test_7_10_traveller_dashboard_and_cross_user_privacy(app_client):
 
 
 def test_8_legacy_incomplete_enquiry_renders_safely(app_client):
+    """Verify ``is_contactable`` is False when no actual email exists even if the DB flag was set."""
     with store.db() as conn:
         vid = str(uuid4())
         tid = str(uuid4())

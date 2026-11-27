@@ -13,6 +13,7 @@ from mira.main import app
 
 
 def send_turn(client, trip_id, message, run=None):
+    """Post a turn to ``/api/agent`` for ``trip_id`` and return ``(turn_dict, surface_list)``."""
     run = run or str(uuid4())
     resp = client.post(
         "/api/agent",
@@ -39,6 +40,7 @@ def send_turn(client, trip_id, message, run=None):
 
 
 def test_a_preserve_selected_tour_on_followup_quote_and_missing_rate(app_client):
+    """Verify follow-up quote preserves selected tour T16 and emits EnquiryNotice when rate is missing."""
     trip_id = app_client.post("/api/trips").json()["id"]
     t1, _ = send_turn(app_client, trip_id, "Cultural Triangle Tour")
     assert [c["id"] for c in t1["components"] if c["type"] == "TourCard"] == ["T16"]
@@ -56,6 +58,7 @@ def test_a_preserve_selected_tour_on_followup_quote_and_missing_rate(app_client)
 
 
 def test_date_and_child_age_extraction_variants(app_client):
+    """Verify unambiguous date formats, rejection of ambiguous numeric dates, and Oxford-comma child ages."""
     assert parse_date("January 10, 2027") == "2027-01-10"
     assert parse_date("10 January 2027") == "2027-01-10"
     assert parse_date("2027-01-10") == "2027-01-10"
@@ -80,6 +83,7 @@ def test_date_and_child_age_extraction_variants(app_client):
 
 
 def test_b_d_e_f_g_h_enquiry_lifecycle_isolation_and_staff_update(app_client):
+    """Verify run-ID deduplication, cross-user isolation, staff follow-up updates, and session restore."""
     app_client.post(
         "/api/auth/register",
         json={"email": "alice@example.com", "password": "Password123!", "full_name": "Alice Perera"},
@@ -142,6 +146,7 @@ def test_b_d_e_f_g_h_enquiry_lifecycle_isolation_and_staff_update(app_client):
 
 
 def test_c_dashboard_counts_exceed_10_and_100(app_client):
+    """Verify traveller overview returns exact total/active counts even when >100 enquiries exist."""
     app_client.post(
         "/api/auth/register",
         json={"email": "poweruser@example.com", "password": "Password123!", "full_name": "Power User"},
@@ -167,6 +172,7 @@ def test_c_dashboard_counts_exceed_10_and_100(app_client):
 
 
 def test_migration_0005_repairs_missing_updated_at_idempotently(tmp_path, monkeypatch):
+    """Verify Alembic migration 0005+ backfills ``updated_at`` and ``reference`` idempotently."""
     legacy_db = tmp_path / "legacy.sqlite3"
     conn = sqlite3.connect(legacy_db)
     conn.executescript(
@@ -197,6 +203,7 @@ def test_migration_0005_repairs_missing_updated_at_idempotently(tmp_path, monkey
 
 
 def test_dev_db_isolation_guard(monkeypatch):
+    """Verify ``store.db()`` refuses to open the developer database during pytest runs."""
     monkeypatch.setattr(store, "DB", store._DEV_DB)
     with pytest.raises(RuntimeError, match="isolated temporary database"):
         with store.db():

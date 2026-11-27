@@ -1,3 +1,4 @@
+"""Regression tests ensuring no duplicate source cards, intact quote arithmetic, and safe booking declines."""
 import json
 from uuid import uuid4
 from fastapi.testclient import TestClient
@@ -5,6 +6,7 @@ from mira.main import app
 
 
 def send_agent(client, trip, message, run=None):
+    """Post a turn to ``/api/agent`` for ``trip`` and return the raw ``turn`` snapshot dict."""
     run = run or str(uuid4())
     response = client.post(
         "/api/agent",
@@ -34,6 +36,7 @@ def send_agent(client, trip, message, run=None):
 
 
 def test_no_redundant_library_card_when_tour_card_displayed(app_client):
+    """Verify ``SourceReference`` is omitted when a ``TourCard`` for the same tour is already shown."""
     trip = app_client.post("/api/trips").json()["id"]
     turn = send_agent(
         app_client, trip, "Sigiriya day trip for two adults on 10 January 2027"
@@ -53,6 +56,7 @@ def test_no_redundant_library_card_when_tour_card_displayed(app_client):
 
 
 def test_pricing_arithmetic_integrity(app_client):
+    """Verify public quote totals and ensure internal margin/cost/markup keys are absent."""
     trip = app_client.post("/api/trips").json()["id"]
     turn = send_agent(
         app_client, trip, "Sigiriya day trip for two adults on 10 January 2027"
@@ -77,6 +81,7 @@ def test_pricing_arithmetic_integrity(app_client):
 
 
 def test_quote_saved_confirmation_distinct_from_booking(app_client):
+    """Verify quote confirmation is distinct from booking and declined mock payments do not book."""
     trip = app_client.post("/api/trips").json()["id"]
     turn = send_agent(
         app_client, trip, "Sigiriya day trip for two adults on 10 January 2027"

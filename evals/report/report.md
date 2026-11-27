@@ -1,6 +1,6 @@
 # Mira evaluation
 
-Assessment clock 2026-11-19. Local deterministic mode. Generated 2026-11-24T21:15:41.781416+00:00.
+Assessment clock 2026-11-19. Local deterministic mode. Generated 2026-11-27T17:44:53.893177+00:00.
 
 **53/54 cases passed (98.1%).**
 Includes 17 supplied cases, 37 authored cases and 7 multi-turn conversations.
@@ -27,12 +27,12 @@ Observed 0 unexpected quote components.
 
 Expected [{'tour': 'T09', 'price_usd': 2680, 'deposit_usd': 670}], observed [{'tour': 'T09', 'price_usd': 2965, 'deposit_usd': 742}]
 
-[Trace f108d88e-1e5b-4f04-9e07-1132cf764094](#trace-f108d88e-1e5b-4f04-9e07-1132cf764094)
+[Trace 3b093a37-f335-4b72-8111-3f05a1c5f5a6](#trace-3b093a37-f335-4b72-8111-3f05a1c5f5a6)
 
 
 ## Failed-case trace snapshots
 
-### Trace f108d88e-1e5b-4f04-9e07-1132cf764094
+### Trace 3b093a37-f335-4b72-8111-3f05a1c5f5a6
 
 ```json
 [
@@ -54,7 +54,7 @@ Expected [{'tour': 'T09', 'price_usd': 2680, 'deposit_usd': 670}], observed [{'t
     "outcome": "verified",
     "snapshot": "a16dd63ffb7ed2324e9d709f4b35e1bb3f0d5c2123b765903bce039f5fefdfe2",
     "rate_digest": "a16dd63ffb7ed2324e9d709f4b35e1bb3f0d5c2123b765903bce039f5fefdfe2",
-    "ms": 1
+    "ms": 2
   },
   {
     "stage": "validated_ui",
@@ -69,7 +69,7 @@ Expected [{'tour': 'T09', 'price_usd': 2680, 'deposit_usd': 670}], observed [{'t
   {
     "stage": "persistence",
     "enquiry": true,
-    "request_id": "d95ad806-fea8-42c8-9c2f-e6bf486f6c28",
+    "request_id": "d7c4690a-60bc-4722-8b1c-1e265b474894",
     "ms": 1
   }
 ]

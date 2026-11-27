@@ -1,3 +1,4 @@
+"""Shared pytest fixtures and AG-UI client helpers for backend API tests."""
 from datetime import date
 from uuid import uuid4
 
@@ -12,6 +13,7 @@ TODAY = date(2026, 11, 19)
 
 @pytest.fixture
 def app_client(tmp_path, monkeypatch):
+    """Provide an isolated FastAPI ``TestClient`` backed by a temporary SQLite DB."""
     monkeypatch.setattr(store, "DB", tmp_path / "demo.sqlite3")
     monkeypatch.setenv("AS_OF_DATE", TODAY.isoformat())
     monkeypatch.delenv("GEMINI_API_KEY", raising=False)
@@ -25,10 +27,12 @@ def app_client(tmp_path, monkeypatch):
 
 
 def headers(actor):
+    """Build a legacy dev/test Bearer ``Authorization`` header for ``actor``."""
     return {"Authorization": f"Bearer {actor * 8}"}
 
 
 def turn(client, content, run=None):
+    """Post a user message to ``/api/agent``, assert clean SSE completion, and return ``Turn``."""
     import json
     from mira.catalog import Turn
 
@@ -47,5 +51,6 @@ def turn(client, content, run=None):
 
 
 def quotes(output):
+    """Extract all ``PublicQuote`` objects from a ``Turn``'s ``Breakdown`` components."""
     from mira.catalog import Breakdown
     return [item.quote for item in output.components if isinstance(item, Breakdown)]
