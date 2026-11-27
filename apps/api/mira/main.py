@@ -1,3 +1,16 @@
+"""FastAPI application for Mira Travel Concierge.
+
+Exposes:
+- Public catalogue, guide, and source endpoints (``/api/health``, ``/api/tours``,
+  ``/api/guide``, ``/api/sources/{key}``).
+- Anonymous & authenticated visitor sessions, trip notebooks, quotes, and
+  AG-UI SSE agent streaming (``/api/session``, ``/api/trips``, ``/api/quotes``,
+  ``/api/agent``, ``/api/bookings/mock``).
+- Authentication, profile management, and traveller portal endpoints
+  (``/api/auth/*``, ``/api/traveller/*``, ``/api/enquiries/*``).
+- Staff enquiry CRM, Content Studio draft/approval workflow, read-only pricing
+  preview, and admin RBAC/audit endpoints (``/api/staff/*``, ``/api/admin/*``).
+"""
 import asyncio
 import hmac
 import logging
@@ -35,6 +48,7 @@ from .auth import (
     clear_auth_cookie,
     clear_failed_login,
     create_user_session,
+    ensure_user_visitor,
     get_current_user,
     get_current_user_optional,
     hash_password,
@@ -46,7 +60,7 @@ from .auth import (
 from .catalog import PublicQuote, Strict
 from .data import DATA, Unavailable, as_of, clean, price, public_text, tour_card
 from .guide import guide
-from .observability import RequestLogging, elapsed, event as log_event, is_sensitive_key, request_id, sanitize_value, trace_id
+from .observability import RequestLogging, elapsed, event as log_event, is_sensitive_key, request_id, sanitize_value, shorten_id, trace_id
 from .provider import generate_structured, model_available
 from .rates_repository import current_rates
 from . import store
@@ -58,6 +72,7 @@ ROLES = ("staff", "editor", "approver")
 
 @asynccontextmanager
 async def lifespan(_):
+    """Initialize SQLite schema, bootstrap optional admin, warm rate cache, and flush Langfuse on shutdown."""
     init()
     bootstrap_admin()
     try:
@@ -80,6 +95,7 @@ app.add_middleware(RequestLogging)
 
 
 def website(request: Request):
+    """CSRF/Origin guard for mutating endpoints: reject requests from disallowed ``Origin`` headers."""
     origin = request.headers.get("origin")
     expected = os.getenv("MIRA_ORIGIN", "http://127.0.0.1:3000")
     allowed = {expected, *os.getenv("MIRA_ADDITIONAL_ORIGINS", "http://127.0.0.1:5175").split(",")}
@@ -88,6 +104,7 @@ def website(request: Request):
 
 
 def visitor(session: str | None = Cookie(None, alias=COOKIE), user: UserProfile | None = Depends(get_current_user_optional)):
+    """Require a valid ``mira_session`` cookie and verify ownership if linked to a user account."""
     if not session:
         raise HTTPException(401, "Start a visitor session")
     with db() as conn:
@@ -101,6 +118,7 @@ def role(
     authorization: str = Header(default=""),
     auth_token: str | None = Cookie(None, alias=AUTH_COOKIE),
 ):
+    """Authenticate a staff/approver/admin caller via session cookie or legacy Bearer token."""
     # 1. Check HttpOnly cookie for authenticated staff/approver/admin
     if auth_token:
         with db() as conn:
@@ -141,6 +159,7 @@ _BUILD_REVISION = os.getenv("MIRA_BUILD_REV", "rc-2026-11-25")
 
 @app.get("/api/health")
 def health():
+    """Return service readiness, dataset integrity checks, active providers, and build revision."""
     try:
         rates = current_rates().digest
     except Unavailable:
@@ -160,16 +179,19 @@ def health():
 
 @app.get("/api/tours")
 def tours():
+    """Return summary cards for all published tours."""
     return [tour_card(row) for row in published_records().values() if row["type"] == "tour"]
 
 
 @app.get("/api/guide")
 def travel_guide():
+    """Return structured destinations, tours, day sections, and public pages for the guide UI."""
     return guide(published_records())
 
 
 @app.get("/api/sources/{key}")
 def source(key: str):
+    """Return sanitized markdown content for a published source ID (excluding internal ``P06``)."""
     row = published_records().get(key)
     if not row or key == "P06":
         raise HTTPException(404, "Source unavailable")
@@ -178,11 +200,14 @@ def source(key: str):
 
 
 class Consent(Strict):
+    """Visitor session consent payload controlling 30-day vs session-only cookie lifetime."""
+
     remember: bool = False
 
 
 @app.post("/api/session", dependencies=[Depends(website)])
 def session(body: Consent, res: Response, existing: str | None = Cookie(None, alias=COOKIE), auth_user: UserProfile | None = Depends(get_current_user_optional)):
+    """Create or refresh an anonymous/user-linked visitor session cookie."""
     with db() as conn:
         old = conn.execute("SELECT remember,user_id FROM visitors WHERE id=?", (existing,)).fetchone()
         if old and old["user_id"] and (not auth_user or auth_user.id != old["user_id"]):
@@ -200,6 +225,7 @@ def session(body: Consent, res: Response, existing: str | None = Cookie(None, al
 
 @app.get("/api/session")
 def session_status(key: str = Depends(visitor), auth_user: UserProfile | None = Depends(get_current_user_optional)):
+    """Return current visitor session remember-flag and merged conversation/user preferences."""
     with db() as conn:
         row = conn.execute("SELECT remember,context,user_id FROM visitors WHERE id=?", (key,)).fetchone()
         if not row:
@@ -216,6 +242,7 @@ def session_status(key: str = Depends(visitor), auth_user: UserProfile | None = 
 
 @app.delete("/api/session", dependencies=[Depends(website)])
 def forget(res: Response, key: str = Depends(visitor)):
+    """Delete the visitor record and clear the ``mira_session`` cookie."""
     with db() as conn:
         conn.execute("DELETE FROM visitors WHERE id=?", (key,))
     res.delete_cookie(COOKIE, httponly=True, samesite="lax", secure=os.getenv("MIRA_SECURE_COOKIE") == "1")
@@ -223,6 +250,7 @@ def forget(res: Response, key: str = Depends(visitor)):
 
 
 def quote_current(public, internal, rates):
+    """Return True if a saved quote still matches live rate-sheet calculation and snapshot digest."""
     if rates is None:
         return False
     try:
@@ -234,6 +262,7 @@ def quote_current(public, internal, rates):
 
 @app.post("/api/trips", dependencies=[Depends(website)])
 def create_trip(key: str = Depends(visitor), auth_user: UserProfile | None = Depends(get_current_user_optional)):
+    """Create a new trip notebook owned by the current visitor (and linked user if signed in)."""
     trip_id = str(uuid4())
     with db() as conn:
         conn.execute("INSERT INTO trips(id,visitor) VALUES (?,?)", (trip_id,key))
@@ -244,6 +273,7 @@ def create_trip(key: str = Depends(visitor), auth_user: UserProfile | None = Dep
 
 @app.get("/api/trips")
 def trips(key: str = Depends(visitor), auth_user: UserProfile | None = Depends(get_current_user_optional)):
+    """List non-empty trip notebooks belonging to the visitor or authenticated user."""
     with db() as conn:
         if auth_user:
             return [dict(r) for r in conn.execute(
@@ -257,6 +287,7 @@ def trips(key: str = Depends(visitor), auth_user: UserProfile | None = Depends(g
 
 @app.get("/api/trips/{trip_id}")
 def notebook(trip_id: UUID, key: str = Depends(visitor), auth_user: UserProfile | None = Depends(get_current_user_optional)):
+    """Return full turn history and A2UI surfaces for a trip notebook, invalidating stale quotes."""
     from .catalog import Turn, Booking, Breakdown
     from .surface import surface_messages
     with db() as conn:
@@ -290,6 +321,7 @@ def notebook(trip_id: UUID, key: str = Depends(visitor), auth_user: UserProfile 
 
 @app.get("/api/quotes")
 def saved_quotes(key: str = Depends(visitor), auth_user: UserProfile | None = Depends(get_current_user_optional)):
+    """List up to 25 recent quotes for the visitor/user, flagging whether each is still current."""
     with db() as conn:
         if auth_user:
             rows = conn.execute(
@@ -317,6 +349,7 @@ def saved_quotes(key: str = Depends(visitor), auth_user: UserProfile | None = De
 
 @lru_cache
 def remote_tracing():
+    """Return a cached Langfuse client if public and secret keys are configured, else ``None``."""
     if os.getenv("LANGFUSE_PUBLIC_KEY") and os.getenv("LANGFUSE_SECRET_KEY"):
         from langfuse import get_client
         return get_client()
@@ -333,6 +366,7 @@ _STAGE_OBSERVATION_TYPES = {
 
 
 def export_trace(w, trace):
+    """Export sanitized turn stages and LLM token usage to Langfuse without failing the request."""
     if not w.get("events"):
         return None
     try:
@@ -358,6 +392,8 @@ def export_trace(w, trace):
         }.items() if v is not None}
         raw_prompt = w.get("prompt")
         trace_input = {"message": sanitize_value(raw_prompt)} if isinstance(raw_prompt, str) and raw_prompt else None
+        if w.get("discovery_message") is not None:
+            trace_input = {"operation": "catalogue_discovery"}
         trace_output = {
             "outcome": outcome,
             "stages": [e.get("stage") for e in w["events"] if e.get("stage")],
@@ -416,6 +452,7 @@ def export_trace(w, trace):
 @app.post("/api/agent", dependencies=[Depends(website)])
 async def agui(payload: RunAgentInput, request: Request, key: str = Depends(visitor), trip_id: UUID | None = None,
                auth_user: UserProfile | None = Depends(get_current_user_optional)):
+    """Stream an AG-UI LangGraph turn over SSE, enforcing trip ownership, run-ID idempotency, and trace capture."""
     users = [m for m in payload.messages if m.role == "user"]
     if not users or not isinstance(users[-1].content, str) or not 1 <= len(users[-1].content.strip()) <= 1200:
         raise HTTPException(422, "Enter a message of 1–1200 characters")
@@ -460,11 +497,32 @@ async def agui(payload: RunAgentInput, request: Request, key: str = Depends(visi
                       "user_id": auth_user.id if auth_user else None,
                       "prompt": user.content,
                   }))]
-        log_event("AGENT", "workflow.started", notebook=trip_id is not None)
+        raw_msg = user.content.strip()
+        request_type = (
+            "structured_action"
+            if raw_msg.startswith("{") and raw_msg.endswith("}")
+            else ("notebook" if trip_id is not None else "chat")
+        )
+        session_ctx = {
+            "visitor_id": shorten_id(key, debug=False),
+            "trip_id": str(trip_id) if trip_id else None,
+            "is_signed_in": auth_user is not None,
+        }
+        log_event(
+            "AGENT",
+            "workflow.started",
+            notebook=trip_id is not None,
+            request_type=request_type,
+            request_id=request_id.get(),
+            trace_id=str(trace),
+            user_message=user.content,
+            session_context=session_ctx,
+        )
         try:
             async for event in adapter.run(safe):
                 if event.type == EventType.RUN_ERROR:
                     outcome = "failed"
+                    working.get().setdefault("errors", []).append("agui.run_error")
                     log_event("ERROR", "workflow.run_error", level=logging.ERROR)
                     event = RunErrorEvent(type=EventType.RUN_ERROR, message="Mira couldn’t finish. Please retry.")
                 if event.type == EventType.RUN_FINISHED:
@@ -474,8 +532,9 @@ async def agui(payload: RunAgentInput, request: Request, key: str = Depends(visi
                             await asyncio.to_thread(export_trace, working.get(), trace)
                 yield encoder.encode(event)
         finally:
+            w_state = working.get() or {}
             if outcome != "completed":
-                stages = [*working.get().get("events", []), {"stage":"stream", "outcome":outcome, "ms":elapsed(start)}]
+                stages = [*w_state.get("events", []), {"stage":"stream", "outcome":outcome, "ms":elapsed(start)}]
                 try:
                     with db() as conn:
                         conn.execute("INSERT OR IGNORE INTO failed_traces(id,events) VALUES(?,?)",
@@ -483,8 +542,19 @@ async def agui(payload: RunAgentInput, request: Request, key: str = Depends(visi
                     if os.getenv("LANGFUSE_PUBLIC_KEY") and os.getenv("LANGFUSE_SECRET_KEY"):
                         await asyncio.to_thread(export_trace, {"events": stages}, trace)
                 except Exception:
+                    w_state.setdefault("errors", []).append("trace.persistence_failed")
                     log_event("ERROR", "trace.persistence_failed", level=logging.ERROR)
-            log_event("AGENT", "workflow.finished", outcome=outcome, duration_ms=elapsed(start))
+            log_event(
+                "AGENT",
+                "workflow.finished",
+                outcome=outcome,
+                duration_ms=elapsed(start),
+                execution_path=w_state.get("execution_path", []),
+                llm_calls=w_state.get("llm_calls", 0),
+                node_durations=w_state.get("node_durations", {}),
+                warnings=w_state.get("warnings", []),
+                errors=w_state.get("errors", []),
+            )
             for var, token in reversed(tokens):
                 var.reset(token)
 
@@ -492,12 +562,15 @@ async def agui(payload: RunAgentInput, request: Request, key: str = Depends(visi
 
 
 class Book(Strict):
+    """Mock booking request selecting a quote UUID and simulated payment/availability scenario."""
+
     quote: UUID
     scenario: Literal["success", "declined", "unavailable", "network", "expired"] = "success"
 
 
 @app.post("/api/bookings/mock", dependencies=[Depends(website)])
 def booking(body: Book, key: str = Depends(visitor), auth_user: UserProfile | None = Depends(get_current_user_optional)):
+    """Simulate booking a verified quote after re-checking rate freshness and notebook currency."""
     try:
         rates = current_rates()
     except Unavailable:
@@ -526,8 +599,399 @@ def booking(body: Book, key: str = Depends(visitor), auth_user: UserProfile | No
                 resp["confirmed_reference"] = previous["id"]
             return resp
         reference = str(uuid4())
-        conn.execute("INSERT INTO bookings(quote,id) VALUES (?,?)", (str(body.quote), reference))
+        pub_q = PublicQuote.model_validate_json(quote["public"])
+        conn.execute(
+            "INSERT INTO bookings(quote,id,status,paid_amount,policy_version) VALUES (?,?,?,?,?)",
+            (str(body.quote), reference, "confirmed", str(pub_q.deposit), "P02-2026-11-01"),
+        )
+        pay_type = "deposit" if pub_q.deposit < pub_q.total else "full"
+        conn.execute(
+            """INSERT INTO booking_payments(id, booking_id, booking_ref, visitor_id, user_id, payment_type, amount, currency, status, scenario, idempotency_key)
+               VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
+            (
+                str(uuid4()),
+                str(body.quote),
+                reference,
+                key,
+                auth_user.id if auth_user else None,
+                pay_type,
+                str(pub_q.deposit),
+                pub_q.currency,
+                "completed",
+                "success",
+                f"initial:{body.quote}",
+            ),
+        )
         return {"status": "success", "reference": reference}
+
+
+class CancelBookingInput(Strict):
+    """Structured cancellation confirmation payload."""
+
+    reason: str = Field(default="traveller_requested", max_length=200)
+
+
+@app.post("/api/bookings/{booking_ref}/cancel/preview", dependencies=[Depends(website)])
+def preview_booking_cancellation(
+    booking_ref: str,
+    key: str = Depends(visitor),
+    auth_user: UserProfile | None = Depends(get_current_user_optional),
+):
+    """Phase 1 HITL preview: compute P02 refund and persist ``pending_confirmation``."""
+    from .cancellation import evaluate_cancellation, create_pending_cancellation, find_owned_bookings
+
+    records = published_records()
+    with db() as conn:
+        conn.execute("BEGIN IMMEDIATE")
+        bookings = find_owned_bookings(conn, key, auth_user.id if auth_user else None)
+        booking = next((b for b in bookings if b["quote"] == booking_ref or b["id"] == booking_ref), None)
+        if not booking:
+            raise HTTPException(404, "Booking unavailable")
+        pq = PublicQuote.model_validate_json(booking["public"])
+        ev = evaluate_cancellation(records.get(pq.source), pq, booking)
+        req_id = create_pending_cancellation(conn, booking["quote"], key, auth_user.id if auth_user else None, ev)
+        return {
+            "confirmation_id": req_id,
+            "booking_reference": booking["id"],
+            "quote_id": booking["quote"],
+            "status": booking.get("status", "confirmed"),
+            "policy_version": ev.policy_version,
+            "paid_amount": str(ev.paid_amount),
+            "refund_amount": str(ev.refund_amount),
+            "escalate_to_staff": ev.escalate_to_staff,
+            "terms": ev.terms_summary,
+        }
+
+
+@app.post("/api/bookings/{booking_ref}/cancel", dependencies=[Depends(website)])
+def cancel_booking_endpoint(
+    booking_ref: str,
+    body: CancelBookingInput | None = None,
+    key: str = Depends(visitor),
+    auth_user: UserProfile | None = Depends(get_current_user_optional),
+):
+    """Authorized, atomic, idempotent simulated cancellation endpoint requiring Phase 1 preview."""
+    from .cancellation import execute_mock_cancellation
+
+    records = published_records()
+    with db() as conn:
+        conn.execute("BEGIN IMMEDIATE")
+        try:
+            res = execute_mock_cancellation(
+                conn,
+                booking_ref,
+                key,
+                auth_user.id if auth_user else None,
+                records,
+                reason=body.reason if body else "traveller_requested",
+                require_pending=True,
+            )
+            return res
+        except PermissionError:
+            raise HTTPException(404, "Booking unavailable") from None
+        except ValueError as exc:
+            raise HTTPException(409, str(exc)) from None
+
+
+class PayBookingInput(Strict):
+    """Simulated balance or partial payment request."""
+
+    amount: str | None = Field(default=None, max_length=32)
+    scenario: Literal["success", "failed", "pending"] = "success"
+    idempotency_key: str | None = Field(default=None, max_length=120)
+
+
+@app.post("/api/bookings/{booking_ref}/pay", dependencies=[Depends(website)])
+def pay_booking_balance(
+    booking_ref: str,
+    body: PayBookingInput,
+    key: str = Depends(visitor),
+    current_user: UserProfile = Depends(get_current_user),
+):
+    """Record an authorized, atomic, idempotent simulated payment against an owned confirmed booking."""
+    from datetime import timedelta
+    from decimal import Decimal, InvalidOperation
+    from .auth import audit_log
+    from .cancellation import find_owned_bookings
+
+    with db() as conn:
+        conn.execute("BEGIN IMMEDIATE")
+        bookings = find_owned_bookings(conn, key, current_user.id)
+        booking = next((b for b in bookings if b["quote"] == booking_ref or b["id"] == booking_ref), None)
+        if not booking:
+            raise HTTPException(404, "Booking unavailable")
+        if booking.get("status") in {"cancelled", "cancellation_pending"}:
+            raise HTTPException(409, f"Cannot record payment for booking in status '{booking.get('status')}'")
+
+        pq = PublicQuote.model_validate_json(booking["public"])
+        total = Decimal(str(pq.total))
+
+        if body.idempotency_key:
+            existing = conn.execute(
+                "SELECT * FROM booking_payments WHERE booking_id=? AND idempotency_key=?",
+                (booking["quote"], body.idempotency_key),
+            ).fetchone()
+            if existing:
+                paid_now = Decimal(str(booking.get("paid_amount") or pq.deposit))
+                return {
+                    "idempotent": True,
+                    "payment_id": existing["id"],
+                    "status": existing["status"],
+                    "amount": existing["amount"],
+                    "paid_amount": str(paid_now),
+                    "outstanding_balance": str(max(Decimal("0"), total - paid_now)),
+                }
+
+        completed_rows = conn.execute(
+            "SELECT amount FROM booking_payments WHERE booking_id=? AND status='completed'",
+            (booking["quote"],),
+        ).fetchall()
+        if completed_rows:
+            already_paid = sum((Decimal(str(r["amount"])) for r in completed_rows), Decimal("0"))
+        else:
+            already_paid = Decimal(str(booking.get("paid_amount") or pq.deposit))
+
+        outstanding = max(Decimal("0"), total - already_paid)
+        if outstanding <= 0:
+            raise HTTPException(409, "Booking is already fully paid")
+
+        if body.amount is not None:
+            try:
+                pay_amt = Decimal(body.amount.strip())
+            except (InvalidOperation, AttributeError):
+                raise HTTPException(400, "Invalid payment amount") from None
+            if pay_amt <= 0:
+                raise HTTPException(400, "Payment amount must be greater than zero")
+            if pay_amt > outstanding:
+                raise HTTPException(400, f"Payment amount USD {pay_amt} exceeds outstanding balance USD {outstanding}")
+        else:
+            pay_amt = outstanding
+
+        pay_type = "balance" if pay_amt == outstanding else "partial"
+        pay_status = "completed" if body.scenario == "success" else body.scenario
+        pay_id = str(uuid4())
+        conn.execute(
+            """INSERT INTO booking_payments(id, booking_id, booking_ref, visitor_id, user_id, payment_type, amount, currency, status, scenario, idempotency_key)
+               VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
+            (
+                pay_id,
+                booking["quote"],
+                booking["id"],
+                key,
+                current_user.id,
+                pay_type,
+                str(pay_amt),
+                pq.currency,
+                pay_status,
+                body.scenario,
+                body.idempotency_key,
+            ),
+        )
+        new_paid = already_paid + (pay_amt if pay_status == "completed" else Decimal("0"))
+        if pay_status == "completed":
+            conn.execute(
+                "UPDATE bookings SET paid_amount=?, version=version+1 WHERE quote=?",
+                (str(new_paid), booking["quote"]),
+            )
+            if pq.enquiry:
+                conn.execute(
+                    "INSERT INTO notes(enquiry, actor, body) VALUES (?, ?, ?)",
+                    (
+                        str(pq.enquiry),
+                        current_user.id,
+                        f"Simulated {pay_type} payment of {pq.currency} {pay_amt} recorded for booking {booking['id']}.",
+                    ),
+                )
+        audit_log(conn, current_user.id, f"booking_payment_{pay_status}", booking["quote"])
+        return {
+            "idempotent": False,
+            "payment_id": pay_id,
+            "status": pay_status,
+            "payment_type": pay_type,
+            "amount": str(pay_amt),
+            "paid_amount": str(new_paid),
+            "outstanding_balance": str(max(Decimal("0"), total - new_paid)),
+            "simulated": True,
+        }
+
+
+@app.get("/api/traveller/bookings")
+def traveller_bookings(
+    filter: Literal["all", "upcoming", "outstanding", "completed", "cancellation_pending", "cancelled"] = "all",
+    page: int = 1,
+    limit: int = 20,
+    key: str = Depends(visitor),
+    current_user: UserProfile = Depends(get_current_user),
+):
+    """Return owned confirmed/cancelled bookings with payment history, balances, and summary metrics."""
+    page = max(1, page)
+    limit = min(50, max(1, limit))
+    from datetime import timedelta
+    from decimal import Decimal
+    from .cancellation import find_owned_bookings
+    from .search import is_multi_day_tour
+
+    records = published_records()
+    today = as_of()
+    with db() as conn:
+        raw_bookings = find_owned_bookings(conn, key, current_user.id)
+        quote_ids = [b["quote"] for b in raw_bookings]
+        payments_by_booking: dict[str, list[dict]] = {}
+        cancels_by_booking: dict[str, dict] = {}
+        trip_by_quote: dict[str, str] = {}
+        if quote_ids:
+            placeholders = ",".join("?" for _ in quote_ids)
+            for pr in conn.execute(
+                f"SELECT id, booking_id, payment_type, amount, currency, status, scenario, created_at FROM booking_payments WHERE booking_id IN ({placeholders}) ORDER BY rowid DESC",
+                quote_ids,
+            ).fetchall():
+                payments_by_booking.setdefault(pr["booking_id"], []).append({
+                    "id": pr["id"],
+                    "payment_type": pr["payment_type"],
+                    "amount": pr["amount"],
+                    "currency": pr["currency"],
+                    "status": pr["status"],
+                    "scenario": pr["scenario"],
+                    "created_at": _utc_iso(pr["created_at"]),
+                    "simulated": True,
+                })
+            for cr in conn.execute(
+                f"SELECT * FROM cancellation_requests WHERE booking_id IN ({placeholders}) ORDER BY rowid DESC",
+                quote_ids,
+            ).fetchall():
+                if cr["booking_id"] not in cancels_by_booking:
+                    cancels_by_booking[cr["booking_id"]] = {
+                        "id": cr["id"],
+                        "status": cr["status"],
+                        "policy_version": cr["policy_version"],
+                        "paid_amount": cr["paid_amount"],
+                        "refund_amount": cr["refund_amount"],
+                        "refund_status": cr["refund_status"],
+                        "updated_at": _utc_iso(cr["updated_at"]),
+                    }
+            for tr in conn.execute(
+                f"SELECT q.id AS qid, tt.trip FROM quotes q JOIN trip_turns tt ON tt.trace = q.trace WHERE q.id IN ({placeholders})",
+                quote_ids,
+            ).fetchall():
+                trip_by_quote[tr["qid"]] = tr["trip"]
+
+    enriched = []
+    summary = {
+        "total_bookings": len(raw_bookings),
+        "upcoming_confirmed": 0,
+        "fully_paid": 0,
+        "outstanding_balance_total": Decimal("0"),
+        "cancelled": 0,
+        "pending_cancellations": 0,
+    }
+    for b in raw_bookings:
+        pq = PublicQuote.model_validate_json(b["public"])
+        tour_rec = records.get(pq.source) or {}
+        card = tour_card(tour_rec) if tour_rec else {}
+        total = Decimal(str(pq.total))
+        pay_list = payments_by_booking.get(b["quote"], [])
+        completed_sum = sum((Decimal(str(p["amount"])) for p in pay_list if p["status"] == "completed"), Decimal("0"))
+        if pay_list and completed_sum > 0:
+            paid = completed_sum
+        elif b.get("paid_amount") is not None:
+            paid = Decimal(str(b["paid_amount"]))
+        else:
+            paid = Decimal(str(pq.deposit))
+        outstanding = max(Decimal("0"), total - paid)
+        b_status = b.get("status") or "confirmed"
+        r_status = b.get("refund_status") or "none"
+
+        if r_status == "simulated_completed":
+            p_status = "simulated_refund_completed"
+        elif pay_list and pay_list[0]["status"] == "failed" and paid < total:
+            p_status = "payment_failed"
+        elif pay_list and pay_list[0]["status"] == "pending" and paid < total:
+            p_status = "payment_pending"
+        elif outstanding == 0:
+            p_status = "fully_paid"
+        elif paid <= Decimal(str(pq.deposit)):
+            p_status = "deposit_paid"
+        else:
+            p_status = "partially_paid"
+
+        if b_status == "confirmed" and pq.date >= today:
+            summary["upcoming_confirmed"] += 1
+        if b_status == "confirmed" and outstanding == 0:
+            summary["fully_paid"] += 1
+        if b_status != "cancelled":
+            summary["outstanding_balance_total"] += outstanding
+        if b_status == "cancelled":
+            summary["cancelled"] += 1
+        if b_status == "cancellation_pending":
+            summary["pending_cancellations"] += 1
+
+        is_multi = is_multi_day_tour(tour_rec) if tour_rec else (pq.deposit < pq.total)
+        balance_due_date = (pq.date - timedelta(days=30)).isoformat() if (is_multi and outstanding > 0 and b_status != "cancelled") else None
+        payment_terms = (
+            "Balance due 30 days before start date (P01)"
+            if balance_due_date
+            else ("Full payment settled" if outstanding == 0 else None)
+        )
+
+        item = {
+            "booking_reference": b["id"],
+            "quote_id": b["quote"],
+            "trip_id": trip_by_quote.get(b["quote"]),
+            "enquiry_reference": pq.enquiry_reference,
+            "tour_id": pq.source,
+            "tour_name": pq.title,
+            "tour_image": card.get("image"),
+            "duration": tour_rec.get("duration") or "",
+            "start": tour_rec.get("start") or "",
+            "destinations": tour_rec.get("destinations") or [],
+            "travel_date": pq.date.isoformat(),
+            "adults": pq.adults,
+            "ages": pq.ages,
+            "children": len(pq.ages),
+            "created_at": _utc_iso(b.get("created")),
+            "booking_status": b_status,
+            "total_amount": str(total),
+            "paid_amount": str(paid),
+            "outstanding_balance": str(outstanding),
+            "currency": pq.currency,
+            "payment_status": p_status,
+            "balance_due_date": balance_due_date,
+            "payment_terms": payment_terms,
+            "refund_amount": b.get("refund_amount"),
+            "refund_status": r_status,
+            "policy_version": b.get("policy_version") or "P02-2026-11-01",
+            "payments": pay_list,
+            "latest_cancellation": cancels_by_booking.get(b["quote"]),
+            "is_upcoming": pq.date >= today and b_status != "cancelled",
+            "is_completed": pq.date < today and b_status == "confirmed",
+        }
+        enriched.append(item)
+
+    if filter == "upcoming":
+        filtered = [x for x in enriched if x["is_upcoming"]]
+    elif filter == "outstanding":
+        filtered = [x for x in enriched if Decimal(x["outstanding_balance"]) > 0 and x["booking_status"] != "cancelled"]
+    elif filter == "completed":
+        filtered = [x for x in enriched if x["is_completed"]]
+    elif filter == "cancellation_pending":
+        filtered = [x for x in enriched if x["booking_status"] == "cancellation_pending"]
+    elif filter == "cancelled":
+        filtered = [x for x in enriched if x["booking_status"] == "cancelled"]
+    else:
+        filtered = enriched
+
+    start_idx = (page - 1) * limit
+    paged = filtered[start_idx : start_idx + limit]
+    return {
+        "summary": {
+            **summary,
+            "outstanding_balance_total": str(summary["outstanding_balance_total"]),
+        },
+        "bookings": paged,
+        "total": len(filtered),
+        "page": page,
+        "limit": limit,
+    }
 
 
 # ==============================================================================
@@ -541,6 +1005,7 @@ def register(
     request: Request,
     existing_visitor: str | None = Cookie(None, alias=COOKIE),
 ):
+    """Register a new traveller account, link any existing visitor session, and set the auth cookie."""
     email = body.email.strip().lower()
     with db() as conn:
         existing = conn.execute("SELECT id FROM users WHERE email=?", (email,)).fetchone()
@@ -557,10 +1022,13 @@ def register(
 
         ip = request.client.host if request.client else ""
         ua = request.headers.get("user-agent", "")
-        token, _ = create_user_session(conn, user_id, existing_visitor, remember=True, ip=ip, ua=ua)
+        visitor_key = ensure_user_visitor(conn, user_id, existing_visitor, remember=True)
+        token, _ = create_user_session(conn, user_id, visitor_key, remember=True, ip=ip, ua=ua)
         audit_log(conn, user_id, "register", user_id)
 
     set_auth_cookie(response, token, remember=True)
+    response.set_cookie(COOKIE, visitor_key, httponly=True, samesite="lax", max_age=2592000,
+                        secure=os.getenv("MIRA_SECURE_COOKIE") == "1")
     return UserProfile(
         id=user_id,
         email=email,
@@ -580,6 +1048,7 @@ def login(
     request: Request,
     existing_visitor: str | None = Cookie(None, alias=COOKIE),
 ):
+    """Authenticate by email/password with brute-force lockout protection and issue a session cookie."""
     email = body.email.strip().lower()
     ip = request.client.host if request.client else ""
     ua = request.headers.get("user-agent", "")
@@ -604,10 +1073,14 @@ def login(
         if ip:
             clear_failed_login(conn, ip)
 
-        token, _ = create_user_session(conn, user["id"], existing_visitor, remember=body.remember, ip=ip, ua=ua)
+        visitor_key = ensure_user_visitor(conn, user["id"], existing_visitor, remember=body.remember)
+        token, _ = create_user_session(conn, user["id"], visitor_key, remember=body.remember, ip=ip, ua=ua)
         audit_log(conn, user["id"], "login", user["id"])
 
     set_auth_cookie(response, token, remember=body.remember)
+    response.set_cookie(COOKIE, visitor_key, httponly=True, samesite="lax",
+                        max_age=2592000 if body.remember else None,
+                        secure=os.getenv("MIRA_SECURE_COOKIE") == "1")
     prefs = json.loads(user["preferences"]) if user["preferences"] else {}
     return UserProfile(
         id=user["id"],
@@ -627,6 +1100,7 @@ def logout(
     auth_token: str | None = Cookie(None, alias=AUTH_COOKIE),
     current_user: UserProfile = Depends(get_current_user),
 ):
+    """Revoke the active user session and clear both auth and visitor cookies."""
     if auth_token:
         with db() as conn:
             conn.execute("UPDATE user_sessions SET revoked=1 WHERE id=?", (auth_token,))
@@ -638,6 +1112,7 @@ def logout(
 
 @app.get("/api/auth/me")
 def me(current_user: UserProfile = Depends(get_current_user)):
+    """Return the authenticated user's profile."""
     return current_user
 
 
@@ -646,6 +1121,7 @@ def update_profile(
     body: ProfileUpdateInput,
     current_user: UserProfile = Depends(get_current_user),
 ):
+    """Update the authenticated user's name, phone, or travel preferences."""
     with db() as conn:
         updates = []
         params = []
@@ -690,6 +1166,7 @@ def change_password(
     current_user: UserProfile = Depends(get_current_user),
     auth_token: str | None = Cookie(None, alias=AUTH_COOKIE),
 ):
+    """Verify current password, store new Argon2id hash, and revoke all other sessions."""
     with db() as conn:
         user = conn.execute("SELECT password_hash FROM users WHERE id=?", (current_user.id,)).fetchone()
         if not user or not verify_password(body.current_password, user["password_hash"]):
@@ -720,6 +1197,7 @@ _REASON_LABELS = {
 
 
 def _utc_iso(ts: str | None) -> str | None:
+    """Normalize SQLite ``YYYY-MM-DD HH:MM:SS`` timestamps to UTC ISO-8601 strings."""
     if not ts:
         return None
     s = str(ts).strip()
@@ -729,6 +1207,7 @@ def _utc_iso(ts: str | None) -> str | None:
 
 
 def _enrich_enquiry(conn, row, records: dict, include_traveller: bool = False) -> dict:
+    """Hydrate a raw ``enquiries`` row with tour metadata, quote/booking status, and optional traveller PII."""
     data = dict(row)
     trip_raw = data.get("trip") or "{}"
     try:
@@ -764,6 +1243,9 @@ def _enrich_enquiry(conn, row, records: dict, include_traveller: bool = False) -
     quoted_deposit_usd = None
     mock_booking_status = None
     mock_booking_reference = None
+    booking_status = None
+    refund_amount = None
+    refund_status = None
     if data.get("quote"):
         q_row = conn.execute("SELECT public FROM quotes WHERE id=?", (data["quote"],)).fetchone()
         if q_row:
@@ -773,9 +1255,15 @@ def _enrich_enquiry(conn, row, records: dict, include_traveller: bool = False) -
                 quoted_deposit_usd = pq.get("deposit")
             except (ValueError, TypeError):
                 pass
-        b_row = conn.execute("SELECT id, created FROM bookings WHERE quote=?", (data["quote"],)).fetchone()
+        b_row = conn.execute(
+            "SELECT id, created, status, refund_amount, refund_status FROM bookings WHERE quote=?",
+            (data["quote"],),
+        ).fetchone()
         if b_row:
-            mock_booking_status = "confirmed"
+            booking_status = b_row["status"] if "status" in b_row.keys() else "confirmed"
+            refund_amount = b_row["refund_amount"] if "refund_amount" in b_row.keys() else None
+            refund_status = b_row["refund_status"] if "refund_status" in b_row.keys() else None
+            mock_booking_status = booking_status or "confirmed"
             mock_booking_reference = b_row["id"]
 
     trip_row = conn.execute("SELECT trip FROM trip_turns WHERE trace=?", (data.get("trace"),)).fetchone()
@@ -806,6 +1294,9 @@ def _enrich_enquiry(conn, row, records: dict, include_traveller: bool = False) -
         "quoted_deposit_usd": quoted_deposit_usd,
         "mock_booking_status": mock_booking_status,
         "mock_booking_reference": mock_booking_reference,
+        "booking_status": booking_status,
+        "refund_amount": refund_amount,
+        "refund_status": refund_status,
         "special_requests": data.get("contact_notes") or trip_data.get("notes") or "",
         "is_contactable": bool((data.get("contact_email") or "").strip()),
     }
@@ -849,6 +1340,7 @@ def traveller_overview(
     key: str = Depends(visitor),
     current_user: UserProfile = Depends(get_current_user),
 ):
+    """Return dashboard counts, recent quotes, enquiries, and saved trips for the signed-in traveller."""
     records = published_records()
     with db() as conn:
         total_quotes = conn.execute(
@@ -923,11 +1415,20 @@ def traveller_overview(
 
         quote_ids = [r["id"] for r in quotes_rows]
         booking_map = {}
+        booking_detail_map = {}
         trip_map = {}
         if quote_ids:
             placeholders = ",".join("?" for _ in quote_ids)
-            for br in conn.execute(f"SELECT quote, id FROM bookings WHERE quote IN ({placeholders})", quote_ids).fetchall():
+            for br in conn.execute(
+                f"SELECT quote, id, status, refund_amount, refund_status FROM bookings WHERE quote IN ({placeholders})",
+                quote_ids,
+            ).fetchall():
                 booking_map[br["quote"]] = br["id"]
+                booking_detail_map[br["quote"]] = {
+                    "booking_status": br["status"] if "status" in br.keys() else "confirmed",
+                    "refund_amount": br["refund_amount"] if "refund_amount" in br.keys() else None,
+                    "refund_status": br["refund_status"] if "refund_status" in br.keys() else None,
+                }
             for tr in conn.execute(
                 f"SELECT q.id AS qid, tt.trip FROM quotes q JOIN trip_turns tt ON tt.trace = q.trace WHERE q.id IN ({placeholders})",
                 quote_ids,
@@ -957,6 +1458,9 @@ def traveller_overview(
             "trip_id": trip_map.get(str(pq.id)),
             "enquiry_reference": pq.enquiry_reference,
             "mock_booking_reference": booking_map.get(str(pq.id)),
+            "booking_status": (booking_detail_map.get(str(pq.id)) or {}).get("booking_status"),
+            "refund_amount": (booking_detail_map.get(str(pq.id)) or {}).get("refund_amount"),
+            "refund_status": (booking_detail_map.get(str(pq.id)) or {}).get("refund_status"),
             "created": _utc_iso(q_row["created"]),
         }
         recent_quotes.append(entry)
@@ -981,6 +1485,7 @@ def traveller_quotes(
     key: str = Depends(visitor),
     current_user: UserProfile = Depends(get_current_user),
 ):
+    """List up to 50 quotes for the authenticated traveller with live rate-freshness flags."""
     with db() as conn:
         rows = conn.execute(
             """SELECT * FROM quotes 
@@ -1008,6 +1513,7 @@ def traveller_enquiries(
     key: str = Depends(visitor),
     current_user: UserProfile = Depends(get_current_user),
 ):
+    """List up to 50 enriched enquiries belonging to the authenticated traveller."""
     records = published_records()
     with db() as conn:
         enquiries_rows = conn.execute(
@@ -1026,6 +1532,8 @@ def traveller_enquiries(
 # ==============================================================================
 
 class ContactEnquiryInput(Strict):
+    """Traveller contact-request payload to attach contact details or create a new specialist enquiry."""
+
     enquiry_id: str | None = None
     quote_id: str | None = None
     trip_id: str | None = None
@@ -1046,6 +1554,7 @@ def submit_contact_enquiry(
     key: str = Depends(visitor),
     auth_user: UserProfile | None = Depends(get_current_user_optional),
 ):
+    """Attach contact details to an existing session enquiry/quote or create a new contactable enquiry."""
     email_clean = body.email.strip().lower()
     if not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", email_clean):
         raise HTTPException(422, "Please provide a valid email address")
@@ -1154,6 +1663,7 @@ def visitor_enquiry(
     key: str = Depends(visitor),
     auth_user: UserProfile | None = Depends(get_current_user_optional),
 ):
+    """Fetch a single enquiry by UUID or ``ENQ-...`` reference, scoped to the caller's session/user."""
     records = published_records()
     user_id = auth_user.id if auth_user else ""
     with db() as conn:
@@ -1190,6 +1700,7 @@ def visitor_enquiry(
 
 @app.get("/api/staff/traces/{trace}")
 def staff_trace(trace: UUID, _: str = Depends(role)):
+    """Return recorded stage events for a completed or failed trace UUID (staff-only)."""
     with db() as conn:
         row = conn.execute("""SELECT events FROM traces WHERE id=? UNION ALL
             SELECT events FROM failed_traces WHERE id=? LIMIT 1""", (str(trace), str(trace))).fetchone()
@@ -1200,6 +1711,7 @@ def staff_trace(trace: UUID, _: str = Depends(role)):
 
 @app.get("/api/staff/evaluation")
 def evaluation(_: str = Depends(role)):
+    """Return the latest offline evaluation JSON report if present."""
     from pathlib import Path
     path = Path(os.getenv("MIRA_EVAL_REPORT", "evals/report/report.json"))
     if not path.is_file():
@@ -1209,6 +1721,7 @@ def evaluation(_: str = Depends(role)):
 
 @app.get("/api/staff/dashboard/overview")
 def dashboard_overview(_: str = Depends(role)):
+    """Return aggregate enquiry, approval, and recent audit counters for the staff dashboard."""
     with db() as conn:
         total_enquiries = conn.execute("SELECT COUNT(*) FROM enquiries").fetchone()[0]
         open_enquiries = conn.execute(
@@ -1269,6 +1782,7 @@ def enquiries(
     offset: int = 0,
     _: str = Depends(role),
 ):
+    """Filter, sort, and paginate staff enquiries, returning total count in ``X-Total-Count``."""
     records = published_records()
     safe_limit = max(1, min(limit, 200))
     safe_offset = max(0, offset)
@@ -1318,6 +1832,7 @@ def enquiries(
 
 @app.get("/api/staff/enquiries/{key}")
 def enquiry(key: str, _: str = Depends(role)):
+    """Return full staff enquiry detail including trace events, internal finance, notes, and quote history."""
     key_str = key.strip()
     records = published_records()
     with db() as conn:
@@ -1380,6 +1895,8 @@ def enquiry(key: str, _: str = Depends(role)):
 
 
 class FollowUp(Strict):
+    """Staff enquiry status transition, assignment, follow-up date, and PII-free internal note."""
+
     status: Literal[
         "new",
         "in_review",
@@ -1402,6 +1919,7 @@ _TERMINAL_ENQUIRY_STATUSES = {"booked", "closed", "closed_lost", "unqualified"}
 
 @app.patch("/api/staff/enquiries/{key}", dependencies=[Depends(website)])
 def follow_up(key: str, body: FollowUp, actor: str = Depends(role)):
+    """Update enquiry status/assignment/follow-up, enforcing lifecycle rules and PII-free notes."""
     key_str = key.strip()
     if re.search(r"@|(?:\d[ .-]*){7}", body.note):
         raise HTTPException(422, "Use a note without personal details")
@@ -1462,6 +1980,7 @@ def follow_up(key: str, body: FollowUp, actor: str = Depends(role)):
 
 @app.get("/api/staff/users/assignable")
 def assignable_staff(_: str = Depends(role)):
+    """List active staff, approver, and admin users eligible for enquiry assignment."""
     with db() as conn:
         rows = conn.execute(
             "SELECT id, full_name, email, role FROM users WHERE role IN ('staff', 'approver', 'admin') AND status='active' ORDER BY full_name"
@@ -1474,16 +1993,21 @@ def assignable_staff(_: str = Depends(role)):
 # ==============================================================================
 
 class DraftCommand(Strict):
+    """Content Studio request specifying a destination-grounded draft prompt."""
+
     command: str = Field(min_length=5, max_length=300)
 
 
 class DraftText(Strict):
+    """Sanitized draft title and body produced by Gemini or extractive fallback."""
+
     title: str = Field(min_length=4, max_length=100)
     body: str = Field(min_length=20, max_length=2000)
 
 
 @app.post("/api/staff/drafts", dependencies=[Depends(website)])
 def generate(body: DraftCommand, actor: str = Depends(role)):
+    """Generate a source-grounded Content Studio draft for a published destination."""
     if actor not in {"staff", "editor", "approver", "admin"}:
         raise HTTPException(403, "Editor access required")
     records = [row for row in published_records().values() if row["type"] == "destination"]
@@ -1514,6 +2038,7 @@ def generate(body: DraftCommand, actor: str = Depends(role)):
 
 @app.get("/api/staff/drafts")
 def drafts(actor: str = Depends(role)):
+    """List up to 100 Content Studio drafts with normalized UTC timestamps."""
     if actor not in {"staff", "editor", "approver", "admin"}:
         raise HTTPException(403, "Editor access required")
     with db() as conn:
@@ -1529,12 +2054,15 @@ def drafts(actor: str = Depends(role)):
 
 
 class DraftReviewInput(Strict):
+    """Approver review decision (approve, request_revision, or reject) with optional notes."""
+
     action: Literal["approve", "request_revision", "reject"]
     notes: str = Field(default="", max_length=1000)
 
 
 @app.post("/api/staff/drafts/{key}/review", dependencies=[Depends(website)])
 def review_draft(key: str, body: DraftReviewInput, actor: str = Depends(role)):
+    """Record an approver's review decision on an unpublished Content Studio draft."""
     if actor != "approver":
         raise HTTPException(403, "Approver access required")
     status_map = {
@@ -1558,6 +2086,7 @@ def review_draft(key: str, body: DraftReviewInput, actor: str = Depends(role)):
 
 @app.post("/api/staff/drafts/{key}/publish", dependencies=[Depends(website)])
 def publish(key: str, actor: str = Depends(role)):
+    """Publish a draft or approved Content Studio item so it appears in ``published_records()``."""
     if actor != "approver":
         raise HTTPException(403, "Approver access required")
     with db() as conn:
@@ -1573,12 +2102,14 @@ def publish(key: str, actor: str = Depends(role)):
 
 @app.get("/api/staff/audit")
 def audit(_: str = Depends(role)):
+    """Return the 100 most recent append-only audit log entries for staff."""
     with db() as conn:
         return [dict(row) | {"created": _utc_iso(row["created"])} for row in conn.execute("SELECT * FROM audit ORDER BY id DESC LIMIT 100")]
 
 
 @app.get("/api/staff/me")
 def staff_identity(actor: str = Depends(role), current_user: UserProfile | None = Depends(get_current_user_optional)):
+    """Return the active staff caller's role and profile metadata (if cookie-authenticated)."""
     if current_user:
         return {
             "role": current_user.role,
@@ -1595,6 +2126,7 @@ def staff_identity(actor: str = Depends(role), current_user: UserProfile | None 
 
 @app.get("/api/admin/users")
 def list_users(search: str = "", role_filter: str = "", status_filter: str = "", actor: str = Depends(role)):
+    """Admin-only user directory with optional search, role, and status filters."""
     if actor != "admin":
         raise HTTPException(403, "Admin access required")
     with db() as conn:
@@ -1623,6 +2155,8 @@ def list_users(search: str = "", role_filter: str = "", status_filter: str = "",
 
 
 class AdminUserUpdate(Strict):
+    """Admin-only payload to change a user's RBAC role or active/deactivated status."""
+
     role: Literal["guest", "traveller", "staff", "approver", "admin"] | None = None
     status: Literal["active", "deactivated"] | None = None
 
@@ -1634,6 +2168,7 @@ def update_user(
     actor: str = Depends(role),
     current_user: UserProfile | None = Depends(get_current_user_optional),
 ):
+    """Update a user's role/status (preventing self-demotion/deactivation) and revoke sessions if deactivated."""
     if actor != "admin":
         raise HTTPException(403, "Admin access required")
     uid_str = str(user_id)
@@ -1675,6 +2210,7 @@ def update_user(
 
 @app.get("/api/admin/audit")
 def admin_audit(actor: str = Depends(role)):
+    """Admin-only view of the 100 most recent append-only audit log records."""
     if actor != "admin":
         raise HTTPException(403, "Admin access required")
     with db() as conn:
@@ -1705,6 +2241,8 @@ from datetime import date as _Date
 
 
 class PricingPreviewInput(Strict):
+    """Input configuration for the read-only staff pricing preview calculator."""
+
     tour_id: str = Field(min_length=1, max_length=64)
     date: _Date
     adults: int = Field(ge=1, le=100)
@@ -1714,6 +2252,7 @@ class PricingPreviewInput(Strict):
 
 @app.post("/api/staff/pricing/preview", dependencies=[Depends(website)])
 def staff_pricing_preview(body: PricingPreviewInput, _: str = Depends(role)):
+    """Evaluate live tour pricing and internal LKR/margin breakdown for staff without writing to SQLite."""
     if any(not 0 <= a <= 120 for a in body.child_ages):
         raise HTTPException(422, "Child ages must be between 0 and 120.")
     if len(body.child_ages) + body.infants > 30:
