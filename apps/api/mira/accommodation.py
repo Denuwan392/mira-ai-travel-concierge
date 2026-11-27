@@ -9,6 +9,8 @@ from typing import NamedTuple, Optional
 
 
 class HotelInfo(NamedTuple):
+    """Lightweight reference pairing a hotel display name with its source tour ID."""
+
     name: str
     source_tour_id: str
 

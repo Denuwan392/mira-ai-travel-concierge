@@ -7,11 +7,13 @@ down_revision = "0005_enquiry_metadata"
 
 
 def _existing_columns(conn, table: str) -> set[str]:
+    """Return the set of column names currently defined on ``table``."""
     rows = conn.execute(sa.text(f"PRAGMA table_info({table})")).fetchall()
     return {row[1] for row in rows}
 
 
 def upgrade():
+    """Add contact fields, ``is_contactable``, and ``enquiry_type`` to ``enquiries`` and backfill."""
     conn = op.get_bind()
     cols = _existing_columns(conn, "enquiries")
 

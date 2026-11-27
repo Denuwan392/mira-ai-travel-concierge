@@ -34,12 +34,18 @@ COLORS = {
 }
 
 STAGE_COLORS = {
+    "REQUEST": 36,   # cyan
     "INTENT": 35,    # purple (AGENT)
+    "LLM": 33,       # yellow
     "RAG": 36,       # teal (RAG)
+    "ROUTE": 34,     # blue
+    "FALLBACK": 33,  # amber/yellow
     "PRICE": 33,     # yellow (PRICING)
+    "COMPOSE": 32,   # green
     "GROUND": 36,    # teal (RAG)
     "UI": 32,        # green (UI)
     "TRACE": 35,     # magenta (TRACE)
+    "SUMMARY": 35,   # magenta
     "DONE": 32,      # green
     "FAILED": 31,    # red
     "ERROR": 31,     # red
@@ -77,9 +83,17 @@ INTENT_TITLES = {
 WORKFLOW_EVENTS = {
     "workflow.started",
     "intent.classified",
+    "gemini.started",
+    "gemini.completed",
+    "gemini.failed",
+    "gemini.fallback",
+    "gemini.unconfigured",
     "retrieval.completed",
+    "routing.selected",
+    "fallback.triggered",
     "pricing.started",
     "pricing.completed",
+    "compose.completed",
     "grounding.completed",
     "ui.validated",
     "turn.persisted",
@@ -93,26 +107,54 @@ WORKFLOW_EVENTS = {
 }
 
 
-SENSITIVE_KEY_SUBSTRINGS = ("token", "secret", "password", "bearer", "auth", "cost_lkr", "private", "credential")
+SENSITIVE_KEY_SUBSTRINGS = (
+    "token",
+    "secret",
+    "password",
+    "bearer",
+    "auth",
+    "cost_lkr",
+    "private",
+    "credential",
+    "api_key",
+    "apikey",
+    "cookie",
+    "gross_profit",
+    "margin",
+)
 
 
 def is_sensitive_key(key: str) -> bool:
+    """Return True if ``key`` looks like a credential, secret, or internal margin field."""
     k = key.lower()
     return any(sub in k for sub in SENSITIVE_KEY_SUBSTRINGS)
 
 
 def sanitize_value(val):
+    """Recursively redact emails, API keys, Bearer tokens, and sensitive fields from log values."""
+    import re
+    if isinstance(val, dict):
+        return {
+            k: ("[REDACTED]" if is_sensitive_key(str(k)) else sanitize_value(v))
+            for k, v in val.items()
+        }
+    if isinstance(val, list):
+        return [sanitize_value(item) for item in val]
+    if isinstance(val, tuple):
+        return tuple(sanitize_value(item) for item in val)
     if isinstance(val, str):
         if "@" in val:
-            import re
             val = re.sub(r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+", "[REDACTED_EMAIL]", val)
         if "Bearer " in val:
-            import re
             val = re.sub(r"Bearer\s+\S+", "Bearer [REDACTED]", val)
+        val = re.sub(r"\bAIza[0-9A-Za-z_-]{20,}\b", "[REDACTED_API_KEY]", val)
+        val = re.sub(r"\b(?:sk|pk)-[0-9A-Za-z_-]{16,}\b", "[REDACTED_KEY]", val)
+        val = re.sub(r"(?i)\b(token|api_key|apikey|password|secret)=([^\s&\"']+)", r"\1=[REDACTED]", val)
     return val
 
 
 def shorten_id(val: str | None, debug: bool = False) -> str:
+    """Abbreviate UUIDs to 8 characters in non-debug pretty logs for readability."""
     if not val:
         return ""
     s = str(val)
@@ -125,25 +167,31 @@ def shorten_id(val: str | None, debug: bool = False) -> str:
 
 
 def colorize(text: str, code: int | str, enabled: bool) -> str:
+    """Wrap ``text`` in an ANSI escape sequence when terminal color is enabled."""
     if not enabled:
         return text
     return f"\033[{code}m{text}\033[0m"
 
 
 def truncate(text: str, max_len: int = 120) -> str:
+    """Clamp a single-line log string to ``max_len`` characters."""
     if len(text) <= max_len:
         return text
     return f"{text[:max_len - 1]}…"
 
 
 class Formatter(logging.Formatter):
+    """Formats Mira log records as structured JSON or compact ANSI-colored console lines."""
+
     def __init__(self, style="pretty", color=False, debug=False):
+        """Initialize formatter with output ``style`` ('pretty' or 'json'), ``color``, and ``debug``."""
         super().__init__()
         self.style = style
         self.color = color if style != "json" else False
         self.debug = debug
 
     def format(self, record):
+        """Normalize framework/Mira log records and render JSON or pretty output."""
         fields = getattr(record, "mira_fields", {})
         component = getattr(record, "mira_component", "API")
         if not hasattr(record, "mira_fields"):
@@ -174,18 +222,29 @@ class Formatter(logging.Formatter):
         timestamp = datetime.fromtimestamp(record.created, timezone.utc)
 
         if self.style == "json":
+            safe_fields = {
+                k: sanitize_value(v)
+                for k, v in fields.items()
+                if not is_sensitive_key(k)
+            }
+            safe_context = {
+                k: sanitize_value(v)
+                for k, v in context.items()
+                if not is_sensitive_key(k)
+            }
             return json.dumps({
                 "timestamp": timestamp.isoformat(timespec="milliseconds"),
                 "level": record.levelname,
                 "component": component,
                 "event": message,
-                **fields,
-                **context
+                **safe_fields,
+                **safe_context,
             }, ensure_ascii=True)
 
         return self.format_pretty_record(record, component, message, fields, context, timestamp)
 
     def format_pretty_record(self, record, component, message, fields, context, timestamp):
+        """Render a single non-workflow log record in human-readable console format."""
         time_str = f"{timestamp.astimezone():%H:%M:%S}"
         raw_label = f"[{component}]"
         label_str = f"{raw_label:<8}"
@@ -294,7 +353,23 @@ class Formatter(logging.Formatter):
         line = f"{time_str}  {label_display} {message}" + (f" · {details}" if details else "")
         return truncate(line)
 
+    def _append_debug_details(self, lines, indent, pipe, fields, keys):
+        """Append indented DEBUG sub-lines for selected sanitized fields."""
+        if not self.debug:
+            return
+        for key in keys:
+            if key not in fields or fields[key] is None or is_sensitive_key(key):
+                continue
+            val = sanitize_value(fields[key])
+            if val == "" or val == [] or val == {}:
+                continue
+            rendered = val if isinstance(val, str) else json.dumps(val, ensure_ascii=True)
+            rendered = truncate(rendered.replace("\n", " "), max_len=240)
+            key_label = colorize(f"{key}:", "90", self.color)
+            lines.append(f"{indent}{pipe}   {key_label} {rendered}")
+
     def format_workflow(self, records: list[logging.LogRecord]) -> str:
+        """Render a buffered sequence of workflow events as an ASCII tree block."""
         if not records:
             return ""
 
@@ -307,10 +382,13 @@ class Formatter(logging.Formatter):
 
         title = None
         trace_val = None
+        req_val = None
         for r in records:
             ctx = getattr(r, "mira_context", {})
             if "trace_id" in ctx and not trace_val:
                 trace_val = ctx["trace_id"]
+            if "request_id" in ctx and not req_val:
+                req_val = ctx["request_id"]
             fields = getattr(r, "mira_fields", {})
             if fields.get("notebook"):
                 title = "Journey notebook"
@@ -325,7 +403,22 @@ class Formatter(logging.Formatter):
         for r in records:
             msg = r.msg
             fields = getattr(r, "mira_fields", {})
-            if msg == "intent.classified":
+            if msg == "workflow.started":
+                if fields.get("request_type") or self.debug:
+                    req_type = fields.get("request_type") or ("notebook" if fields.get("notebook") else "chat")
+                    req_id = fields.get("request_id") or req_val or ""
+                    req_str = f" · req: {shorten_id(req_id, debug=self.debug)}" if req_id else ""
+                    msg_preview = fields.get("user_message")
+                    msg_part = f" · {truncate(str(sanitize_value(msg_preview)), 50)!r}" if msg_preview else ""
+                    text = f"{req_type}{req_str}{msg_part}"
+                    tag = colorize(f"{'REQUEST':<8}", STAGE_COLORS["REQUEST"], self.color)
+                    lines.append(f"{indent}{mid_branch} {tag} {truncate(text)}")
+                    self._append_debug_details(
+                        lines, indent, pipe, fields,
+                        ("user_message", "request_type", "request_id", "trace_id", "session_context"),
+                    )
+
+            elif msg == "intent.classified":
                 intent_val = fields.get("intent", "")
                 party_val = fields.get("party_type", "")
                 intent_name = INTENT_TITLES.get(intent_val, intent_val.replace("_", " ").capitalize())
@@ -333,6 +426,32 @@ class Formatter(logging.Formatter):
                 text = f"{intent_name} · {party_name}" if party_name else intent_name
                 tag = colorize(f"{'INTENT':<8}", STAGE_COLORS["INTENT"], self.color)
                 lines.append(f"{indent}{mid_branch} {tag} {truncate(text)}")
+                self._append_debug_details(
+                    lines, indent, pipe, fields,
+                    ("intent", "named_tour", "matched_rules", "entities", "preferences", "previous_context", "updated_context", "duration_ms"),
+                )
+
+            elif msg in {"gemini.completed", "gemini.failed", "gemini.unconfigured"}:
+                op = fields.get("operation", "LLM")
+                model = fields.get("model", "unconfigured")
+                dur = fields.get("duration_ms")
+                dur_str = f" · {dur}ms" if dur is not None else ""
+                if msg == "gemini.unconfigured":
+                    text = f"{op} · skipped (unconfigured)"
+                elif msg == "gemini.failed":
+                    err = fields.get("failure_reason") or fields.get("exception_type") or "error"
+                    text = f"{model} · {op} · failed ({err}){dur_str}"
+                else:
+                    usage = fields.get("token_usage") or {}
+                    tok_str = f" · {usage['total']} tok" if "total" in usage else ""
+                    val_str = f" · schema:{fields['schema_validation']}" if fields.get("schema_validation") else ""
+                    text = f"{model} · {op}{val_str}{tok_str}{dur_str}"
+                tag = colorize(f"{'LLM':<8}", STAGE_COLORS["LLM"], self.color)
+                lines.append(f"{indent}{mid_branch} {tag} {truncate(text)}")
+                self._append_debug_details(
+                    lines, indent, pipe, fields,
+                    ("model", "operation", "input_prompt", "structured_output", "schema_validation", "token_usage", "retries", "failure_reason", "duration_ms"),
+                )
 
             elif msg == "retrieval.completed":
                 sources = fields.get("sources", [])
@@ -342,6 +461,34 @@ class Formatter(logging.Formatter):
                 text = f"Retrieved {src_str} · {doc_str}"
                 tag = colorize(f"{'RAG':<8}", STAGE_COLORS["RAG"], self.color)
                 lines.append(f"{indent}{mid_branch} {tag} {truncate(text)}")
+                self._append_debug_details(
+                    lines, indent, pipe, fields,
+                    ("query", "constraints", "keywords", "tags", "candidates", "ranking_scores", "sources", "selection_reasoning", "duration_ms"),
+                )
+
+            elif msg == "routing.selected":
+                edge = fields.get("edge", "")
+                reason = fields.get("reason", "")
+                text = f"{edge}" + (f" · {reason}" if reason else "")
+                tag = colorize(f"{'ROUTE':<8}", STAGE_COLORS["ROUTE"], self.color)
+                lines.append(f"{indent}{mid_branch} {tag} {truncate(text)}")
+                self._append_debug_details(
+                    lines, indent, pipe, fields,
+                    ("edge", "conditions", "reason"),
+                )
+
+            elif msg in {"fallback.triggered", "gemini.fallback"}:
+                trigger = fields.get("trigger") or fields.get("operation") or "fallback"
+                method = fields.get("fallback_method", "deterministic")
+                recs = fields.get("recommendations")
+                rec_str = f" -> {','.join(recs)}" if isinstance(recs, list) and recs else ""
+                text = f"{trigger} · {method}{rec_str}"
+                tag = colorize(f"{'FALLBACK':<8}", STAGE_COLORS["FALLBACK"], self.color)
+                lines.append(f"{indent}{mid_branch} {tag} {truncate(text)}")
+                self._append_debug_details(
+                    lines, indent, pipe, fields,
+                    ("trigger", "rejected_output", "fallback_method", "recommendations"),
+                )
 
             elif msg == "pricing.completed":
                 tour_id = fields.get("tour_id", "")
@@ -356,6 +503,22 @@ class Formatter(logging.Formatter):
                     text = f"Quote {status} · {tour_id}{rule_str}{dur_str}"
                 tag = colorize(f"{'PRICE':<8}", STAGE_COLORS["PRICE"], self.color)
                 lines.append(f"{indent}{mid_branch} {tag} {truncate(text)}")
+                self._append_debug_details(
+                    lines, indent, pipe, fields,
+                    ("inputs", "matched_rows", "business_rules", "validation_outcomes", "calculation_stages", "public_quote", "duration_ms"),
+                )
+
+            elif msg == "compose.completed":
+                branch = fields.get("branch", "default")
+                srcs = fields.get("sources", [])
+                ctypes = fields.get("component_types", [])
+                text = f"{branch} · {len(srcs)} src · {len(ctypes)} components"
+                tag = colorize(f"{'COMPOSE':<8}", STAGE_COLORS["COMPOSE"], self.color)
+                lines.append(f"{indent}{mid_branch} {tag} {truncate(text)}")
+                self._append_debug_details(
+                    lines, indent, pipe, fields,
+                    ("branch", "sources", "component_types", "generated_text", "duration_ms"),
+                )
 
             elif msg == "grounding.completed":
                 sources = fields.get("sources", [])
@@ -383,10 +546,18 @@ class Formatter(logging.Formatter):
                 text = " · ".join(parts)
                 tag = colorize(f"{'TRACE':<8}", STAGE_COLORS["TRACE"], self.color)
                 lines.append(f"{indent}{mid_branch} {tag} {truncate(text)}")
+                self._append_debug_details(
+                    lines, indent, pipe, fields,
+                    ("db_operations", "saved_records", "replay_detected", "transaction_result", "duration_ms"),
+                )
 
             elif msg == "turn.replayed":
                 tag = colorize(f"{'TRACE':<8}", STAGE_COLORS["TRACE"], self.color)
                 lines.append(f"{indent}{mid_branch} {tag} Turn replayed from cache")
+                self._append_debug_details(
+                    lines, indent, pipe, fields,
+                    ("replay_detected", "stale_quote_stripped", "saved_records", "transaction_result"),
+                )
 
             elif msg == "trace.export_failed":
                 tag = colorize(f"{'TRACE':<8}", STAGE_COLORS["TRACE"], self.color)
@@ -398,11 +569,25 @@ class Formatter(logging.Formatter):
                 tag = colorize(f"{'ERROR':<8}", STAGE_COLORS["ERROR"], self.color)
                 lines.append(f"{indent}{mid_branch} {tag} {truncate(text)}")
 
+        finish_record = next((r for r in reversed(records) if r.msg == "workflow.finished"), None)
+        finish_fields = finish_record.mira_fields if finish_record and hasattr(finish_record, "mira_fields") else {}
+        if finish_fields.get("execution_path") is not None or (self.debug and finish_fields):
+            path_str = " -> ".join(finish_fields.get("execution_path", [])) or "none"
+            llm_calls = finish_fields.get("llm_calls", 0)
+            warns = len(finish_fields.get("warnings", []))
+            errs = len(finish_fields.get("errors", []))
+            sum_text = f"path: {path_str} · llm: {llm_calls} · warn: {warns} · err: {errs}"
+            tag = colorize(f"{'SUMMARY':<8}", STAGE_COLORS["SUMMARY"], self.color)
+            lines.append(f"{indent}{mid_branch} {tag} {truncate(sum_text)}")
+            self._append_debug_details(
+                lines, indent, pipe, finish_fields,
+                ("execution_path", "llm_calls", "node_durations", "duration_ms", "warnings", "errors"),
+            )
+
         lines.append(f"{indent}{pipe}")
 
-        finish_record = next((r for r in reversed(records) if r.msg == "workflow.finished"), None)
-        outcome = finish_record.mira_fields.get("outcome", "completed") if finish_record and hasattr(finish_record, "mira_fields") else "completed"
-        dur = finish_record.mira_fields.get("duration_ms") if finish_record and hasattr(finish_record, "mira_fields") else None
+        outcome = finish_fields.get("outcome", "completed")
+        dur = finish_fields.get("duration_ms")
 
         dur_str = f"{dur}ms" if dur is not None else ""
         trace_str = shorten_id(trace_val, debug=self.debug)
@@ -421,7 +606,10 @@ class Formatter(logging.Formatter):
 
 
 class ConsoleHandler(logging.StreamHandler):
+    """Thread-safe stream handler that groups per-trace workflow logs into tree blocks."""
+
     def __init__(self, stream=None, style="pretty", debug=False):
+        """Initialize handler and per-trace buffer map."""
         super().__init__(stream or sys.stderr)
         self.style = style
         self.debug = debug
@@ -429,8 +617,9 @@ class ConsoleHandler(logging.StreamHandler):
         self._lock = threading.Lock()
 
     def emit(self, record):
+        """Buffer workflow records by ``trace_id`` in pretty mode; emit immediately otherwise."""
         try:
-            if self.style == "json" or self.debug:
+            if self.style == "json":
                 msg = self.format(record)
                 self.stream.write(msg + self.terminator)
                 self.flush()
@@ -443,7 +632,7 @@ class ConsoleHandler(logging.StreamHandler):
 
             is_workflow_msg = (
                 trace and (
-                    component in {"AGENT", "RAG", "PRICING", "TRACE"} or
+                    component in {"AGENT", "RAG", "PRICING", "TRACE", "LLM"} or
                     msg_name in WORKFLOW_EVENTS or
                     (component == "ERROR" and isinstance(msg_name, str) and (msg_name.startswith("workflow.") or msg_name.startswith("turn.")))
                 )
@@ -483,6 +672,7 @@ class ConsoleHandler(logging.StreamHandler):
             self.handleError(record)
 
     def flush_all(self):
+        """Flush any incomplete workflow buffers (e.g. on process exit)."""
         with self._lock:
             for trace, records in list(self._buffers.items()):
                 try:
@@ -498,6 +688,7 @@ class ConsoleHandler(logging.StreamHandler):
 
 
 def configure():
+    """Configure root logging, Uvicorn loggers, and noisy third-party log levels."""
     mode = os.getenv("LOG_FORMAT", "pretty").lower()
     level_name = os.getenv("LOG_LEVEL", "INFO").upper()
     is_debug = level_name == "DEBUG"
@@ -524,24 +715,32 @@ def configure():
     access_logger.propagate = False
     access_logger.setLevel(logging.WARNING)
 
-    for name in ("httpx", "httpx2", "httpcore", "google_genai", "opentelemetry", "langfuse", "alembic"):
+    for name in ("httpx", "httpx2", "httpcore", "google_genai", "opentelemetry", "langfuse", "alembic", "asyncio"):
         logging.getLogger(name).setLevel(logging.WARNING)
 
 
 def correlation():
+    """Return active ``request_id`` and ``trace_id`` context vars, omitting unset keys."""
     return {k: v for k, v in {"request_id": request_id.get(), "trace_id": trace_id.get()}.items() if v}
 
 
 def event(component, name, *, level=logging.INFO, exception=False, **fields):
+    """Emit a structured Mira log event tagged with ``component`` and correlation IDs."""
+    safe_fields = {
+        k: ("[REDACTED]" if is_sensitive_key(k) else sanitize_value(v))
+        for k, v in fields.items()
+    }
     logging.getLogger(f"mira.{component.lower()}").log(
-        level, name, exc_info=exception, extra={"mira_component": component, "mira_fields": fields, "mira_context": correlation()})
+        level, name, exc_info=exception, extra={"mira_component": component, "mira_fields": safe_fields, "mira_context": correlation()})
 
 
 def elapsed(start):
+    """Return elapsed wall-clock milliseconds since ``perf_counter()`` timestamp ``start``."""
     return round((perf_counter() - start) * 1000)
 
 
 def valid_id(value):
+    """Return canonical UUID string if ``value`` is a 36-char UUID, else ``None``."""
     try:
         return str(UUID(value)) if value and len(value) == 36 else None
     except ValueError:
@@ -549,10 +748,14 @@ def valid_id(value):
 
 
 class RequestLogging:
+    """ASGI middleware that assigns ``request_id``, propagates ``x-trace-id``, and logs HTTP requests."""
+
     def __init__(self, app):
+        """Wrap the downstream ASGI application."""
         self.app = app
 
     async def __call__(self, scope, receive, send):
+        """Instrument HTTP requests with timing, correlation IDs, and 500 fallback handling."""
         if scope["type"] != "http":
             return await self.app(scope, receive, send)
         supplied = next((v.decode("latin1") for k, v in scope["headers"] if k == b"x-request-id"), None)

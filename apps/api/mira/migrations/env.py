@@ -1,3 +1,4 @@
+"""Alembic migration environment configured to reuse ``store.init()``'s SQLite connection."""
 from alembic import context
 
 connection = context.config.attributes["connection"]
