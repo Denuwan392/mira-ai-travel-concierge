@@ -53,16 +53,21 @@ export async function run(
     initialMessages: [{ id: runId, role: "user", content: prompt }],
   });
   let result: Entry | undefined;
+  let runError: string | undefined;
   await agent.runAgent(
     { runId, abortController: signal },
     {
       onTextMessageContentEvent: ({ textMessageBuffer }) => progress(textMessageBuffer),
+      onRunErrorEvent: ({ event }) => {
+        if (event?.message) runError = event.message;
+      },
       onStateChanged: ({ state }) => {
         if (state?.["turn"] && state["surface"])
           result = entry(prompt, state["turn"], state["surface"]);
       },
     },
   );
+  if (runError) throw Error(runError);
   if (!result) throw Error("Mira couldn’t finish this turn. Retry to recover it.");
   return result;
 }

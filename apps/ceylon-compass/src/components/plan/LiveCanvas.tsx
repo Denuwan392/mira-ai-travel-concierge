@@ -158,6 +158,47 @@ export function LiveCanvas({
         );
       case "InteractiveMap":
         return <RouteMap value={c} onSelectDay={(index) => send("@day " + (index + 1))} busy={busy} />;
+      case "CancellationPreview":
+        return (
+          <article className="live-card">
+            <small>{c.policy_title}</small>
+            <h3>{c.tour_title}</h3>
+            <p>{c.terms}</p>
+            <p>
+              Paid: <strong>{c.paid_amount}</strong> · Estimated simulated refund: <strong>{c.refund_amount}</strong>
+            </p>
+            {c.requires_confirmation && (
+              <div className="fields">
+                <button
+                  className="gold"
+                  disabled={busy}
+                  onClick={() => send(JSON.stringify({ type: "CONFIRM_CANCELLATION", payload: { targetId: c.target_id } }))}
+                >
+                  Confirm cancellation
+                </button>
+                <button
+                  className="pill"
+                  disabled={busy}
+                  onClick={() => send(JSON.stringify({ type: "DECLINE_CANCELLATION", payload: {} }))}
+                >
+                  Keep booking
+                </button>
+              </div>
+            )}
+          </article>
+        );
+      case "CancellationStatus":
+        return (
+          <article className="live-card">
+            <small>Cancellation status · {c.status}</small>
+            <p>{c.summary}</p>
+            {c.refund_status !== "none" && (
+              <p>
+                Simulated refund: <strong>{c.refund_amount}</strong> ({c.refund_status})
+              </p>
+            )}
+          </article>
+        );
       case "TourCard": {
         const photo = tourPhotos[c.id];
         return (

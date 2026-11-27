@@ -91,8 +91,14 @@ function Planner() {
       setPending("");
       request.current = null;
       if (seed) void navigate({ replace: true, search: { id: params.id } });
-    } catch {
-      setError("Mira could not finish this turn. Retry to recover the same request.");
+    } catch (cause: unknown) {
+      const msg = cause instanceof Error ? cause.message : "";
+      if (msg.includes("Start a visitor session") || msg.includes("Journey unavailable")) {
+        request.current = null;
+        setError("Your session changed. Refresh or start a new trip to continue.");
+      } else {
+        setError(msg || "Mira could not finish this turn. Retry to recover the same request.");
+      }
     } finally {
       clearTimeout(timeout);
       lock.current = false;
