@@ -1,3 +1,4 @@
+"""Workflow tests for family holiday clarification, grounded custom plans, and package switching."""
 import json
 import sqlite3
 from uuid import uuid4
@@ -7,6 +8,7 @@ from mira.provider import NotebookIntent
 
 
 def _send(client, trip_id: str, content: str, run_id: str | None = None):
+    """Post a turn to ``/api/agent`` for ``trip_id`` and return the ``turn`` snapshot dict."""
     rid = run_id or str(uuid4())
     resp = client.post(
         "/api/agent",
@@ -74,6 +76,7 @@ def test_complete_family_request_builds_grounded_itinerary_without_unrelated_car
     assert enq_count == 1
 
 def test_custom_to_published_package_preserves_only_current_quote_requirements(app_client):
+    """Verify switching from a custom proposal to a published package clears custom state while keeping history."""
     trip = app_client.post("/api/trips").json()["id"]
     plan = _send(app_client, trip, "Design a 10-day custom journey across Kandy and Ella for a family of four")
     components = plan["components"]
@@ -98,6 +101,7 @@ def test_custom_to_published_package_preserves_only_current_quote_requirements(a
 
 
 def test_date_edit_keeps_child_age_until_a_new_package_replaces_party(app_client):
+    """Verify date-only updates retain child ages, while switching to a new adult-only package clears them."""
     trip = app_client.post("/api/trips").json()["id"]
 
     def quote(prompt):

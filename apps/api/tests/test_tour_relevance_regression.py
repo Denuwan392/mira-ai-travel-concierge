@@ -7,6 +7,7 @@ from mira.search import is_day_tour, is_multi_day_tour
 
 
 def send_turn(client, trip_id, message):
+    """Post a turn to ``/api/agent`` for ``trip_id`` and return ``(turn_dict, surface_list)``."""
     run_id = str(uuid4())
     resp = client.post(
         "/api/agent",
@@ -33,10 +34,12 @@ def send_turn(client, trip_id, message):
 
 
 def _cards(turn):
+    """Extract all ``TourCard`` dicts from a turn's component list."""
     return [c for c in turn["components"] if c["type"] == "TourCard"]
 
 
 def _assert_valid_a2ui(turn, surface):
+    """Assert v0.9 A2UI surface structure and that all ``TourCard`` metadata matches published records."""
     assert surface[0]["version"] == "v0.9"
     assert surface[0]["createSurface"]["surfaceId"] == "journey"
     nodes = surface[1]["updateComponents"]["components"]
@@ -194,3 +197,105 @@ def test_deterministic_filter_blocks_llm_multiday_leak(app_client, monkeypatch):
     assert len(cards) >= 1
     assert all(is_day_tour(tours[c["id"]]) for c in cards)
     assert not {"T08", "T10", "T12"} & {c["id"] for c in cards}
+
+
+def test_paraphrased_mountain_scenery_cool_weather_offline(app_client):
+    """Gemini-unavailable fallback must still recommend hill-country/scenic tours, not generic T01/T09/T05."""
+    trip_id = app_client.post("/api/trips").json()["id"]
+    turn, surface = send_turn(
+        app_client,
+        trip_id,
+        "I want a peaceful holiday somewhere surrounded by mountains, with beautiful scenery and cool weather.",
+    )
+    _assert_valid_a2ui(turn, surface)
+    card_ids = [c["id"] for c in _cards(turn)]
+    assert len(card_ids) >= 1
+    assert card_ids != ["T01", "T09", "T05"]
+    tours = published()
+    assert any(
+        any(dest in {"nuwara-eliya", "ella"} for dest in tours[tid]["destinations"])
+        for tid in card_ids
+    ), f"Expected hill-country tours, got {card_ids}"
+
+
+def test_paraphrased_preferences_preserved_to_rank_without_limited_service(app_client, monkeypatch):
+    """Semantic preferences must reach provider.rank() and avoid 'Limited service' when Gemini succeeds."""
+    from mira import agent, provider
+
+    captured = {}
+
+    def fake_intent(prompt, previous, destinations, events, evidence=None):
+        events.append({"stage": "gemini_intent", "outcome": "ok", "ms": 1})
+        return provider.NotebookIntent(operation="catalogue", destinations=[])
+
+    def fake_rank(tours, trip, events):
+        captured["trip"] = dict(trip)
+        events.append({"stage": "gemini_suggestions", "outcome": "ok", "ms": 1})
+        return [tid for tid in ("T06", "T08", "T12") if tid in tours]
+
+    monkeypatch.setattr(agent, "notebook_intent", fake_intent)
+    monkeypatch.setattr(agent, "rank", fake_rank)
+
+    trip_id = app_client.post("/api/trips").json()["id"]
+    turn, surface = send_turn(
+        app_client,
+        trip_id,
+        "I want a peaceful holiday somewhere surrounded by mountains, with beautiful scenery and cool weather.",
+    )
+    _assert_valid_a2ui(turn, surface)
+    assert "preferences" in captured["trip"]
+    assert "mountains" in captured["trip"]["preferences"]
+    assert "limited service" not in turn["text"].lower()
+    assert [c["id"] for c in _cards(turn)] == ["T06", "T08", "T12"]
+
+
+def test_malformed_or_empty_suggestions_rejected_and_falls_back(app_client, monkeypatch):
+    """Empty or malformed Suggestions JSON must fail schema validation and fall back to relevant tours."""
+    import pytest
+    from pydantic import ValidationError
+    from mira import agent, provider
+
+    with pytest.raises(ValidationError):
+        provider.Suggestions.model_validate_json('{"tour_ids": []}')
+
+    monkeypatch.setenv("GEMINI_API_KEY", "test-key")
+    monkeypatch.setenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
+    monkeypatch.setattr(
+        provider,
+        "generate_structured",
+        lambda schema, instructions, usage_out=None: (_ for _ in ()).throw(ValueError("empty or malformed")),
+    )
+    # Use default agent.rank -> provider.rank which calls provider.generate_structured
+    monkeypatch.setattr(agent, "rank", provider.rank)
+
+    trip_id = app_client.post("/api/trips").json()["id"]
+    turn, surface = send_turn(
+        app_client,
+        trip_id,
+        "I want a peaceful holiday somewhere surrounded by mountains, with beautiful scenery and cool weather.",
+    )
+    _assert_valid_a2ui(turn, surface)
+    card_ids = [c["id"] for c in _cards(turn)]
+    assert card_ids != ["T01", "T09", "T05"]
+    assert "limited service" in turn["text"].lower()
+
+
+def test_irrelevant_llm_recommendations_filtered_by_constraints(app_client, monkeypatch):
+    """Irrelevant LLM tour IDs outside filtered scenic pool must be rejected."""
+    from mira import agent
+
+    monkeypatch.setattr(agent, "rank", lambda tours, trip, events: ["T03", "T05", "T11"])
+    trip_id = app_client.post("/api/trips").json()["id"]
+    turn, surface = send_turn(
+        app_client,
+        trip_id,
+        "I want a peaceful holiday somewhere surrounded by mountains, with beautiful scenery and cool weather.",
+    )
+    _assert_valid_a2ui(turn, surface)
+    card_ids = [c["id"] for c in _cards(turn)]
+    assert not {"T03", "T05", "T11"} & set(card_ids)
+    tours = published()
+    assert any(
+        any(dest in {"nuwara-eliya", "ella"} for dest in tours[tid]["destinations"])
+        for tid in card_ids
+    )

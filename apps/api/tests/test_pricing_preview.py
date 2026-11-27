@@ -9,6 +9,7 @@ from mira.store import db
 
 
 def _table_counts() -> dict[str, int]:
+    """Return row counts across core transactional tables to assert zero DB side effects."""
     with db() as conn:
         return {
             tbl: conn.execute(f"SELECT COUNT(*) FROM {tbl}").fetchone()[0]
@@ -17,6 +18,7 @@ def _table_counts() -> dict[str, int]:
 
 
 def test_pricing_preview_auth_and_csrf_guards(app_client):
+    """Verify ``/api/staff/pricing/preview`` requires staff auth (401) and valid Origin (403)."""
     payload = {"tour_id": "T01", "date": "2027-01-10", "adults": 2}
     assert app_client.post("/api/staff/pricing/preview", json=payload).status_code == 401
     assert app_client.post(
@@ -27,6 +29,7 @@ def test_pricing_preview_auth_and_csrf_guards(app_client):
 
 
 def test_pricing_preview_valid_cases_and_no_db_writes(app_client):
+    """Verify valid preview quotes match workbook pricing and perform zero SQLite writes."""
     before = _table_counts()
 
     # 1. Valid 2-adult day tour (T01)
@@ -70,6 +73,7 @@ def test_pricing_preview_valid_cases_and_no_db_writes(app_client):
 
 
 def test_pricing_preview_unavailable_expired_unsupported_and_invalid(app_client, monkeypatch):
+    """Verify preview returns ``PRICE_UNAVAILABLE`` with reason codes and 422 on invalid input, with no DB writes."""
     before = _table_counts()
 
     # 4. Missing hotel rate (T12 single adult 2027-04-10)
@@ -132,6 +136,7 @@ def test_pricing_preview_unavailable_expired_unsupported_and_invalid(app_client,
 
 
 def test_pricing_preview_matches_official_quote_exactly(app_client):
+    """Verify staff preview totals and internal finance match an official saved quote for identical inputs."""
     # Official quote via agent
     out = turn(app_client, "Cultural Triangle Sri Lanka Package for 4 adults and 3 children aged 7, 7, 7 on 12 April 2027", str(uuid4()))
     [official_q] = quotes(out)

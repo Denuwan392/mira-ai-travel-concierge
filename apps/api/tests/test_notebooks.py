@@ -1,3 +1,4 @@
+"""Tests for persistent trip notebooks, replay, stale quote invalidation, and grounded fact selection."""
 import json
 from uuid import uuid4
 
@@ -6,6 +7,7 @@ from mira.main import app
 
 
 def send(client, trip, message, run=None):
+    """Post a message to ``/api/agent`` for ``trip`` and return the ``turn`` snapshot dict."""
     run = run or str(uuid4())
     response = client.post("/api/agent",params={"trip_id":trip},json={
         "threadId":trip,"runId":run,"messages":[{"id":run,"role":"user","content":message}],
@@ -17,6 +19,7 @@ def send(client, trip, message, run=None):
 
 
 def test_owned_persistent_trip_edits_and_replay(app_client):
+    """Verify trip edits persist, identical run IDs replay cleanly, and other visitors get 404."""
     trip = app_client.post("/api/trips").json()["id"]
     send(app_client,trip,"We have six days for nature, trains and beaches")
     run = str(uuid4())
@@ -34,6 +37,7 @@ def test_owned_persistent_trip_edits_and_replay(app_client):
 
 
 def test_quote_obsolete_after_custom_edit(app_client):
+    """Verify editing a trip invalidates earlier quotes in ``/api/quotes``, ``/api/bookings/mock``, and history."""
     trip = app_client.post("/api/trips").json()["id"]
     output = send(app_client,trip,"Sigiriya day trip for two adults on 10 January 2027")
     quote = next(c["quote"] for c in output["components"] if c["type"]=="PriceBreakdown")
@@ -46,6 +50,7 @@ def test_quote_obsolete_after_custom_edit(app_client):
 
 
 def test_day_and_date_actions_persist_in_staff_request(app_client):
+    """Verify ``@day`` and ``@depart`` panel actions update map selection and persisted enquiry dates."""
     import json
     from conftest import headers
     trip = app_client.post("/api/trips").json()["id"]
@@ -60,9 +65,11 @@ def test_day_and_date_actions_persist_in_staff_request(app_client):
 
 
 def test_grounded_model_selects_only_a_published_passage(app_client,monkeypatch):
+    """Verify ``fact`` intent renders a ``PolicySnippet`` verbatim from the cited published source."""
     from mira import agent
     from mira.provider import NotebookIntent
     def choose(prompt, previous, destinations, events, evidence):
+        """Mock ``notebook_intent`` selecting the Nine Arches Bridge evidence passage."""
         key = next(k for k,text in evidence.items() if "Nine Arches Bridge" in text)
         return NotebookIntent(operation="fact",evidence_key=key)
     monkeypatch.setattr(agent,"notebook_intent",choose)

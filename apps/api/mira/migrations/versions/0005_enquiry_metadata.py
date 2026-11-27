@@ -7,11 +7,13 @@ down_revision = "0004_failed_traces"
 
 
 def _existing_columns(conn, table: str) -> set[str]:
+    """Return the set of column names currently defined on ``table``."""
     rows = conn.execute(sa.text(f"PRAGMA table_info({table})")).fetchall()
     return {row[1] for row in rows}
 
 
 def upgrade():
+    """Add and backfill ``updated_at``, ``reference``, and ``follow_up_date`` on ``enquiries``."""
     conn = op.get_bind()
     cols = _existing_columns(conn, "enquiries")
 

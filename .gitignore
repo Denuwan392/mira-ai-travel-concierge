@@ -18,3 +18,5 @@ output/
 llm_test.py
 0
 demo-output/
+~$*
+.deps/

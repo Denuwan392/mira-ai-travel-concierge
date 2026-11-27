@@ -1,9 +1,11 @@
+"""Add persistent trip notebook tables (``trips`` and ``trip_turns``) linked to visitors and traces."""
 from alembic import op
 
 revision = '0002_notebooks'
 down_revision = '0001_catalogue'
 
 def upgrade():
+    """Create ``trips`` and ``trip_turns`` tables and owner lookup index."""
     op.execute("""CREATE TABLE IF NOT EXISTS trips (
                 id TEXT PRIMARY KEY, visitor TEXT NOT NULL REFERENCES visitors(id) ON DELETE CASCADE,
                 title TEXT NOT NULL DEFAULT 'New journey', context TEXT NOT NULL DEFAULT '{}',

@@ -1,3 +1,4 @@
+"""Unit tests for deterministic pricing, occupancy/age/group boundaries, rounding, and fail-closed refusals."""
 from dataclasses import replace
 from datetime import date, timedelta
 from decimal import Decimal
@@ -19,23 +20,27 @@ from conftest import TODAY
     ("T07", "2026-12-01", 1, [], (136000, 605, 605)),
 ], ids=["Q1041", "Q1042", "Q1043-workbook", "Q1044", "infant", "mixed-season", "single"])
 def test_exact_quote(tour, start, adults, ages, expected):
+    """Verify exact LKR cost, USD sell total, and USD deposit against reference workbook quotes."""
     result = price(tour, date.fromisoformat(start), adults, ages, TODAY)
     assert (Decimal(result["cost_lkr"]), result["total"], result["deposit"]) == expected
 
 
 @pytest.mark.parametrize("n,total,vehicle_row", [(3, 410, 2), (4, 540, 3), (8, 910, 3), (9, 1095, 4), (20, 2115, 4)])
 def test_group_boundaries(n, total, vehicle_row):
+    """Verify transport vehicle tier transitions (Car -> Van -> Coach) at group-size boundaries."""
     result = price("T01", date(2027, 1, 10), n, [], TODAY)
     assert (result["total"], result["transport_row"]) == (total, vehicle_row)
 
 
 @pytest.mark.parametrize("age,total", [(1, 315), (2, 365), (11, 365), (12, 410)])
 def test_age_boundaries(age, total):
+    """Verify infant (<2), child (2-11), and adult (12+) pricing tier boundaries."""
     assert price("T01", date(2027, 1, 10), 2, [age], TODAY)["total"] == total
 
 
 @pytest.mark.parametrize("day_count,deposit", [(30, 780), (31, 195)])
 def test_full_payment_boundary(day_count, deposit):
+    """Verify 100% deposit when departing within 30 days vs 25% deposit at 31+ days."""
     assert price("T07", TODAY + timedelta(days=day_count), 2, [], TODAY)["deposit"] == deposit
 
 
@@ -53,6 +58,7 @@ def test_full_payment_boundary(day_count, deposit):
     ("T10", "2027-04-10", 2, "tour_rate"),
 ])
 def test_refuses(tour, start, adults, reason):
+    """Verify invalid, expired, unpublished, or ambiguous configurations fail closed with ``Unavailable``."""
     with pytest.raises(Unavailable, match=f"^{reason}$"):
         price(tour, date.fromisoformat(start), adults, [], TODAY)
 

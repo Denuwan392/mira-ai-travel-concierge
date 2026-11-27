@@ -1,3 +1,4 @@
+"""Security and lifecycle tests: returning visitors, isolation, enquiry PII filtering, approval, and CSRF."""
 import json
 import sqlite3
 from datetime import date

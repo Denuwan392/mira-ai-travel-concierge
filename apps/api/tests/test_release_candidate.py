@@ -28,6 +28,7 @@ SIGIRIYA = "Sigiriya day trip for two adults on 10 January 2027"
 
 
 def test_rc_full_customer_to_staff_lifecycle(app_client):
+    """End-to-end RC check: quote -> age edit -> contact form -> staff follow-up -> PII-free traveller view."""
     # 1-3: Hero prompt -> single turn idempotency
     run1 = str(uuid4())
     first = turn(app_client, SIGIRIYA, run1)
@@ -101,6 +102,7 @@ def test_rc_full_customer_to_staff_lifecycle(app_client):
 
 
 def _chat(client, trip_id: str, content: str):
+    """Post a turn to ``/api/agent`` for ``trip_id`` and return the validated ``Turn``."""
     from mira.catalog import Turn
 
     run_id = str(uuid4())
@@ -120,6 +122,7 @@ def _chat(client, trip_id: str, content: str):
 
 
 def test_rc_deduplication_tour_switch_reopen_and_guest_upgrade(app_client):
+    """Verify enquiry deduplication, tour switching, terminal-status reopen rules, and guest-to-user upgrade."""
     # Repeated identical/modified quote requests on same trip reuse active enquiry
     trip1 = app_client.post("/api/trips").json()["id"]
     _chat(app_client, trip1, SIGIRIYA)
@@ -159,6 +162,7 @@ def test_rc_deduplication_tour_switch_reopen_and_guest_upgrade(app_client):
 
 
 def test_rc_concurrent_quote_requests(app_client):
+    """Verify 4 concurrent visitor sessions quoting simultaneously all succeed without SQLite lock errors."""
     def _send(i: int):
         with TestClient(app) as client:
             client.post("/api/session", json={"remember": False}).raise_for_status()
@@ -185,7 +189,7 @@ def test_rc_migrations_fresh_upgrade_and_idempotent(tmp_path, monkeypatch):
     store.init()  # Repeated startup is safe
     with sqlite3.connect(fresh_db) as conn:
         ver = conn.execute("SELECT version_num FROM alembic_version").fetchone()[0]
-        assert ver == "0006_enquiry_contact_fields"
+        assert ver == "0008_booking_payments"
         cols = {r[1] for r in conn.execute("PRAGMA table_info(enquiries)")}
         assert {"updated_at", "reference", "is_contactable", "contact_email"}.issubset(cols)
 
@@ -220,7 +224,7 @@ def test_rc_migrations_fresh_upgrade_and_idempotent(tmp_path, monkeypatch):
     store.init()
     with sqlite3.connect(pre0006_db) as conn:
         ver = conn.execute("SELECT version_num FROM alembic_version").fetchone()[0]
-        assert ver == "0006_enquiry_contact_fields"
+        assert ver == "0008_booking_payments"
         row = conn.execute("SELECT id, reference, updated_at FROM enquiries WHERE id='e1'").fetchone()
         assert row is not None and row[0] == "e1" and row[1].startswith("ENQ-") and row[2] is not None
 

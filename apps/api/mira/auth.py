@@ -1,3 +1,13 @@
+"""Authentication, Argon2id password hashing, session management, and RBAC helpers.
+
+Provides:
+- Argon2id password hashing and constant-time verification.
+- Per-key brute-force rate limiting (5 failed attempts -> 15-minute lockout).
+- HttpOnly session cookies and Bearer token resolution (plus dev/test-only
+  legacy staff tokens).
+- FastAPI dependencies (``get_current_user``, ``require_role``) and a CLI
+  subcommand to bootstrap the initial administrator account.
+"""
 import base64
 import json
 import logging
@@ -111,6 +121,8 @@ def clear_failed_login(conn, key: str) -> None:
 
 
 class UserProfile(BaseModel):
+    """Publicly safe user profile returned by auth dependencies and endpoints."""
+
     id: str
     email: str
     full_name: str
@@ -122,6 +134,8 @@ class UserProfile(BaseModel):
 
 
 class RegisterInput(BaseModel):
+    """Request payload for traveller self-registration."""
+
     email: str = Field(min_length=5, max_length=254)
     password: str = Field(min_length=8, max_length=128)
     full_name: str = Field(min_length=2, max_length=100)
@@ -131,6 +145,7 @@ class RegisterInput(BaseModel):
     @field_validator("email")
     @classmethod
     def validate_email(cls, v: str) -> str:
+        """Normalize email to lowercase and validate basic address syntax."""
         v = v.strip().lower()
         if not EMAIL_REGEX.match(v):
             raise ValueError("Invalid email format.")
@@ -138,6 +153,8 @@ class RegisterInput(BaseModel):
 
 
 class LoginInput(BaseModel):
+    """Request payload for email/password sign-in."""
+
     email: str = Field(min_length=5, max_length=254)
     password: str = Field(min_length=1, max_length=128)
     remember: bool = False
@@ -145,6 +162,7 @@ class LoginInput(BaseModel):
     @field_validator("email")
     @classmethod
     def validate_email(cls, v: str) -> str:
+        """Normalize email to lowercase and validate basic address syntax."""
         v = v.strip().lower()
         if not EMAIL_REGEX.match(v):
             raise ValueError("Invalid email format.")
@@ -152,17 +170,23 @@ class LoginInput(BaseModel):
 
 
 class ProfileUpdateInput(BaseModel):
+    """Partial update payload for the authenticated user's profile."""
+
     full_name: str | None = Field(default=None, min_length=2, max_length=100)
     phone: str | None = Field(default=None, max_length=30)
     preferences: dict[str, Any] | None = None
 
 
 class PasswordChangeInput(BaseModel):
+    """Request payload for changing an authenticated user's password."""
+
     current_password: str = Field(min_length=1, max_length=128)
     new_password: str = Field(min_length=8, max_length=128)
 
 
 class UserRoleUpdateInput(BaseModel):
+    """Admin-only payload to update a user's role or active/deactivated status."""
+
     role: RoleType | None = None
     status: StatusType | None = None
 
@@ -173,6 +197,25 @@ def audit_log(conn, actor: str, action: str, target: str, outcome: str = "succes
         "INSERT INTO audit(actor, action, target) VALUES (?, ?, ?)",
         (actor, f"{action}:{outcome}" if outcome != "success" else action, target),
     )
+
+
+def ensure_user_visitor(
+    conn,
+    user_id: str,
+    visitor_id: str | None = None,
+    remember: bool = False,
+) -> str:
+    """Return a visitor ID owned by ``user_id``, rotating if missing or owned by another user."""
+    if visitor_id:
+        row = conn.execute("SELECT id, user_id FROM visitors WHERE id=?", (visitor_id,)).fetchone()
+        if row and row["user_id"] in (None, user_id):
+            if row["user_id"] is None:
+                conn.execute("UPDATE visitors SET user_id=?, remember=? WHERE id=? AND user_id IS NULL",
+                             (user_id, int(remember), visitor_id))
+            return visitor_id
+    new_vid = secrets.token_urlsafe(32)
+    conn.execute("INSERT INTO visitors(id, remember, user_id) VALUES (?, ?, ?)", (new_vid, int(remember), user_id))
+    return new_vid
 
 
 def create_user_session(

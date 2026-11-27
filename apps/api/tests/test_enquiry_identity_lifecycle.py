@@ -1,3 +1,4 @@
+"""Regression tests for enquiry identity deduplication, tour switching, and contact attachment."""
 import json
 from uuid import uuid4
 
@@ -8,6 +9,7 @@ from tests.conftest import headers
 
 
 def _send_turn(client, trip_id: str, content: str, run_id: str | None = None):
+    """Post a turn to ``/api/agent`` for ``trip_id`` and return the ``turn`` snapshot dict."""
     rid = run_id or str(uuid4())
     resp = client.post(
         "/api/agent",
@@ -28,6 +30,7 @@ def _send_turn(client, trip_id: str, content: str, run_id: str | None = None):
 
 
 def test_enquiry_identity_lifecycle_and_no_cross_tour_overwrite(app_client):
+    """Verify same-tour quote recalculation reuses enquiry while tour switches create distinct enquiries."""
     app_client.post("/api/auth/register", json={
         "email": "lifecycle@example.test",
         "password": "Password123!",
@@ -113,6 +116,7 @@ def test_enquiry_identity_lifecycle_and_no_cross_tour_overwrite(app_client):
 
 
 def test_historical_incomplete_record_safe_rendering(app_client):
+    """Verify ``_enrich_enquiry`` handles legacy rows with empty ``trip`` JSON gracefully."""
     with store.db() as conn:
         vid = str(uuid4())
         tid = str(uuid4())

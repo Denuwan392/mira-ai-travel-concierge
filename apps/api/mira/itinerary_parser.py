@@ -10,10 +10,14 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class StrictModel(BaseModel):
+    """Base Pydantic model forbidding extra/unexpected fields."""
+
     model_config = ConfigDict(extra="forbid")
 
 
 class DaySchedule(StrictModel):
+    """Structured schedule and inclusions for a single day of a tour."""
+
     day: int = Field(ge=1, le=30)
     title: str = Field(min_length=1, max_length=500)
     description: str = Field(min_length=1, max_length=2000)
@@ -26,6 +30,8 @@ class DaySchedule(StrictModel):
 
 
 class TourItinerary(StrictModel):
+    """Complete parsed tour document including metadata, daily stops, and inclusions."""
+
     id: str = Field(pattern=r"^[A-Z][A-Z0-9-]{1,60}$")
     title: str = Field(min_length=1, max_length=500)
     status: Literal["published", "draft"]

@@ -11,6 +11,7 @@ from mira.catalog import Card, Notice
 
 
 def _send(client, trip_id: str, message: str, run_id: str | None = None):
+    """Send a message within a trip notebook and return the validated ``Turn``."""
     from mira.catalog import Turn
 
     run_id = run_id or str(uuid4())
@@ -34,6 +35,7 @@ def _send(client, trip_id: str, message: str, run_id: str | None = None):
 
 
 def test_cultural_triangle_jan_10_consistent_across_chat_and_tour_detail(app_client):
+    """Verify T09 on 2027-01-10 yields identical PRICE_UNAVAILABLE notices across chat, detail, and follow-up."""
     # 1. Chat entry point (exact natural language)
     trip_chat = app_client.post("/api/trips").json()["id"]
     out_chat = _send(
@@ -78,6 +80,7 @@ def test_cultural_triangle_jan_10_consistent_across_chat_and_tour_detail(app_cli
 
 
 def test_cultural_triangle_valid_april_date_matches_workbook_across_both_entrypoints(app_client):
+    """Verify T09 on a valid April date returns the exact workbook USD total/deposit from both entrypoints."""
     expected = data.price("T09", date(2027, 4, 12), 4, [7, 7, 7], date(2026, 11, 19))
     assert int(expected["total"]) == 4530
     assert int(expected["deposit"]) == 1133
@@ -104,6 +107,7 @@ def test_cultural_triangle_valid_april_date_matches_workbook_across_both_entrypo
 
 
 def test_traveller_and_staff_enquiry_reference_identity_and_idempotency(app_client):
+    """Verify ENQ-... reference and UUID resolve identically across traveller and staff APIs without duplicates."""
     trip_id = app_client.post("/api/trips").json()["id"]
     payload = json.dumps({
         "type": "REQUEST_QUOTE",
@@ -151,6 +155,7 @@ def test_traveller_and_staff_enquiry_reference_identity_and_idempotency(app_clie
 
 
 def test_health_exposes_revision_without_paths_or_secrets(app_client):
+    """Ensure ``/api/health`` exposes a clean build revision string without filesystem paths."""
     h = app_client.get("/api/health").json()
     assert h["rates"] is True
     assert isinstance(h["revision"], str) and len(h["revision"]) > 0

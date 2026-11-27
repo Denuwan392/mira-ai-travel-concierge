@@ -1,9 +1,11 @@
+"""Initial schema: visitors, traces, quotes, enquiries, notes, drafts, append-only audit, bookings, and rate_snapshots."""
 from alembic import op
 
 revision = '0001_catalogue'
 down_revision = None
 
 def upgrade():
+    """Create core catalogue, quoting, enquiry, booking, and append-only audit tables."""
     op.execute("""CREATE TABLE IF NOT EXISTS visitors (
                 id TEXT PRIMARY KEY, remember INTEGER NOT NULL, context TEXT NOT NULL DEFAULT '{}');""")
     op.execute("""CREATE TABLE IF NOT EXISTS traces (

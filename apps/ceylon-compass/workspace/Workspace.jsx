@@ -2387,6 +2387,13 @@ function MiraWorkspace({ navigate }) {
       setActiveQuote(null);
       setWorkspacePanel(panel => panel === 'quote' ? 'welcome' : panel);
     }
+    const clearsActivePlan = latest.turn.components.some(
+      c => c.type === 'PriceBreakdown' || c.type === 'TravellerPicker' || c.type === 'TourCard'
+    );
+    if (clearsActivePlan && !latest.turn.components.some(c => c.type === 'JourneyPlan')) {
+      setJourneyPlan(null);
+      setWorkspacePanel(panel => panel === 'journey-plan' ? 'welcome' : panel);
+    }
 
     const dayExcerpts = latest.turn.components.filter(c => c.type === 'ItineraryDay');
     if (dayExcerpts.length > 0) setItineraryCards(dayExcerpts);
@@ -2419,7 +2426,7 @@ function MiraWorkspace({ navigate }) {
         break;
       }
       if (c.type === 'TourCard') {
-        const hasAuthoritativeActive = latestTurn.components?.some(
+        const hasAuthoritativeActive = latest.turn.components?.some(
           (comp) => (comp.type === 'PriceBreakdown' && comp.quote?.source === activeTour?.id) ||
                     (comp.type === 'EnquiryNotice' && comp.tour_id && comp.tour_id === activeTour?.id)
         );
@@ -2628,6 +2635,7 @@ function MiraWorkspace({ navigate }) {
                       'ItineraryDay', 'PolicySnippet', 'DestinationHighlight', 'DestinationCard',
                       'StayCard', 'ActivityCard', 'ComparisonPanel', 'ConfirmationPanel',
                       'SourceReference', 'JourneyPlan', 'BookingForm',
+                      'CancellationPreview', 'CancellationStatus',
                     ];
                     return comps
                       .filter((c) => allowed.includes(c.type))
@@ -2639,7 +2647,8 @@ function MiraWorkspace({ navigate }) {
                             enquiryReference={quoteComp?.quote?.enquiry_reference}
                             navigate={navigate} 
                             tours={tours} 
-                            setActiveTour={handleSelectTour} 
+                            setActiveTour={handleSelectTour}
+                            onSend={send}
                             setWorkspacePanel={(panel) => {
                               setWorkspacePanel(panel);
                               setMobileTab('workspace');
@@ -3539,8 +3548,51 @@ function JourneyPlanPanel({ plan, map }) {
   );
 }
 
-function UIComponentRenderer({ component, enquiryReference, navigate, tours, setActiveTour, setWorkspacePanel }) {
+function UIComponentRenderer({ component, enquiryReference, navigate, tours, setActiveTour, setWorkspacePanel, onSend }) {
   if (!component) return null;
+
+  if (component.type === 'CancellationPreview') {
+    return (
+      <div className="p-3 bg-white border border-border rounded-card space-y-2 text-xs">
+        <p className="text-[11px] font-semibold uppercase tracking-wide text-text-muted">{component.policy_title}</p>
+        <p className="font-semibold text-sm">{component.tour_title}</p>
+        <p className="text-text-muted">{component.terms}</p>
+        <p>Paid: <strong>{component.paid_amount}</strong> · Estimated simulated refund: <strong>{component.refund_amount}</strong></p>
+        {component.requires_confirmation && onSend && (
+          <div className="flex gap-2 pt-1">
+            <Button
+              variant="primary"
+              size="sm"
+              className="text-xs py-1 px-3"
+              onClick={() => onSend(JSON.stringify({ type: 'CONFIRM_CANCELLATION', payload: { targetId: component.target_id } }))}
+            >
+              Confirm cancellation
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-xs py-1 px-3"
+              onClick={() => onSend(JSON.stringify({ type: 'DECLINE_CANCELLATION', payload: {} }))}
+            >
+              Keep booking
+            </Button>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  if (component.type === 'CancellationStatus') {
+    return (
+      <div className="p-3 bg-white border border-border rounded-card space-y-1 text-xs">
+        <p className="text-[11px] font-semibold uppercase tracking-wide text-text-muted">Cancellation status · {component.status}</p>
+        <p>{component.summary}</p>
+        {component.refund_status !== 'none' && (
+          <p>Simulated refund: <strong>{component.refund_amount}</strong> ({component.refund_status})</p>
+        )}
+      </div>
+    );
+  }
 
   if (component.type === 'TourCard') {
     const tour = tours.find(t => t.id === component.id || t.slug === component.id) || {
@@ -4586,7 +4638,17 @@ function ProfilePage({ navigate }) {
   const { user, logout, refreshUser } = useAuth();
   const [overview, setOverview] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'edit' | 'password'
+  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'bookings' | 'edit' | 'password'
+
+  // My Bookings state
+  const [bookingsData, setBookingsData] = useState(null);
+  const [bookingsFilter, setBookingsFilter] = useState('all');
+  const [bookingsLoading, setBookingsLoading] = useState(false);
+  const [bookingActionMsg, setBookingActionMsg] = useState({ type: '', text: '' });
+  const [bookingBusy, setBookingBusy] = useState(false);
+  const [detailBooking, setDetailBooking] = useState(null);
+  const [historyBooking, setHistoryBooking] = useState(null);
+  const [cancelPreview, setCancelPreview] = useState(null);
 
   // Edit form state
   const [fullName, setFullName] = useState('');
@@ -4613,15 +4675,97 @@ function ProfilePage({ navigate }) {
     let mounted = true;
     (async () => {
       try {
-        const ov = await api('/traveller/overview');
-        if (mounted) setOverview(ov);
+        const [ov, bk] = await Promise.all([
+          api('/traveller/overview'),
+          api(`/traveller/bookings?filter=${encodeURIComponent(bookingsFilter)}`).catch(() => null),
+        ]);
+        if (mounted) {
+          setOverview(ov);
+          if (bk) setBookingsData(bk);
+        }
       } catch {}
       finally {
         if (mounted) setLoading(false);
       }
     })();
     return () => { mounted = false; };
-  }, [user]);
+  }, [user, bookingsFilter]);
+
+  const reloadBookingsAndOverview = async (filterVal = bookingsFilter) => {
+    setBookingsLoading(true);
+    try {
+      const [ov, bk] = await Promise.all([
+        api('/traveller/overview'),
+        api(`/traveller/bookings?filter=${encodeURIComponent(filterVal)}`),
+      ]);
+      setOverview(ov);
+      setBookingsData(bk);
+    } catch (err) {
+      setBookingActionMsg({ type: 'error', text: err.message || 'Could not refresh bookings.' });
+    } finally {
+      setBookingsLoading(false);
+    }
+  };
+
+  const handlePayBalance = async (bk) => {
+    setBookingBusy(true);
+    setBookingActionMsg({ type: '', text: '' });
+    try {
+      const idem = `pay-${bk.booking_reference}-${bk.outstanding_balance}-${Date.now()}`;
+      const res = await api(`/bookings/${encodeURIComponent(bk.booking_reference)}/pay`, {
+        method: 'POST',
+        body: JSON.stringify({ amount: bk.outstanding_balance, scenario: 'success', idempotency_key: idem }),
+      });
+      setBookingActionMsg({
+        type: 'success',
+        text: `Simulated balance payment of USD ${res.amount} completed for ${bk.tour_name}.`,
+      });
+      await reloadBookingsAndOverview();
+    } catch (err) {
+      setBookingActionMsg({ type: 'error', text: err.message || 'Simulated payment failed.' });
+    } finally {
+      setBookingBusy(false);
+    }
+  };
+
+  const handleOpenCancelPreview = async (bk) => {
+    setBookingBusy(true);
+    setBookingActionMsg({ type: '', text: '' });
+    try {
+      const prev = await api(`/bookings/${encodeURIComponent(bk.booking_reference)}/cancel/preview`, {
+        method: 'POST',
+      });
+      setCancelPreview({ ...prev, tour_name: bk.tour_name, travel_date: bk.travel_date });
+    } catch (err) {
+      setBookingActionMsg({ type: 'error', text: err.message || 'Could not load cancellation preview.' });
+    } finally {
+      setBookingBusy(false);
+    }
+  };
+
+  const handleConfirmCancellation = async () => {
+    if (!cancelPreview) return;
+    setBookingBusy(true);
+    setBookingActionMsg({ type: '', text: '' });
+    try {
+      const res = await api(`/bookings/${encodeURIComponent(cancelPreview.booking_reference)}/cancel`, {
+        method: 'POST',
+        body: JSON.stringify({ reason: 'traveller_requested' }),
+      });
+      setCancelPreview(null);
+      setBookingActionMsg({
+        type: 'success',
+        text: res.status === 'pending_staff'
+          ? 'Cancellation submitted for specialist review.'
+          : `Booking cancelled. Simulated refund: USD ${res.refund_amount} (${res.refund_status}).`,
+      });
+      await reloadBookingsAndOverview();
+    } catch (err) {
+      setBookingActionMsg({ type: 'error', text: err.message || 'Could not confirm cancellation.' });
+    } finally {
+      setBookingBusy(false);
+    }
+  };
 
   if (!user) {
     return (
@@ -4765,13 +4909,20 @@ function ProfilePage({ navigate }) {
       </Card>
 
       {/* Tabs */}
-      <div className="flex gap-2 mb-6 border-b border-border pb-3">
+      <div className="flex gap-2 mb-6 border-b border-border pb-3 flex-wrap">
         <Button
           variant={activeTab === 'overview' ? 'primary' : 'ghost'}
           size="sm"
           onClick={() => setActiveTab('overview')}
         >
           My Journeys & Enquiries
+        </Button>
+        <Button
+          variant={activeTab === 'bookings' ? 'primary' : 'ghost'}
+          size="sm"
+          onClick={() => setActiveTab('bookings')}
+        >
+          My Bookings
         </Button>
         <Button
           variant={activeTab === 'edit' ? 'primary' : 'ghost'}
@@ -4788,6 +4939,264 @@ function ProfilePage({ navigate }) {
           Security & Password
         </Button>
       </div>
+
+      {/* Tab: My Bookings */}
+      {activeTab === 'bookings' && (
+        <div className="space-y-6">
+          {/* Summary Metrics */}
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+            <Card className="p-4">
+              <p className="text-[11px] text-text-muted mb-1">Upcoming Confirmed</p>
+              <p className="text-xl font-bold text-brand-teal">{bookingsData?.summary?.upcoming_confirmed ?? 0}</p>
+            </Card>
+            <Card className="p-4">
+              <p className="text-[11px] text-text-muted mb-1">Fully Paid</p>
+              <p className="text-xl font-bold text-emerald-600">{bookingsData?.summary?.fully_paid ?? 0}</p>
+            </Card>
+            <Card className="p-4">
+              <p className="text-[11px] text-text-muted mb-1">Outstanding Balance</p>
+              <p className="text-xl font-bold text-brand-orange">USD {bookingsData?.summary?.outstanding_balance_total ?? '0'}</p>
+            </Card>
+            <Card className="p-4">
+              <p className="text-[11px] text-text-muted mb-1">Pending Cancellation</p>
+              <p className="text-xl font-bold text-amber-600">{bookingsData?.summary?.pending_cancellations ?? 0}</p>
+            </Card>
+            <Card className="p-4">
+              <p className="text-[11px] text-text-muted mb-1">Cancelled</p>
+              <p className="text-xl font-bold text-text-muted">{bookingsData?.summary?.cancelled ?? 0}</p>
+            </Card>
+          </div>
+
+          {bookingActionMsg.text && (
+            <div className={`p-3 rounded-card text-xs border ${bookingActionMsg.type === 'error' ? 'bg-red-50 text-red-700 border-red-200' : 'bg-emerald-50 text-emerald-800 border-emerald-200'}`}>
+              {bookingActionMsg.text}
+            </div>
+          )}
+
+          {/* Filter Pills */}
+          <div className="flex flex-wrap gap-2">
+            {[
+              ['all', 'All bookings'],
+              ['upcoming', 'Upcoming bookings'],
+              ['outstanding', 'Payment outstanding'],
+              ['completed', 'Completed journeys'],
+              ['cancellation_pending', 'Cancellation pending'],
+              ['cancelled', 'Cancelled bookings'],
+            ].map(([val, label]) => (
+              <Button
+                key={val}
+                variant={bookingsFilter === val ? 'primary' : 'ghost'}
+                size="sm"
+                onClick={() => setBookingsFilter(val)}
+              >
+                {label}
+              </Button>
+            ))}
+          </div>
+
+          {/* Booking Cards */}
+          {bookingsLoading ? (
+            <Card className="p-8 text-center text-xs text-text-muted">Loading bookings...</Card>
+          ) : bookingsData?.bookings?.length > 0 ? (
+            <div className="space-y-4">
+              {bookingsData.bookings.map((bk) => {
+                const totalN = Number(bk.total_amount) || 0;
+                const paidN = Number(bk.paid_amount) || 0;
+                const pct = totalN > 0 ? Math.min(100, Math.round((paidN / totalN) * 100)) : 100;
+                const isCancelled = bk.booking_status === 'cancelled';
+                const isPendingCancel = bk.booking_status === 'cancellation_pending';
+                const hasBalance = Number(bk.outstanding_balance) > 0;
+                const payStatusLabel = {
+                  deposit_paid: 'Deposit paid',
+                  partially_paid: 'Partially paid',
+                  fully_paid: 'Fully paid',
+                  payment_pending: 'Payment pending',
+                  payment_failed: 'Payment failed',
+                  simulated_refund_completed: 'Simulated refund completed',
+                }[bk.payment_status] || bk.payment_status;
+
+                return (
+                  <Card key={bk.booking_reference} className="p-5 sm:p-6">
+                    <div className="flex flex-col sm:flex-row gap-4">
+                      {bk.tour_image && (
+                        <img
+                          src={bk.tour_image}
+                          alt={bk.tour_name}
+                          className="w-full sm:w-36 h-28 object-cover rounded-card shrink-0 border border-border"
+                        />
+                      )}
+                      <div className="flex-1 min-w-0 space-y-3">
+                        <div className="flex items-start justify-between gap-3 flex-wrap">
+                          <div>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h3 className="font-bold text-base text-brand-black">{bk.tour_name}</h3>
+                              <span className={`px-2.5 py-0.5 rounded-pill text-[11px] font-semibold capitalize ${
+                                isCancelled ? 'bg-gray-200 text-gray-700' :
+                                isPendingCancel ? 'bg-amber-100 text-amber-800' :
+                                'bg-brand-teal/10 text-brand-teal'
+                              }`}>
+                                {bk.booking_status.replace('_', ' ')}
+                              </span>
+                              <span className={`px-2.5 py-0.5 rounded-pill text-[11px] font-semibold ${
+                                bk.payment_status === 'fully_paid' ? 'bg-emerald-100 text-emerald-800' :
+                                bk.payment_status === 'simulated_refund_completed' ? 'bg-teal-100 text-teal-800' :
+                                bk.payment_status === 'payment_failed' ? 'bg-red-100 text-red-700' :
+                                'bg-amber-100 text-amber-800'
+                              }`}>
+                                {payStatusLabel}
+                              </span>
+                            </div>
+                            <p className="text-xs text-text-muted mt-1">
+                              Ref: <span className="font-mono font-semibold text-brand-black">{bk.booking_reference.slice(0, 8).toUpperCase()}</span>
+                              {' • '}Travel: {bk.travel_date}
+                              {bk.duration ? ` • ${bk.duration}` : ''}
+                              {' • '}{bk.adults} adult{bk.adults === 1 ? '' : 's'}{bk.children ? `, ${bk.children} child${bk.children === 1 ? '' : 'ren'}` : ''}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-[11px] text-text-muted">Total Price</p>
+                            <p className="text-base font-bold text-brand-black">{bk.currency} {bk.total_amount}</p>
+                          </div>
+                        </div>
+
+                        {/* Payment Progress */}
+                        <div className="bg-gray-50 border border-border rounded-card p-3 space-y-2 text-xs">
+                          <div className="flex items-center justify-between gap-2 flex-wrap">
+                            <span>Paid (simulated): <strong className="text-emerald-700">{bk.currency} {bk.paid_amount}</strong></span>
+                            <span>Remaining balance: <strong className={hasBalance && !isCancelled ? 'text-brand-orange' : 'text-text-muted'}>{bk.currency} {bk.outstanding_balance}</strong></span>
+                          </div>
+                          <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                            <div className="h-full bg-brand-teal transition-all" style={{ width: `${pct}%` }} />
+                          </div>
+                          {bk.balance_due_date && (
+                            <p className="text-[11px] text-text-muted">{bk.payment_terms}: due by <strong>{bk.balance_due_date}</strong></p>
+                          )}
+                          {bk.refund_status && bk.refund_status !== 'none' && (
+                            <p className="text-[11px] text-brand-teal font-medium">
+                              Refund status: {bk.refund_status.replace('_', ' ')} {bk.refund_amount ? `(USD ${bk.refund_amount})` : ''}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Contextual Actions */}
+                        <div className="flex flex-wrap gap-2 pt-1">
+                          <Button variant="ghost" size="sm" onClick={() => setDetailBooking(bk)}>View details</Button>
+                          <Button variant="ghost" size="sm" onClick={() => setHistoryBooking(bk)}>Payment history</Button>
+                          {bk.trip_id && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                sessionStorage.setItem('mira-workspace-trip', bk.trip_id);
+                                localStorage.setItem('mira-workspace-trip', bk.trip_id);
+                                navigate('/mira');
+                              }}
+                            >
+                              Resume in Mira
+                            </Button>
+                          )}
+                          {bk.booking_status === 'confirmed' && hasBalance && (
+                            <Button variant="primary" size="sm" disabled={bookingBusy} onClick={() => handlePayBalance(bk)}>
+                              Pay remaining balance (USD {bk.outstanding_balance})
+                            </Button>
+                          )}
+                          {bk.booking_status === 'confirmed' && (
+                            <Button variant="ghost" size="sm" disabled={bookingBusy} onClick={() => handleOpenCancelPreview(bk)}>
+                              Cancel booking
+                            </Button>
+                          )}
+                          {bk.enquiry_reference && (
+                            <Button variant="ghost" size="sm" onClick={() => navigate('/enquiry/' + bk.enquiry_reference)}>
+                              Contact specialist
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                );
+              })}
+            </div>
+          ) : (
+            <Card className="p-8 text-center text-xs text-text-muted">
+              <p>No bookings match this filter yet.</p>
+              <button onClick={() => navigate('/mira')} className="mt-2 text-brand-orange font-semibold hover:underline cursor-pointer">
+                Explore tours with Mira →
+              </button>
+            </Card>
+          )}
+
+          {/* Modal: Booking Details */}
+          {detailBooking && (
+            <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" role="dialog" aria-modal="true">
+              <Card className="max-w-lg w-full p-6 space-y-3 bg-white">
+                <h3 className="font-bold text-base">{detailBooking.tour_name}</h3>
+                <p className="text-xs text-text-muted">
+                  Reference: {detailBooking.booking_reference} • Date: {detailBooking.travel_date} • Status: {detailBooking.booking_status}
+                </p>
+                <p className="text-xs">Destinations: {(detailBooking.destinations || []).join(', ') || 'See itinerary'}</p>
+                <p className="text-xs">Total: USD {detailBooking.total_amount} • Paid (simulated): USD {detailBooking.paid_amount} • Outstanding: USD {detailBooking.outstanding_balance}</p>
+                {detailBooking.refund_status && detailBooking.refund_status !== 'none' && (
+                  <p className="text-xs text-brand-teal">Refund: USD {detailBooking.refund_amount || '0'} ({detailBooking.refund_status})</p>
+                )}
+                <div className="flex justify-end pt-2">
+                  <Button variant="primary" size="sm" onClick={() => setDetailBooking(null)}>Close</Button>
+                </div>
+              </Card>
+            </div>
+          )}
+
+          {/* Modal: Payment History */}
+          {historyBooking && (
+            <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" role="dialog" aria-modal="true">
+              <Card className="max-w-lg w-full p-6 space-y-3 bg-white">
+                <h3 className="font-bold text-base">Simulated Payment History</h3>
+                <p className="text-xs text-text-muted">{historyBooking.tour_name} • All payments are simulated.</p>
+                <div className="space-y-2 max-h-60 overflow-y-auto">
+                  {(historyBooking.payments || []).length > 0 ? historyBooking.payments.map((p) => (
+                    <div key={p.id} className="flex items-center justify-between text-xs p-2.5 rounded-card bg-gray-50 border border-border">
+                      <div>
+                        <span className="font-semibold capitalize">{p.payment_type}</span>
+                        <span className="text-text-muted ml-2">({p.status})</span>
+                      </div>
+                      <span className="font-mono font-bold">{p.currency} {p.amount}</span>
+                    </div>
+                  )) : (
+                    <p className="text-xs text-text-muted">Initial simulated deposit USD {historyBooking.paid_amount} recorded.</p>
+                  )}
+                </div>
+                <div className="flex justify-end pt-2">
+                  <Button variant="primary" size="sm" onClick={() => setHistoryBooking(null)}>Close</Button>
+                </div>
+              </Card>
+            </div>
+          )}
+
+          {/* Modal: HITL Cancellation Preview */}
+          {cancelPreview && (
+            <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" role="dialog" aria-modal="true">
+              <Card className="max-w-lg w-full p-6 space-y-4 bg-white">
+                <h3 className="font-bold text-base">Confirm Booking Cancellation</h3>
+                <p className="text-xs text-text-muted">{cancelPreview.tour_name} • Travel date: {cancelPreview.travel_date}</p>
+                <div className="p-3 rounded-card bg-amber-50 border border-amber-200 text-xs space-y-1.5">
+                  <p><strong>Policy:</strong> {cancelPreview.policy_version}</p>
+                  <p>{cancelPreview.terms}</p>
+                  <p><strong>Recorded payment (simulated):</strong> USD {cancelPreview.paid_amount}</p>
+                  <p><strong>Eligible simulated refund:</strong> {cancelPreview.escalate_to_staff ? 'Specialist review required' : `USD ${cancelPreview.refund_amount}`}</p>
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button variant="ghost" size="sm" disabled={bookingBusy} onClick={() => setCancelPreview(null)}>
+                    Keep Booking
+                  </Button>
+                  <Button variant="primary" size="sm" disabled={bookingBusy} onClick={handleConfirmCancellation}>
+                    Confirm Cancellation
+                  </Button>
+                </div>
+              </Card>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Tab: Overview */}
       {activeTab === 'overview' && (

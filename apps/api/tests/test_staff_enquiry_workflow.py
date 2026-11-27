@@ -1,3 +1,4 @@
+"""End-to-end test for staff enquiry CRM: deduplication, contact attachment, assignment, notes, and privacy."""
 import json
 from uuid import uuid4
 
@@ -6,6 +7,7 @@ from tests.conftest import headers, turn
 
 
 def test_end_to_end_staff_enquiry_and_contact_workflow(app_client):
+    """Verify T16 missing-rate enquiry -> contact form -> staff search/assign/note -> traveller public view."""
     # 1. Create a trip and select Cultural Triangle Tour (T16) + price / specialist handoff
     trip = app_client.post("/api/trips").json()["id"]
 

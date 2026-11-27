@@ -1,6 +1,6 @@
 {
   "as_of": "2026-11-19",
-  "generated_at": "2026-11-24T21:15:41.781416+00:00",
+  "generated_at": "2026-11-27T17:44:53.893177+00:00",
   "summary": {
     "overall_pass_rate_pct": 98.1,
     "passed_cases": 53,
@@ -78,22 +78,97 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "79741752-dd99-415b-80c9-582ec8502b25",
+          "id": "3a4f9951-c5f1-4efa-89e3-5e90c2069283",
           "stages": [
             {
               "stage": "interpret",
               "provider": "local rules",
               "action": "general",
-              "ms": 3
+              "ms": 22
+            },
+            {
+              "stage": "semantic_discovery",
+              "interests": [],
+              "exclude": [],
+              "constraints": {},
+              "eligible": [
+                "T03",
+                "T09",
+                "T16",
+                "T04",
+                "T08",
+                "T10",
+                "T02",
+                "T07",
+                "T06",
+                "T05",
+                "T01",
+                "T11",
+                "T12",
+                "T13"
+              ],
+              "scores": {
+                "T03": 0.0,
+                "T09": 0.0,
+                "T16": 0.0,
+                "T04": 0.0,
+                "T08": 0.0,
+                "T10": 0.0,
+                "T02": 0.0,
+                "T07": 0.0,
+                "T06": 0.0,
+                "T05": 0.0,
+                "T01": 0.0,
+                "T11": 0.0,
+                "T12": 0.0,
+                "T13": 0.0
+              },
+              "candidates": [
+                "T03",
+                "T09",
+                "T16",
+                "T04",
+                "T08",
+                "T10",
+                "T02",
+                "T07",
+                "T06",
+                "T05",
+                "T01",
+                "T11",
+                "T12",
+                "T13"
+              ],
+              "intent": "discovery",
+              "ranking": {
+                "T01": [
+                  "Sigiriya and Minneriya Day Tour from Kandy"
+                ],
+                "T09": [
+                  "Cultural Triangle Sri Lanka Package"
+                ],
+                "T11": [
+                  "Sri Lanka Beach Stay – Mirissa"
+                ]
+              },
+              "selected": [
+                "T01",
+                "T09",
+                "T11"
+              ],
+              "validation": "local",
+              "continued": false,
+              "unsupported_constraint": false,
+              "fallback": "local_relevance"
             },
             {
               "stage": "retrieval",
               "sources": [
                 "T01",
                 "T09",
-                "T05"
+                "T11"
               ],
-              "ms": 0
+              "ms": 6
             },
             {
               "stage": "validated_ui",
@@ -107,7 +182,7 @@
             {
               "stage": "persistence",
               "enquiry": false,
-              "request_id": "16179f3d-f5c4-444a-bb1f-4e2bf82f4275",
+              "request_id": "b0f24184-6a54-4d02-82e7-848e292bc4aa",
               "ms": 1
             }
           ]
@@ -134,7 +209,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "6e8993df-bd07-4914-8761-9060ceada8b7",
+          "id": "1453d8cc-c4fa-4d4a-af10-86909ea6065c",
           "stages": [
             {
               "stage": "interpret",
@@ -154,7 +229,7 @@
               "outcome": "verified",
               "snapshot": "a16dd63ffb7ed2324e9d709f4b35e1bb3f0d5c2123b765903bce039f5fefdfe2",
               "rate_digest": "a16dd63ffb7ed2324e9d709f4b35e1bb3f0d5c2123b765903bce039f5fefdfe2",
-              "ms": 1
+              "ms": 2
             },
             {
               "stage": "validated_ui",
@@ -169,7 +244,7 @@
             {
               "stage": "persistence",
               "enquiry": true,
-              "request_id": "bb9c6d73-dcd8-4b06-b759-998be69830e9",
+              "request_id": "63024d18-cf30-4ec7-826c-63b59b3c5bd2",
               "ms": 1
             }
           ]
@@ -196,13 +271,13 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "f180778c-db2d-4564-8219-8fd4f7529ef9",
+          "id": "a7da20eb-499a-4e74-ad97-04f6aefe19d7",
           "stages": [
             {
               "stage": "interpret",
               "provider": "local rules",
               "action": "discover",
-              "ms": 0
+              "ms": 1
             },
             {
               "stage": "retrieval",
@@ -217,13 +292,13 @@
             {
               "stage": "persistence",
               "enquiry": false,
-              "request_id": "30e2b8ce-3263-408a-b07b-664172d5996c",
+              "request_id": "b051d1bc-205c-453d-8b9b-3ef7ce2cc3b1",
               "ms": 1
             }
           ]
         },
         {
-          "id": "a7965699-a794-4f3e-a1b2-7e09bda39a48",
+          "id": "09c16fbf-ec65-4d5a-8c6f-1bce5d40aaba",
           "stages": [
             {
               "stage": "interpret",
@@ -243,7 +318,7 @@
               "outcome": "verified",
               "snapshot": "a16dd63ffb7ed2324e9d709f4b35e1bb3f0d5c2123b765903bce039f5fefdfe2",
               "rate_digest": "a16dd63ffb7ed2324e9d709f4b35e1bb3f0d5c2123b765903bce039f5fefdfe2",
-              "ms": 1
+              "ms": 3
             },
             {
               "stage": "validated_ui",
@@ -258,7 +333,7 @@
             {
               "stage": "persistence",
               "enquiry": true,
-              "request_id": "6cf2769c-3ed3-4d7a-b837-53b2b6307a1f",
+              "request_id": "12448714-2b94-461b-a7d2-cf062b6e2e64",
               "ms": 1
             }
           ]
@@ -279,7 +354,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "1bbe9810-dd14-41df-be99-ea2b2801e4bd",
+          "id": "fa74ee41-8f66-4d1b-bcc7-5c9722e66809",
           "stages": [
             {
               "stage": "interpret",
@@ -312,7 +387,7 @@
             {
               "stage": "persistence",
               "enquiry": true,
-              "request_id": "0b9517bd-9ec4-48d1-8dda-0b789e34e06c",
+              "request_id": "f0c470f9-2ead-4b05-abab-1568fe56d70d",
               "ms": 1
             }
           ]
@@ -333,7 +408,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "398fcde1-9146-4856-835f-052bb5fbee62",
+          "id": "73e1ead1-5268-4782-a47e-61382e5a0f31",
           "stages": [
             {
               "stage": "interpret",
@@ -366,7 +441,7 @@
             {
               "stage": "persistence",
               "enquiry": true,
-              "request_id": "e202bd60-2147-467f-a2ec-f37122363790",
+              "request_id": "3750ccd6-7e0f-43ee-a581-80c6576ea22d",
               "ms": 1
             }
           ]
@@ -387,7 +462,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "de879c87-9955-4468-8ccf-4cd785702a22",
+          "id": "4637027c-789d-48a6-83b9-060d32113a6a",
           "stages": [
             {
               "stage": "interpret",
@@ -420,7 +495,7 @@
             {
               "stage": "persistence",
               "enquiry": true,
-              "request_id": "72b1cf64-f937-4a48-a649-249032f4fc50",
+              "request_id": "6bfe033e-1a59-43dc-9268-bec8d5573827",
               "ms": 1
             }
           ]
@@ -441,7 +516,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "139a142b-45fc-462e-8696-358bca933001",
+          "id": "526fab75-507b-4135-96f1-68078b0ee3a6",
           "stages": [
             {
               "stage": "interpret",
@@ -466,7 +541,7 @@
             {
               "stage": "persistence",
               "enquiry": false,
-              "request_id": "d0598e21-b3c1-4238-996d-bdf649803116",
+              "request_id": "c003403d-f86e-439b-a2c8-1d9d8b6def9b",
               "ms": 1
             }
           ]
@@ -487,7 +562,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "c0817a96-3eef-4076-b3e3-61afef7fc1fe",
+          "id": "17c114da-3545-4505-9d5d-ba5ccc53f91d",
           "stages": [
             {
               "stage": "interpret",
@@ -512,7 +587,7 @@
             {
               "stage": "persistence",
               "enquiry": false,
-              "request_id": "967c20bb-d480-4ac1-bb65-7b7fe9d31780",
+              "request_id": "82bce8b6-8014-45ab-b376-13e7c2cd6ccc",
               "ms": 1
             }
           ]
@@ -533,7 +608,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "571404a1-b51f-41fd-a92e-7fb6b4a1a987",
+          "id": "2f107bd5-77fd-4a18-9fc8-cb7d7e9c5d00",
           "stages": [
             {
               "stage": "interpret",
@@ -554,7 +629,7 @@
             {
               "stage": "persistence",
               "enquiry": false,
-              "request_id": "b840be07-2cd9-49e4-aab9-137347eeb70c",
+              "request_id": "86ed2a43-0dcc-4d64-8d3e-db0a22d08cea",
               "ms": 1
             }
           ]
@@ -575,7 +650,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "26e6388d-6197-495d-9583-d582eff44fee",
+          "id": "077af5de-cd6b-4e27-9f1c-0720075b9a4b",
           "stages": [
             {
               "stage": "interpret",
@@ -596,7 +671,7 @@
             {
               "stage": "persistence",
               "enquiry": false,
-              "request_id": "d488067c-8767-4faf-82c0-5441251df2d7",
+              "request_id": "83af044a-068b-4b00-a717-b752313a4187",
               "ms": 1
             }
           ]
@@ -617,13 +692,13 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "bd8cae16-a74f-4f1b-93c5-467b450bd31a",
+          "id": "730819c6-b774-44c5-90cd-edc0a7ed8c14",
           "stages": [
             {
               "stage": "interpret",
               "provider": "local rules",
               "action": "custom",
-              "ms": 0
+              "ms": 1
             },
             {
               "stage": "retrieval",
@@ -647,7 +722,7 @@
             {
               "stage": "persistence",
               "enquiry": true,
-              "request_id": "f2717dab-5758-4c08-b70d-d838fa8da8bc",
+              "request_id": "62314bf6-718d-4eed-8304-20bc4ea44813",
               "ms": 1
             }
           ]
@@ -668,7 +743,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "192d83e4-6eef-4740-8d9f-87f41f6e0916",
+          "id": "bf4ca883-be61-469a-af0a-454c16f6a927",
           "stages": [
             {
               "stage": "interpret",
@@ -689,7 +764,7 @@
             {
               "stage": "persistence",
               "enquiry": false,
-              "request_id": "f8d69b2f-1239-424b-99a5-51061dfaa557",
+              "request_id": "2d3d2aac-e2c4-40dd-b67f-2151d11e7095",
               "ms": 1
             }
           ]
@@ -721,7 +796,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "5a624ef8-772e-4852-b2c5-5b9a348ac141",
+          "id": "4a17116c-3a31-4f01-ac9c-88a61788b58f",
           "stages": [
             {
               "stage": "interpret",
@@ -748,13 +823,13 @@
             {
               "stage": "persistence",
               "enquiry": false,
-              "request_id": "ec52c541-92f5-4447-9ce5-3c473c2f748e",
+              "request_id": "e3d62c63-add5-49e1-b891-124789b1c7d1",
               "ms": 1
             }
           ]
         },
         {
-          "id": "aedf3277-0401-42a0-ab75-c9cef698786d",
+          "id": "c81db278-d15f-42da-aeb0-9de12db1a33c",
           "stages": [
             {
               "stage": "interpret",
@@ -789,19 +864,19 @@
             {
               "stage": "persistence",
               "enquiry": true,
-              "request_id": "891dea8f-de39-4ed9-81da-8363f3f17fc9",
+              "request_id": "4cd679de-604a-4a16-8332-342099a6434e",
               "ms": 1
             }
           ]
         },
         {
-          "id": "e32659b9-2753-4e8f-8391-ab0bf64de0ee",
+          "id": "b67ad549-d5cf-4b38-85ed-94d5e90ecccc",
           "stages": [
             {
               "stage": "interpret",
               "provider": "local rules",
               "action": "discover",
-              "ms": 1
+              "ms": 0
             },
             {
               "stage": "retrieval",
@@ -830,7 +905,7 @@
             {
               "stage": "persistence",
               "enquiry": true,
-              "request_id": "78f75b91-5715-48c4-befc-a96eef197669",
+              "request_id": "1bb86523-a451-4dc1-a9c4-6361a9397c6d",
               "ms": 1
             }
           ]
@@ -851,7 +926,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "05b9517f-f0d1-468e-a17c-2e76f5cc3c8b",
+          "id": "b2f57d79-1790-4416-93c8-d915c6d62de3",
           "stages": [
             {
               "stage": "interpret",
@@ -872,7 +947,7 @@
             {
               "stage": "persistence",
               "enquiry": false,
-              "request_id": "1d1825c9-a973-436c-adfa-6c0217738837",
+              "request_id": "baa47e12-f83e-4724-975d-8227f09bbaef",
               "ms": 1
             }
           ]
@@ -899,7 +974,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "800a9cd4-7ce5-4cd5-a4d4-b1856db2b12e",
+          "id": "773151dd-ff57-48d0-9ecd-cb5e00bde1f7",
           "stages": [
             {
               "stage": "interpret",
@@ -933,7 +1008,7 @@
             {
               "stage": "persistence",
               "enquiry": true,
-              "request_id": "4c6a257b-cc51-4685-bd3b-1fbd59ec5ae7",
+              "request_id": "2dd63118-ab52-4852-aed8-96df4a68b61a",
               "ms": 1
             }
           ]
@@ -954,7 +1029,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "bff88737-3185-4fe2-b3b3-24c3bc2c2035",
+          "id": "8b4f068a-e497-4f62-81d4-0a2c6b6a680b",
           "stages": [
             {
               "stage": "interpret",
@@ -984,7 +1059,7 @@
             {
               "stage": "persistence",
               "enquiry": true,
-              "request_id": "ce26c5a5-6fcd-4edf-b3c6-2682bb942d58",
+              "request_id": "91de6a88-2024-4d71-a704-1685a6eac26a",
               "ms": 1
             }
           ]
@@ -1005,7 +1080,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "bff9bae8-2bdb-4243-8919-2d9505254f45",
+          "id": "451c4ec9-7677-4800-9e00-2d5b73ed3211",
           "stages": [
             {
               "stage": "interpret",
@@ -1032,7 +1107,7 @@
             {
               "stage": "persistence",
               "enquiry": false,
-              "request_id": "74b00977-dca1-4630-af35-ac4c4923755c",
+              "request_id": "0389f9dd-6f21-422e-b97c-e9e5c3cda969",
               "ms": 1
             }
           ]
@@ -1059,7 +1134,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "e6559531-7a9d-46f7-801e-b9a6568625be",
+          "id": "75bbebe3-27ce-4130-a563-436744c8f713",
           "stages": [
             {
               "stage": "interpret",
@@ -1094,7 +1169,7 @@
             {
               "stage": "persistence",
               "enquiry": true,
-              "request_id": "0a33965c-ab71-4266-8f75-4d1843ff33ba",
+              "request_id": "8a7f8e80-8331-4f55-ae62-b2fa1de9e514",
               "ms": 1
             }
           ]
@@ -1121,7 +1196,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "54b3706e-9598-408f-9845-feed01bec972",
+          "id": "f9aaf203-0671-47e3-b917-2d5ed3ca2e92",
           "stages": [
             {
               "stage": "interpret",
@@ -1141,7 +1216,7 @@
               "outcome": "verified",
               "snapshot": "a16dd63ffb7ed2324e9d709f4b35e1bb3f0d5c2123b765903bce039f5fefdfe2",
               "rate_digest": "a16dd63ffb7ed2324e9d709f4b35e1bb3f0d5c2123b765903bce039f5fefdfe2",
-              "ms": 1
+              "ms": 2
             },
             {
               "stage": "validated_ui",
@@ -1156,7 +1231,7 @@
             {
               "stage": "persistence",
               "enquiry": true,
-              "request_id": "9e55b25f-c485-47b0-b962-373fcc41ad3c",
+              "request_id": "8ce95a49-6eab-4034-8a1f-43c8830d4808",
               "ms": 1
             }
           ]
@@ -1183,7 +1258,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "f108d88e-1e5b-4f04-9e07-1132cf764094",
+          "id": "3b093a37-f335-4b72-8111-3f05a1c5f5a6",
           "stages": [
             {
               "stage": "interpret",
@@ -1203,7 +1278,7 @@
               "outcome": "verified",
               "snapshot": "a16dd63ffb7ed2324e9d709f4b35e1bb3f0d5c2123b765903bce039f5fefdfe2",
               "rate_digest": "a16dd63ffb7ed2324e9d709f4b35e1bb3f0d5c2123b765903bce039f5fefdfe2",
-              "ms": 1
+              "ms": 2
             },
             {
               "stage": "validated_ui",
@@ -1218,7 +1293,7 @@
             {
               "stage": "persistence",
               "enquiry": true,
-              "request_id": "d95ad806-fea8-42c8-9c2f-e6bf486f6c28",
+              "request_id": "d7c4690a-60bc-4722-8b1c-1e265b474894",
               "ms": 1
             }
           ]
@@ -1245,7 +1320,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "a57a6518-b90c-4a0d-a593-7b8615d89188",
+          "id": "a7dcd0d1-0f5f-43ff-87ff-2e49f7cb8b81",
           "stages": [
             {
               "stage": "interpret",
@@ -1280,7 +1355,7 @@
             {
               "stage": "persistence",
               "enquiry": true,
-              "request_id": "dc9929b0-2691-420f-8e3f-f14ae6417bc5",
+              "request_id": "bb891012-10c3-4975-8b57-8f806824ed67",
               "ms": 1
             }
           ]
@@ -1301,7 +1376,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "edc502c4-2fbf-4608-ae3a-29544bac4e99",
+          "id": "6a9d8783-cdbb-4aac-acd5-854562412fe4",
           "stages": [
             {
               "stage": "interpret",
@@ -1335,7 +1410,7 @@
             {
               "stage": "persistence",
               "enquiry": true,
-              "request_id": "c23c12ed-d88e-4914-a6c2-82330edf34ff",
+              "request_id": "8462687c-3c62-4adf-be81-1876b0324dfc",
               "ms": 1
             }
           ]
@@ -1356,7 +1431,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "b9ffa9db-563d-450e-bf2a-9c4f8d2340a5",
+          "id": "073356a8-b2af-40c3-a834-cbffdb8034a5",
           "stages": [
             {
               "stage": "interpret",
@@ -1390,7 +1465,7 @@
             {
               "stage": "persistence",
               "enquiry": true,
-              "request_id": "cc6434f8-3105-47c1-a466-7d8d614bd13f",
+              "request_id": "b522abce-16f1-473c-8466-c89decf1de92",
               "ms": 1
             }
           ]
@@ -1417,7 +1492,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "2466b294-1327-4405-848d-f310912a1f05",
+          "id": "c3f04cfa-74b6-4687-95fe-988f4feaf89d",
           "stages": [
             {
               "stage": "interpret",
@@ -1452,7 +1527,7 @@
             {
               "stage": "persistence",
               "enquiry": true,
-              "request_id": "12d2a0b3-9166-4f45-9782-7ef6ac92700f",
+              "request_id": "53aba269-314f-41e5-b49d-3921eaebe90f",
               "ms": 1
             }
           ]
@@ -1479,7 +1554,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "719ecf66-e886-4844-8ad7-69bde75b56b5",
+          "id": "bd3f080c-a361-4e10-bb40-57310459c877",
           "stages": [
             {
               "stage": "interpret",
@@ -1514,7 +1589,7 @@
             {
               "stage": "persistence",
               "enquiry": true,
-              "request_id": "0d6c9ede-4a92-46e8-99c6-6d024e573b0e",
+              "request_id": "02e969a4-8621-434d-9285-8c2b2e00c70b",
               "ms": 1
             }
           ]
@@ -1541,7 +1616,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "92e89498-decd-47b9-bf4a-fd8d2d0fd1fd",
+          "id": "05d298dc-ac37-4269-b83c-c60535154e63",
           "stages": [
             {
               "stage": "interpret",
@@ -1576,7 +1651,7 @@
             {
               "stage": "persistence",
               "enquiry": true,
-              "request_id": "72f0d94d-7c7a-440b-8e3f-a3ffaac29bab",
+              "request_id": "96849c5b-4476-4170-b97c-492d9d850432",
               "ms": 1
             }
           ]
@@ -1603,7 +1678,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "d8b19e5c-7d52-4ceb-8fb7-34fd48945138",
+          "id": "70c457f2-2aac-4313-a071-d848ad1570c1",
           "stages": [
             {
               "stage": "interpret",
@@ -1638,7 +1713,7 @@
             {
               "stage": "persistence",
               "enquiry": true,
-              "request_id": "eee7bc59-ce4d-491f-8ca2-19eea6b39431",
+              "request_id": "fb7d3199-0934-430f-8087-3dd21872ab40",
               "ms": 1
             }
           ]
@@ -1665,7 +1740,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "a1d661ae-dd88-46c8-a731-f22ec5b8c1e8",
+          "id": "c681b9d4-076c-4cac-bf56-d467679c1466",
           "stages": [
             {
               "stage": "interpret",
@@ -1700,7 +1775,7 @@
             {
               "stage": "persistence",
               "enquiry": true,
-              "request_id": "e840b330-0e5d-4d02-93d0-ecc16d3f17cd",
+              "request_id": "2a51ff38-e565-4875-b828-b3d5391fa0d5",
               "ms": 1
             }
           ]
@@ -1727,7 +1802,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "5acc517b-15e8-4cf9-bbbb-8bd66e364ba0",
+          "id": "5adfa3fc-b4ba-48a6-9cd4-5bc325591b13",
           "stages": [
             {
               "stage": "interpret",
@@ -1762,7 +1837,7 @@
             {
               "stage": "persistence",
               "enquiry": true,
-              "request_id": "76bd6854-4ada-4155-b20d-db2307246463",
+              "request_id": "8fd266ab-f914-49ab-aed9-18d0820782f5",
               "ms": 1
             }
           ]
@@ -1783,7 +1858,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "bacb7e98-70f3-41bd-b119-bc895fbc7663",
+          "id": "1261719e-5ae6-4ddb-a9d2-e95b7343d11d",
           "stages": [
             {
               "stage": "interpret",
@@ -1817,7 +1892,7 @@
             {
               "stage": "persistence",
               "enquiry": true,
-              "request_id": "52bc71da-8ab2-4a29-9087-27ffcd5c32fe",
+              "request_id": "09677ec8-ee2f-4ff0-a928-67342646c1fe",
               "ms": 1
             }
           ]
@@ -1844,7 +1919,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "32315960-9468-41cb-a521-166121ff1877",
+          "id": "0b109bc7-a057-489c-adb7-e1bbb5b5f333",
           "stages": [
             {
               "stage": "interpret",
@@ -1879,7 +1954,7 @@
             {
               "stage": "persistence",
               "enquiry": true,
-              "request_id": "3787f6ec-b372-49de-b99b-0524c5b3c045",
+              "request_id": "45b6e52f-7d4a-4e0b-9ec9-a236d0fa553c",
               "ms": 1
             }
           ]
@@ -1906,7 +1981,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "4c6d0703-6a2c-4939-b4cc-43a862554269",
+          "id": "c4444585-ea97-4a85-bcd0-1fbc79811472",
           "stages": [
             {
               "stage": "interpret",
@@ -1941,7 +2016,7 @@
             {
               "stage": "persistence",
               "enquiry": true,
-              "request_id": "67314495-5731-408c-af57-3bea70b8b29e",
+              "request_id": "ac27eda4-d444-4438-8679-335cf80546fe",
               "ms": 1
             }
           ]
@@ -1962,7 +2037,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "8c5faf3b-ed0e-4e91-8189-88225de9f878",
+          "id": "7652897e-6dc3-4ea2-9c20-a2ba5f5a0177",
           "stages": [
             {
               "stage": "interpret",
@@ -1995,7 +2070,7 @@
             {
               "stage": "persistence",
               "enquiry": true,
-              "request_id": "62c956ed-3803-43cf-9776-38790164202a",
+              "request_id": "fe35c203-1bfe-4616-b6a2-55a6a4feb299",
               "ms": 1
             }
           ]
@@ -2016,7 +2091,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "7b3e8578-71b3-4eaf-a771-990b98676cd4",
+          "id": "172d3f9e-cf95-4d23-80e1-6cb3d652a901",
           "stages": [
             {
               "stage": "interpret",
@@ -2043,7 +2118,7 @@
             {
               "stage": "persistence",
               "enquiry": false,
-              "request_id": "9e3163bb-12b4-46f8-a926-e272daa98370",
+              "request_id": "0a592593-ba9e-4cf3-be90-80e756f42f73",
               "ms": 1
             }
           ]
@@ -2064,7 +2139,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "e19a9c6f-95a9-4cdd-bbb5-9fff4b69a28e",
+          "id": "5f464d99-6ff4-42e9-bd62-3a734f89a7ba",
           "stages": [
             {
               "stage": "interpret",
@@ -2073,13 +2148,88 @@
               "ms": 0
             },
             {
+              "stage": "semantic_discovery",
+              "interests": [],
+              "exclude": [],
+              "constraints": {},
+              "eligible": [
+                "T03",
+                "T09",
+                "T16",
+                "T04",
+                "T08",
+                "T10",
+                "T02",
+                "T07",
+                "T06",
+                "T05",
+                "T01",
+                "T11",
+                "T12",
+                "T13"
+              ],
+              "scores": {
+                "T03": 0.0,
+                "T09": 0.0,
+                "T16": 0.0,
+                "T04": 0.0,
+                "T08": 0.0,
+                "T10": 0.0,
+                "T02": 0.0,
+                "T07": 0.0,
+                "T06": 0.0,
+                "T05": 0.0,
+                "T01": 0.0,
+                "T11": 0.0,
+                "T12": 0.0,
+                "T13": 0.0
+              },
+              "candidates": [
+                "T03",
+                "T09",
+                "T16",
+                "T04",
+                "T08",
+                "T10",
+                "T02",
+                "T07",
+                "T06",
+                "T05",
+                "T01",
+                "T11",
+                "T12",
+                "T13"
+              ],
+              "intent": "discovery",
+              "ranking": {
+                "T01": [
+                  "Sigiriya and Minneriya Day Tour from Kandy"
+                ],
+                "T09": [
+                  "Cultural Triangle Sri Lanka Package"
+                ],
+                "T11": [
+                  "Sri Lanka Beach Stay – Mirissa"
+                ]
+              },
+              "selected": [
+                "T01",
+                "T09",
+                "T11"
+              ],
+              "validation": "local",
+              "continued": false,
+              "unsupported_constraint": false,
+              "fallback": "local_relevance"
+            },
+            {
               "stage": "retrieval",
               "sources": [
                 "T01",
                 "T09",
-                "T05"
+                "T11"
               ],
-              "ms": 0
+              "ms": 4
             },
             {
               "stage": "validated_ui",
@@ -2093,7 +2243,7 @@
             {
               "stage": "persistence",
               "enquiry": false,
-              "request_id": "286a2a0b-2f8c-4a03-adb1-1ac561c8a64c",
+              "request_id": "7c6418cb-649f-4428-a3ee-125133453050",
               "ms": 1
             }
           ]
@@ -2114,7 +2264,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "96a7a469-a48e-432c-ae10-1bbebc7ede5b",
+          "id": "fea6fd6b-1492-4fc2-ba8a-9205fc2b2a80",
           "stages": [
             {
               "stage": "interpret",
@@ -2144,7 +2294,7 @@
             {
               "stage": "persistence",
               "enquiry": true,
-              "request_id": "45cadf13-3bad-455a-a092-5c3adff78913",
+              "request_id": "c8a71ff3-cb29-4c23-867d-a211d833272d",
               "ms": 1
             }
           ]
@@ -2165,7 +2315,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "aa24c6ba-8f7f-4be4-8214-8bd38d49df56",
+          "id": "fec6b714-b6af-4218-b392-d874696d7ddb",
           "stages": [
             {
               "stage": "interpret",
@@ -2190,7 +2340,7 @@
             {
               "stage": "persistence",
               "enquiry": false,
-              "request_id": "be030ae7-9e23-4018-995b-0bef9144730b",
+              "request_id": "96ca10b2-b8d2-4754-bf4e-da326620bb5f",
               "ms": 1
             }
           ]
@@ -2211,7 +2361,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "a3141b61-7b8d-45ee-8d82-13cb982bbdfc",
+          "id": "80aec555-f813-4949-aca5-101583cd5160",
           "stages": [
             {
               "stage": "interpret",
@@ -2240,7 +2390,7 @@
             {
               "stage": "persistence",
               "enquiry": false,
-              "request_id": "859e2a80-fb50-4905-95c3-de94d3f40f73",
+              "request_id": "5b5d197b-e39e-4fd6-8160-9c86875c0bfe",
               "ms": 1
             }
           ]
@@ -2261,7 +2411,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "290c76e6-a569-43be-b989-d5d3f63dfeb2",
+          "id": "4715f26e-bf72-4963-a65c-e779cfde2dcf",
           "stages": [
             {
               "stage": "interpret",
@@ -2282,7 +2432,7 @@
             {
               "stage": "persistence",
               "enquiry": false,
-              "request_id": "d1730d66-57c1-45bb-a481-b28516ec451a",
+              "request_id": "463e38de-cc34-4a8a-8812-db9af0ee7499",
               "ms": 1
             }
           ]
@@ -2303,7 +2453,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "d237b7c2-d623-48d4-992f-66002e11d10d",
+          "id": "72ae24ab-aa40-4f90-ba23-61f35ecb680b",
           "stages": [
             {
               "stage": "interpret",
@@ -2328,7 +2478,7 @@
             {
               "stage": "persistence",
               "enquiry": false,
-              "request_id": "1b4d7dff-6cd0-47ce-a76a-69fabacf0142",
+              "request_id": "a350fa02-6c2f-4aef-b075-24e7a6383d11",
               "ms": 1
             }
           ]
@@ -2360,7 +2510,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "c9b2ea18-94ea-4c38-aef7-03ff718713da",
+          "id": "a9da008b-6ee2-458e-b7e1-c0f5781175cd",
           "stages": [
             {
               "stage": "interpret",
@@ -2387,13 +2537,13 @@
             {
               "stage": "persistence",
               "enquiry": false,
-              "request_id": "76425975-f286-4990-b612-bd99db98abe8",
-              "ms": 1
+              "request_id": "d3b056db-5bd9-4201-8764-b654d25ac77b",
+              "ms": 4
             }
           ]
         },
         {
-          "id": "8965c868-8a4e-46dd-aa75-b65f437303a0",
+          "id": "32141ef6-5af1-4464-a664-489b4fb41889",
           "stages": [
             {
               "stage": "interpret",
@@ -2413,7 +2563,7 @@
               "outcome": "verified",
               "snapshot": "a16dd63ffb7ed2324e9d709f4b35e1bb3f0d5c2123b765903bce039f5fefdfe2",
               "rate_digest": "a16dd63ffb7ed2324e9d709f4b35e1bb3f0d5c2123b765903bce039f5fefdfe2",
-              "ms": 1
+              "ms": 2
             },
             {
               "stage": "validated_ui",
@@ -2428,13 +2578,13 @@
             {
               "stage": "persistence",
               "enquiry": true,
-              "request_id": "bfa02e3c-9d09-4111-bad1-a6e0295854e4",
+              "request_id": "c4ec8202-ac0d-48a1-9070-3e13f8d48e7f",
               "ms": 1
             }
           ]
         },
         {
-          "id": "33b51f7a-13af-49ff-834f-93597a5e7352",
+          "id": "689a44e2-3c03-4972-b364-4dc32ab16811",
           "stages": [
             {
               "stage": "interpret",
@@ -2454,7 +2604,7 @@
               "outcome": "verified",
               "snapshot": "a16dd63ffb7ed2324e9d709f4b35e1bb3f0d5c2123b765903bce039f5fefdfe2",
               "rate_digest": "a16dd63ffb7ed2324e9d709f4b35e1bb3f0d5c2123b765903bce039f5fefdfe2",
-              "ms": 1
+              "ms": 2
             },
             {
               "stage": "validated_ui",
@@ -2469,7 +2619,7 @@
             {
               "stage": "persistence",
               "enquiry": true,
-              "request_id": "07de0d8b-393f-4ae2-818e-ba318c437853",
+              "request_id": "16d34776-26d6-4844-aebc-9d86ec3e11bd",
               "ms": 1
             }
           ]
@@ -2501,7 +2651,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "3d2545ab-939b-4959-b5b0-8d107e72314f",
+          "id": "fa07770c-0130-45e1-a59c-1610cd303fe6",
           "stages": [
             {
               "stage": "interpret",
@@ -2536,19 +2686,19 @@
             {
               "stage": "persistence",
               "enquiry": true,
-              "request_id": "6659d15b-bd19-4a79-a382-48bf27f94622",
+              "request_id": "ac4ccbdb-f43b-452c-99db-b0b849258686",
               "ms": 1
             }
           ]
         },
         {
-          "id": "6684d9c7-b777-4ea0-92b5-c488d9b031d0",
+          "id": "96baa812-4ac7-4561-ac88-6e81c6ad8a0b",
           "stages": [
             {
               "stage": "interpret",
               "provider": "local rules",
               "action": "discover",
-              "ms": 0
+              "ms": 1
             },
             {
               "stage": "retrieval",
@@ -2577,7 +2727,7 @@
             {
               "stage": "persistence",
               "enquiry": true,
-              "request_id": "350db4b3-8a99-4970-b5e0-80725e84cfcd",
+              "request_id": "f4588738-5520-4696-a3f3-4aeaa80a649b",
               "ms": 1
             }
           ]
@@ -2609,7 +2759,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "e22a25b1-2267-4c09-8ab9-797acd8b5ea4",
+          "id": "163a49e3-34d9-4183-860e-11a307ba6499",
           "stages": [
             {
               "stage": "interpret",
@@ -2644,19 +2794,19 @@
             {
               "stage": "persistence",
               "enquiry": true,
-              "request_id": "3f53890c-6e0f-433c-af81-b9b49e75f539",
+              "request_id": "6bec4e87-e610-430f-8661-cce18b92fd6e",
               "ms": 1
             }
           ]
         },
         {
-          "id": "98fedaae-e3d4-4a12-a3f9-fa86dfaf05b3",
+          "id": "e2971519-110c-499b-bf0f-2189c10ff028",
           "stages": [
             {
               "stage": "interpret",
               "provider": "local rules",
               "action": "discover",
-              "ms": 0
+              "ms": 2
             },
             {
               "stage": "retrieval",
@@ -2670,7 +2820,7 @@
               "outcome": "verified",
               "snapshot": "a16dd63ffb7ed2324e9d709f4b35e1bb3f0d5c2123b765903bce039f5fefdfe2",
               "rate_digest": "a16dd63ffb7ed2324e9d709f4b35e1bb3f0d5c2123b765903bce039f5fefdfe2",
-              "ms": 1
+              "ms": 4
             },
             {
               "stage": "validated_ui",
@@ -2685,8 +2835,8 @@
             {
               "stage": "persistence",
               "enquiry": true,
-              "request_id": "1321be2a-7420-4490-9796-b740c0d681ce",
-              "ms": 1
+              "request_id": "35206428-b8e6-497b-abbf-fd4e3614a9a3",
+              "ms": 8
             }
           ]
         }
@@ -2717,7 +2867,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "374c7817-9e43-44dc-9e30-2349a6775581",
+          "id": "b5081a96-0c88-4e53-a29a-8cd7b9cea8a7",
           "stages": [
             {
               "stage": "interpret",
@@ -2737,7 +2887,7 @@
               "outcome": "verified",
               "snapshot": "a16dd63ffb7ed2324e9d709f4b35e1bb3f0d5c2123b765903bce039f5fefdfe2",
               "rate_digest": "a16dd63ffb7ed2324e9d709f4b35e1bb3f0d5c2123b765903bce039f5fefdfe2",
-              "ms": 1
+              "ms": 6
             },
             {
               "stage": "validated_ui",
@@ -2752,13 +2902,13 @@
             {
               "stage": "persistence",
               "enquiry": true,
-              "request_id": "943c5756-ed0b-4351-aa61-55afaa767437",
-              "ms": 1
+              "request_id": "3a338ac3-487b-4d00-8e7e-72a6709e8db3",
+              "ms": 2
             }
           ]
         },
         {
-          "id": "381a26d9-68fe-42cb-9b65-a0fcac53b87d",
+          "id": "6c443994-bff8-4cca-adaf-9b90581b592e",
           "stages": [
             {
               "stage": "interpret",
@@ -2792,7 +2942,7 @@
             {
               "stage": "persistence",
               "enquiry": true,
-              "request_id": "094a4ca8-14ec-4a7c-a8c1-0f7408e3292e",
+              "request_id": "217a3376-f1a0-4c91-b211-71f56193334c",
               "ms": 1
             }
           ]
@@ -2819,7 +2969,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "95fd7ee2-a0f3-4249-897c-bb67d1067f62",
+          "id": "269413f2-9252-473d-be8b-6b61998f038e",
           "stages": [
             {
               "stage": "interpret",
@@ -2840,13 +2990,13 @@
             {
               "stage": "persistence",
               "enquiry": false,
-              "request_id": "c288c0f8-2470-4caa-892b-e5dca9c30062",
+              "request_id": "35ed282e-db36-4682-9a7f-b97f644a3d64",
               "ms": 1
             }
           ]
         },
         {
-          "id": "0647c73d-fe5a-467d-9847-4a7bb9f489cd",
+          "id": "84f78f94-068e-44db-b310-e6cc32361d3a",
           "stages": [
             {
               "stage": "interpret",
@@ -2881,7 +3031,7 @@
             {
               "stage": "persistence",
               "enquiry": true,
-              "request_id": "b3bfd511-dc83-40eb-be1d-1ab60bba7917",
+              "request_id": "04f3a5bc-134f-4377-9f14-6b35c3d1e11e",
               "ms": 1
             }
           ]
@@ -2902,7 +3052,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "1338e607-d409-45b0-9cc4-8ac1817719da",
+          "id": "bf297729-53b8-4229-9499-39c6aea34565",
           "stages": [
             {
               "stage": "interpret",
@@ -2923,7 +3073,7 @@
             {
               "stage": "persistence",
               "enquiry": false,
-              "request_id": "e62a5d2c-5b53-433b-a739-076cdf9ffcdb",
+              "request_id": "fdb18ed5-d071-42f6-8186-7bc1244d562d",
               "ms": 1
             }
           ]
@@ -2944,7 +3094,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "3f6e2623-05e7-4f2c-9e0f-f17f88c04fb6",
+          "id": "20fb21e2-6d3c-4585-a3ba-63903b7aba1d",
           "stages": [
             {
               "stage": "interpret",
@@ -2965,7 +3115,7 @@
             {
               "stage": "persistence",
               "enquiry": false,
-              "request_id": "cd14e7e1-b741-480a-864c-fe7c06887904",
+              "request_id": "329c7001-f087-4f6e-94f3-f783f4a36344",
               "ms": 1
             }
           ]
@@ -2986,7 +3136,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "01902b57-1c0f-4002-8d3f-d58ddddaf85d",
+          "id": "e251aa27-9f8f-4a46-88bd-63f322a6c03c",
           "stages": [
             {
               "stage": "interpret",
@@ -3007,7 +3157,7 @@
             {
               "stage": "persistence",
               "enquiry": false,
-              "request_id": "66edec5b-ca65-4a74-86ef-aa9b69746cc4",
+              "request_id": "bdc1bd31-29da-41d6-bc49-d0e9a52b265e",
               "ms": 1
             }
           ]
@@ -3028,7 +3178,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "50349887-0d01-48c0-ad49-f5d336045192",
+          "id": "f0eed3db-9159-49ef-9809-8268db1c207d",
           "stages": [
             {
               "stage": "interpret",
@@ -3049,7 +3199,7 @@
             {
               "stage": "persistence",
               "enquiry": false,
-              "request_id": "08523830-fc2c-444d-ba10-0f02742b0207",
+              "request_id": "eab0cb14-b35d-4556-b6cb-78a9f76b874c",
               "ms": 1
             }
           ]
@@ -3076,7 +3226,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "f1548a91-06a5-4300-9c90-a70072852a80",
+          "id": "1a5e072a-255d-44eb-8718-42da3893fa36",
           "stages": [
             {
               "stage": "interpret",
@@ -3111,7 +3261,7 @@
             {
               "stage": "persistence",
               "enquiry": true,
-              "request_id": "162a658a-e83c-4a6c-8dd5-de602d67efd2",
+              "request_id": "64e6ef00-c66d-4101-b1ca-6733b068c539",
               "ms": 1
             },
             {
@@ -3142,7 +3292,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "ad5963ee-2c01-4cdf-a26a-a29e6b6ee9bb",
+          "id": "34382669-32eb-4604-8ef5-b5344124f84a",
           "stages": [
             {
               "stage": "interpret",
@@ -3177,7 +3327,7 @@
             {
               "stage": "persistence",
               "enquiry": true,
-              "request_id": "a30f3018-5a16-4d1b-a864-545cb7f7826e",
+              "request_id": "7a81b02c-59c6-4eda-bdaa-0a4a94e98da4",
               "ms": 1
             },
             {
@@ -3208,7 +3358,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "b3b5fc54-9d4d-4c5d-8aa6-f404f60e4b3a",
+          "id": "ec1256dc-703f-49a7-bc0f-953460b1d331",
           "stages": [
             {
               "stage": "interpret",
@@ -3228,7 +3378,7 @@
               "outcome": "verified",
               "snapshot": "a16dd63ffb7ed2324e9d709f4b35e1bb3f0d5c2123b765903bce039f5fefdfe2",
               "rate_digest": "a16dd63ffb7ed2324e9d709f4b35e1bb3f0d5c2123b765903bce039f5fefdfe2",
-              "ms": 1
+              "ms": 4
             },
             {
               "stage": "validated_ui",
@@ -3243,7 +3393,7 @@
             {
               "stage": "persistence",
               "enquiry": true,
-              "request_id": "a9c5ff69-3077-4f24-87fd-aab2e220e7b5",
+              "request_id": "989acb2a-6676-403e-afd7-60abc244ba57",
               "ms": 1
             },
             {
@@ -3268,7 +3418,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "caca24a2-6bef-411e-aac7-55b1ab6a91df",
+          "id": "aee9fff7-176b-42fe-9fef-3aff08e5e21e",
           "stages": [
             {
               "stage": "interpret",
@@ -3298,7 +3448,7 @@
             {
               "stage": "persistence",
               "enquiry": true,
-              "request_id": "26fef4a0-9b54-4252-9395-1539ad0f65bf",
+              "request_id": "16e127df-09f5-4c02-94c1-6d7cb8b903ea",
               "ms": 1
             }
           ]
@@ -3319,7 +3469,7 @@
       "ui_failure": false,
       "traces": [
         {
-          "id": "0acb405e-36f0-48f6-9089-2fad31410b5d",
+          "id": "7f43d09b-afed-4ee8-9020-f75d877f4e83",
           "stages": [
             {
               "stage": "interpret",
@@ -3344,7 +3494,7 @@
             {
               "stage": "persistence",
               "enquiry": false,
-              "request_id": "7ba02372-3f80-40d7-beb4-655439c04309",
+              "request_id": "680badba-3c4f-4e04-9f01-dc36eb892e29",
               "ms": 1
             }
           ]

@@ -1,3 +1,4 @@
+"""Add user accounts, sessions, brute-force lockout tracking, and RBAC/review metadata columns."""
 from alembic import op
 
 revision = '0003_auth_rbac'
@@ -5,6 +6,7 @@ down_revision = '0002_notebooks'
 
 
 def upgrade():
+    """Create auth tables and idempotently add assignment/review columns to enquiries and drafts."""
     op.execute("""CREATE TABLE IF NOT EXISTS users (
                 id TEXT PRIMARY KEY,
                 email TEXT UNIQUE NOT NULL,

@@ -14,6 +14,7 @@ from mira.catalog import Breakdown, Card, SourcePanel
 
 
 def send_turn(client, trip_id, message):
+    """Post a turn to ``/api/agent`` for ``trip_id`` and return the ``turn`` snapshot dict."""
     run_id = str(uuid4())
     res = client.post(
         "/api/agent",
